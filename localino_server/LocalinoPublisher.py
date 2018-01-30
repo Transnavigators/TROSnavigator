@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import socket
 import configparser
 import rospy
