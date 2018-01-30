@@ -4,7 +4,6 @@ import rospy
 import serial
 import os
 import re
-from PyCRC.CRC16 import CRC16
 from std_msgs.msg import String
 
 port_name = '/dev/ttyUSB1'
@@ -13,7 +12,6 @@ if os.name == 'nt':
 ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
 move_pattern = re.compile('^Move r=(.*), a=(.*)$')
 set_pattern = re.compile('^Set s=(.*), a=(.*), ac=(.*)$')
-rospy.init_node('arduino', anonymous=True)
 
 
 def callback(data):
@@ -55,39 +53,17 @@ def callback(data):
 
 
 def listener():
+    # Initialize the serial port
+
+    rospy.init_node('arduino_controller', anonymous=True)
+
     # Subscribe to the arduino_commands topic and never exit
     rospy.Subscriber("arduino_commands", String, callback)
-
-# TODO: multithread
-def talker():
-    global ser
-    pub = rospy.Publisher('arduino_publisher', String, queue_size=10)
-    rate = rospy.Rate(100)  # 100Hz, increase if needed
-    while not rospy.is_shutdown():
-        data = ser.read()
-        if data == 0xEE:
-            data = ser.read()
-            if data == 0x01:
-                speed1 = ser.read(4)
-                speed2 = ser.read(4)
-                delta_time = ser.read(4)
-                crc = ser.read(2)
-                buf = bytearray()
-                buf.extend(speed1)
-                buf.extend(speed2)
-                buf.extend(delta_time)
-                calc_crc = CRC16().calculate(bytes(buffer))
-                if calc_crc != crc:
-                    rospy.loginfo("Error: packet didn't pass checksum")
-                else:
-                    pub.publish(
-                        "speed1=" + int(speed1) + ", speed2=" + int(speed2) + ", time=" + int(delta_time))
-        rate.sleep()
+    rospy.spin()
 
 
 if __name__ == "__main__":
     try:
         listener()
-        talker()
     except rospy.ROSInterruptException:
-        pass
+pass
