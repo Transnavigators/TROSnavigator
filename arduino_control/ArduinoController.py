@@ -4,6 +4,7 @@ import rospy
 import serial
 import os
 import re
+from std_msgs.msg import String
 
 port_name = '/dev/ttyUSB1'
 if os.name == 'nt':

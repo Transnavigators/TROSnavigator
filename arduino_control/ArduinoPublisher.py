@@ -4,7 +4,7 @@ import os
 import rospy
 import serial
 from PyCRC.CRC16 import CRC16
-
+from std_msgs.msg import String
 
 class ArduinoPublisher:
     def __init__(self):

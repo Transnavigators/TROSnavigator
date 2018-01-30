@@ -3,7 +3,7 @@
 import socket
 import configparser
 import rospy
-
+from std_msgs.msg import String
 
 class LocalinoPublisher:
     def __init__(self):
