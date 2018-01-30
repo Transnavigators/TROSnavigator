@@ -14,14 +14,6 @@ import os
 deviceShadowHandler = None
 pub = None
 
-# Custom MQTT message callback
-def customCallback(client, userdata, message):
-    print("Received a new message: ")
-    print(message.payload)
-    print("from topic: ")
-    print(message.topic)
-    print("--------------\n\n")
-
 def myCallback(payload, responseStatus, token):
     global deviceShadowHandler
     global pub
