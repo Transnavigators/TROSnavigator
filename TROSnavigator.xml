@@ -1,6 +1,5 @@
 <launch>
-    <node name="VoiceControlPublisher.py" pkg="alexa_voice_control" type="talker" />
-    <node name="ArduinoController.py" pkg="arduino_control" type="listener" />
-    <node name="ArduinoPublisher.py" pkg="arduino_control" type="talker" />
-    <node name="LocalinoPublisher.py" pkg="localino_server" type="talker" />
+    <node name="VoiceControlPublisher.py" pkg="alexa_voice_control" type="VoiceControlPublisher.py" />
+    <node name="ArduinoController.py" pkg="arduino_control" type="ArduinoController.py" />
+    <node name="LocalinoPublisher.py" pkg="localino_server" type="LocalinoPublisher.py" />
 </launch>
