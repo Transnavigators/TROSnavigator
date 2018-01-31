@@ -1,9 +1,9 @@
 <launch>
     <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py"/>
-    <node name="arduino_controller" pkg="arduino_control" type="arduino_controller.py"/>
+    <node name="arduino_control" pkg="arduino_control" type="arduino_control.py"/>
     <node name="localino_server" pkg="localino_server" type="localino_server.py"/>
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
-        <param name="port" value="/dev/ttyS0"/>
+        <param name="port" value="/dev/ttyS0" />
     </node>
 </launch>

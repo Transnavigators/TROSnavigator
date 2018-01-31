@@ -9,7 +9,7 @@ from std_msgs.msg import String
 
 class ArduinoPublisher:
     def __init__(self):
-        port_name = '/dev/ttyUSB1'
+        port_name = '/dev/ttyS0'
         if os.name == 'nt':
             port_name = 'COM6'
         self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)

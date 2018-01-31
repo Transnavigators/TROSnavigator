@@ -14,7 +14,7 @@ class LocalinoPublisher:
     def talker(self):
         # Read the config file for anchor positions
         config = configparser.ConfigParser()
-        config.read('config.ini')
+        config.read('/home/pi/catkin_ws/src/localino_server/config.ini')
         anchor_names = config.options('anchorpos')
         anchor_coords = {anchorName: None for anchorName in anchor_names}
         tag_ids = config.options('tagnames')

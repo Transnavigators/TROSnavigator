@@ -6,7 +6,7 @@ import os
 import re
 from std_msgs.msg import String
 
-port_name = '/dev/ttyUSB1'
+port_name = '/dev/ttyS0'
 if os.name == 'nt':
     port_name = 'COM6'
 ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
