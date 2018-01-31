@@ -5,6 +5,7 @@ import configparser
 import rospy
 from std_msgs.msg import String
 
+
 class LocalinoPublisher:
     def __init__(self):
         self.pub = rospy.Publisher('localino_server', String, queue_size=10)
@@ -69,9 +70,9 @@ class LocalinoPublisher:
                     y = 0.0
                     for anchorName in anchor_names:
                         x += 1.0 / (anchor_coords[anchorName]['x'] * (
-                        data[timestamp % history_length][tag_id][anchorName]) / sum_dist)
+                            data[timestamp % history_length][tag_id][anchorName]) / sum_dist)
                         y += 1.0 / (anchor_coords[anchorName]['y'] * (
-                        data[timestamp % history_length][tag_id][anchorName]) / sum_dist)
+                            data[timestamp % history_length][tag_id][anchorName]) / sum_dist)
 
                     self.pub.publish("Located Tag#=" + tag_id + " at t=" + timestamp + "@ p=(" + x + "," + y + ")")
             rate.sleep()
