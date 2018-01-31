@@ -152,10 +152,12 @@ catkin_package(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-install(PROGRAMS
-  arduino_publisher.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#install(PROGRAMS
+#  arduino_publisher.py
+#  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
+catkin_install_python(PROGRAMS arduino_publisher.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
