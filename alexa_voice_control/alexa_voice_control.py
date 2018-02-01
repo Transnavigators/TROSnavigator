@@ -24,11 +24,11 @@ class Alexa:
         self.clientId = 'Pi'
         self.topic = '/get/accepted'
         
-    def callback(self.payload, responseStatus, token):
+    def callback(self, payload, responseStatus, token):
         data = json.loads(payload)['state']
 
         # Delete shadow JSON doc
-        self.deviceShadowHandler.shadowDelete(callbackDelete, 5)
+        self.deviceShadowHandler.shadowDelete(self.callbackDelete, 5)
 
         # publish data
         data = json.dumps(data)
@@ -36,7 +36,7 @@ class Alexa:
         self.pub.publish(data)
 
 
-    def callbackDelete(payload, responseStatus, token):
+    def callbackDelete(self, payload, responseStatus, token):
         if responseStatus == "accepted":
             pass
         if responseStatus == "timeout":
@@ -49,7 +49,7 @@ class Alexa:
 
         # Configure logging
         logger = logging.getLogger("AWSIoTPythonSDK.core")
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.WARN)
         streamHandler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         streamHandler.setFormatter(formatter)
@@ -57,9 +57,9 @@ class Alexa:
 
         # Shadow Client
         # Init AWSIoTMQTTClient
-        myAWSIoTMQTTShadowClient = AWSIoTMQTTShadowClient(clientId)
-        myAWSIoTMQTTShadowClient.configureEndpoint(host, 8883)
-        myAWSIoTMQTTShadowClient.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
+        myAWSIoTMQTTShadowClient = AWSIoTMQTTShadowClient(self.clientId)
+        myAWSIoTMQTTShadowClient.configureEndpoint(self.host, 8883)
+        myAWSIoTMQTTShadowClient.configureCredentials(self.rootCAPath, self.privateKeyPath, self.certificatePath)
 
         # AWSIoTMQTTClient connection configuration
         myAWSIoTMQTTShadowClient.configureAutoReconnectBackoffTime(1, 32, 20)
@@ -67,8 +67,8 @@ class Alexa:
         myAWSIoTMQTTShadowClient.configureMQTTOperationTimeout(5)  # 5 sec
 
         myAWSIoTMQTTShadowClient.connect()
-        deviceShadowHandler = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("Pi", True)
-        deviceShadowHandler.shadowRegisterDeltaCallback(callback);
+        self.deviceShadowHandler = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("Pi", True)
+        self.deviceShadowHandler.shadowRegisterDeltaCallback(self.callback);
 
         # wait
         rospy.spin()
