@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>alexa_voice_control</name>
     <version>1.0.0</version>
     <description>The alexa_voice_control package</description>
@@ -16,6 +16,8 @@
 
     <buildtool_depend>catkin</buildtool_depend>
 
+    <depend>rospy</depend>
+    <depend>std_msgs</depend>
 
     <!-- The export tag contains other, unspecified, tags -->
     <export>

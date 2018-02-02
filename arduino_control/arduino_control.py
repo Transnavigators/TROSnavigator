@@ -2,7 +2,6 @@
 
 import rospy
 import serial
-import os
 import re
 from std_msgs.msg import String
 
@@ -13,19 +12,17 @@ class ArduinoController:
         rospy.init_node('arduino_controller', anonymous=True)
         # Subscribe to the arduino_commands topic
         rospy.Subscriber("arduino_commands", String, self.callback)
-    
+
         # set up the port
         port_name = rospy.get_param("~port")
         self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
-        
+
         # create regex
         self.move_pattern = re.compile('^Move r=(.*), a=(.*)$')
         self.set_pattern = re.compile('^Set s=(.*), a=(.*), ac=(.*)$')
-        
-        
 
     # callback for receiving data from the arduino
-    def callback(self,data):
+    def callback(self, data):
         if data.startswith("Stop"):
             # Stop after the current command is done
             if data.endswith("next"):
@@ -60,7 +57,6 @@ class ArduinoController:
             for i in range(0, 2):
                 buf.extend(bytes(float(match.group(i))))
             self.ser.write(bytes(buf))
-
 
     # start the node: spin forever
     def begin(self):

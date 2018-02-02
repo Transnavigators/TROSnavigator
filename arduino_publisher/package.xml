@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>arduino_publisher</name>
     <version>1.0.0</version>
     <description>The arduino_publisher package</description>
@@ -15,6 +15,11 @@
     <author email="yuenm18@up.edu">Matthew Yuen</author>
 
     <buildtool_depend>catkin</buildtool_depend>
+    <depend>rospy</depend>
+    <depend>std_msgs</depend>
+    <depend>nav_msgs</depend>
+    <depend>geometry_msgs</depend>
+    <depend>tf</depend>
 
     <export>
         <!-- Other tools can request additional information be placed here -->

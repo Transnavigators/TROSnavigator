@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package version="2">
     <name>arduino_control</name>
     <version>1.0.0</version>
     <description>The arduino_control package</description>
@@ -15,6 +15,9 @@
     <author email="yuenm18@up.edu">Matthew Yuen</author>
 
     <buildtool_depend>catkin</buildtool_depend>
+
+    <depend>rospy</depend>
+    <depend>std_msgs</depend>
 
     <export>
         <!-- Other tools can request additional information be placed here -->
