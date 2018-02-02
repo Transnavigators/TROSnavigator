@@ -15,7 +15,7 @@ class ArduinoController:
         rospy.Subscriber("arduino_commands", String, self.callback)
     
         # set up the port
-        port_name = rospy.get_param("port")
+        port_name = rospy.get_param("~port")
         self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
         
         # create regex
@@ -63,7 +63,7 @@ class ArduinoController:
 
 
     # start the node: spin forever
-    def begin():
+    def begin(self):
         # never exit
         rospy.spin()
 

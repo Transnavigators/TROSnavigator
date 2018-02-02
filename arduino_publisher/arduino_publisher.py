@@ -10,7 +10,7 @@ from std_msgs.msg import String
 class ArduinoPublisher:
     def __init__(self):
         # initialize port
-        port_name = rospy.get_param("port")
+        port_name = rospy.get_param("~port")
         self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
         
         # set up node
