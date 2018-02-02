@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# license removed for brevity
+
 import rospy
 from std_msgs.msg import String
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
@@ -11,6 +11,7 @@ import json
 import os
 
 class Alexa:
+    # set up note and constants
     def __init__(self):
         # create a new node that publishes on topic voice_control
         self.pub = rospy.Publisher('voice_control', String, queue_size=10)
@@ -24,6 +25,7 @@ class Alexa:
         self.clientId = 'Pi'
         self.topic = '/get/accepted'
         
+    # callback for receiving AWS message
     def callback(self, payload, responseStatus, token):
         data = json.loads(payload)['state']
 
@@ -35,7 +37,7 @@ class Alexa:
         rospy.loginfo(data)
         self.pub.publish(data)
 
-
+    # callback for removing message
     def callbackDelete(self, payload, responseStatus, token):
         if responseStatus == "accepted":
             pass
@@ -44,7 +46,7 @@ class Alexa:
         if responseStatus == "rejected":
             print("Delete request " + token + " rejected")
 
-
+    # sets up communication with AWS
     def begin(self):
 
         # Configure logging

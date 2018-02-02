@@ -8,10 +8,12 @@ from std_msgs.msg import String
 
 class LocalinoPublisher:
     def __init__(self):
+        # initialize the node
         self.pub = rospy.Publisher('localino_server', String, queue_size=10)
         rospy.init_node('localino', anonymous=True)
 
-    def talker(self):
+    # start the triangulation
+    def begin(self):
         # Read the config file for anchor positions
         config = configparser.ConfigParser()
         config.read('/home/pi/catkin_ws/src/localino_server/config.ini')
@@ -81,6 +83,6 @@ class LocalinoPublisher:
 if __name__ == "__main__":
     try:
         lp = LocalinoPublisher()
-        lp.talker()
+        lp.begin()
     except rospy.ROSInterruptException:
         pass
