@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# license removed for brevity
+
 import rospy
 from std_msgs.msg import String
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
@@ -10,80 +10,75 @@ import argparse
 import json
 import os
 
-deviceShadowHandler = None
-pub = None
+class Alexa:
+    # set up note and constants
+    def __init__(self):
+        # create a new node that publishes on topic voice_control
+        self.pub = rospy.Publisher('voice_control', String, queue_size=10)
+        rospy.init_node('alexa', anonymous=True)
+        
+        # set up constants
+        self.host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
+        self.rootCAPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/root-CA.crt'
+        self.certificatePath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.cert.pem'
+        self.privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.private.key'
+        self.clientId = 'Pi'
+        self.topic = '/get/accepted'
+        
+    # callback for receiving AWS message
+    def callback(self, payload, responseStatus, token):
+        data = json.loads(payload)['state']
 
+        # Delete shadow JSON doc
+        self.deviceShadowHandler.shadowDelete(self.callbackDelete, 5)
 
-def myCallback(payload, responseStatus, token):
-    global deviceShadowHandler
-    global pub
+        # publish data
+        data = json.dumps(data)
+        rospy.loginfo(data)
+        self.pub.publish(data)
 
-    data = json.loads(payload)['state']
+    # callback for removing message
+    def callbackDelete(self, payload, responseStatus, token):
+        if responseStatus == "accepted":
+            pass
+        if responseStatus == "timeout":
+            print("Delete request " + token + " time out")
+        if responseStatus == "rejected":
+            print("Delete request " + token + " rejected")
 
-    print(data);
-    # Delete shadow JSON doc
-    deviceShadowHandler.shadowDelete(customShadowCallback_Delete, 5)
+    # sets up communication with AWS
+    def begin(self):
 
-    # publish data
-    data = json.dumps(data)
-    rospy.loginfo(data)
-    pub.publish(data)
+        # Configure logging
+        logger = logging.getLogger("AWSIoTPythonSDK.core")
+        logger.setLevel(logging.WARN)
+        streamHandler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        streamHandler.setFormatter(formatter)
+        logger.addHandler(streamHandler)
 
+        # Shadow Client
+        # Init AWSIoTMQTTClient
+        myAWSIoTMQTTShadowClient = AWSIoTMQTTShadowClient(self.clientId)
+        myAWSIoTMQTTShadowClient.configureEndpoint(self.host, 8883)
+        myAWSIoTMQTTShadowClient.configureCredentials(self.rootCAPath, self.privateKeyPath, self.certificatePath)
 
-def customShadowCallback_Delete(payload, responseStatus, token):
-    if responseStatus == "timeout":
-        print("Delete request " + token + " time out!")
-    if responseStatus == "accepted":
-        print("~~~~~~~~~~~~~~~~~~~~~~~")
-        print("Delete request with token: " + token + " accepted!")
-        print("~~~~~~~~~~~~~~~~~~~~~~~\n\n")
-    if responseStatus == "rejected":
-        print("Delete request " + token + " rejected!")
+        # AWSIoTMQTTClient connection configuration
+        myAWSIoTMQTTShadowClient.configureAutoReconnectBackoffTime(1, 32, 20)
+        myAWSIoTMQTTShadowClient.configureConnectDisconnectTimeout(10)  # 10 sec
+        myAWSIoTMQTTShadowClient.configureMQTTOperationTimeout(5)  # 5 sec
 
+        myAWSIoTMQTTShadowClient.connect()
+        self.deviceShadowHandler = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("Pi", True)
+        self.deviceShadowHandler.shadowRegisterDeltaCallback(self.callback);
 
-def talker():
-    global deviceShadowHandler
-    global pub
-
-    pub = rospy.Publisher('voice_control', String, queue_size=10)
-    rospy.init_node('alexa', anonymous=True)
-
-    host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
-    rootCAPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/root-CA.crt'
-    certificatePath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.cert.pem'
-    privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.private.key'
-    clientId = 'Pi'
-    topic = '/get/accepted'
-
-    # Configure logging
-    logger = logging.getLogger("AWSIoTPythonSDK.core")
-    logger.setLevel(logging.INFO)
-    streamHandler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    streamHandler.setFormatter(formatter)
-    logger.addHandler(streamHandler)
-
-    # Shadow Client
-    # Init AWSIoTMQTTClient
-    myAWSIoTMQTTShadowClient = AWSIoTMQTTShadowClient(clientId)
-    myAWSIoTMQTTShadowClient.configureEndpoint(host, 8883)
-    myAWSIoTMQTTShadowClient.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
-
-    # AWSIoTMQTTClient connection configuration
-    myAWSIoTMQTTShadowClient.configureAutoReconnectBackoffTime(1, 32, 20)
-    myAWSIoTMQTTShadowClient.configureConnectDisconnectTimeout(10)  # 10 sec
-    myAWSIoTMQTTShadowClient.configureMQTTOperationTimeout(5)  # 5 sec
-
-    myAWSIoTMQTTShadowClient.connect()
-    deviceShadowHandler = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("Pi", True)
-    deviceShadowHandler.shadowRegisterDeltaCallback(myCallback);
-
-    # wait
-    rospy.spin()
+        # wait
+        rospy.spin()
 
 
 if __name__ == '__main__':
     try:
-        talker()
+        alexa = Alexa();
+        alexa.begin();
     except rospy.ROSInterruptException:
         pass

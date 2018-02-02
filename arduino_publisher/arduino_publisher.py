@@ -9,14 +9,16 @@ from std_msgs.msg import String
 
 class ArduinoPublisher:
     def __init__(self):
-        port_name = '/dev/ttyUSB1'
-        if os.name == 'nt':
-            port_name = 'COM6'
+        # initialize port
+        port_name = rospy.get_param("port")
         self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
+        
+        # set up node
         self.pub = rospy.Publisher('arduino_publisher', String, queue_size=10)
         rospy.init_node('arduino', anonymous=True)
 
-    def talker(self):
+    # start node
+    def begin(self):
         rate = rospy.Rate(100)  # 100Hz, increase if needed
         while not rospy.is_shutdown():
             data = self.ser.read()
@@ -43,6 +45,6 @@ class ArduinoPublisher:
 if __name__ == "__main__":
     try:
         ap = ArduinoPublisher()
-        ap.talker()
+        ap.begin()
     except rospy.ROSInterruptException:
         pass
