@@ -16,8 +16,8 @@
 
     <buildtool_depend>catkin</buildtool_depend>
 
-    <depend>rospy</depend>
-    <depend>std_msgs</depend>
+    <run_depend>rospy</run_depend>
+    <run_depend>std_msgs</run_depend>
 
     <export>
         <!-- Other tools can request additional information be placed here -->
