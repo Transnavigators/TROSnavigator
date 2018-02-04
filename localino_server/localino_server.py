@@ -91,8 +91,8 @@ class LocalinoPublisher:
             self.timeout = 50e-6
 
         # The rate at which each localino sends packets
-        if rospy.has_param("~rate"):
-            self.rate = rospy.Rate(int(rospy.get_param("~rate")))
+        if rospy.has_param("~poll_rate"):
+            self.rate = rospy.Rate(int(rospy.get_param("~poll_rate")))
         else:
             self.rate = rospy.Rate(4000)
 
