@@ -12,8 +12,17 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 class ArduinoPublisher:
     def __init__(self):
         # initialize port
-        port_name = rospy.get_param("~port")
-        self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
+        if rospy.has_param("~port"):
+            self.port_name = rospy.get_param("~port")
+        else:
+            self.port_name = '/dev/ttyACM0'
+
+        if rospy.has_param("~baud_rate"):
+            self.baud_rate = int(rospy.get_param("~baud_rate"))
+        else:
+            self.baud_rate = 115200
+
+        self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
 
         # set up node
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
@@ -21,8 +30,9 @@ class ArduinoPublisher:
         rospy.init_node('arduino_pub', anonymous=True)
 
         # Set the polling rate for checking serial messages
-        if rospy.has_param("~rate"):
-            self.RATE = rospy.get_param("~rate")
+        # TODO: measure rate and adjust this value
+        if rospy.has_param("~poll_rate"):
+            self.RATE = rospy.get_param("~poll_rate")
         else:
             self.RATE = 100
 
@@ -40,7 +50,7 @@ class ArduinoPublisher:
             self.WIDTH = 31.5 * 0.0254
 
         # The difference between the encoder output of the two wheels in m for it to be considered straight
-        # Tweak this to get rid of unstable swerving
+        # TODO: Tweak this to get rid of unstable swerving
         if rospy.has_param("~drift_error"):
             self.DRIFT_ERROR = rospy.get_param("~drift_error")
         else:

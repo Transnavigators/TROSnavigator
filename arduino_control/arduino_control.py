@@ -34,20 +34,6 @@ class ArduinoController:
             # Check battery levels
             self.ser.write("\xEE\x30")
         # Example: Set r=NUMBER, a=NUMBER
-        elif data.startswith("Set"):
-            # Set speed, accel, centrip accel
-
-            # Use regex to parse floats from the command string
-            match = self.set_pattern.match(data)
-
-            # Put everything into a byte array for serial communication
-            buf = bytearray()
-            buf.extend(b'\xEE\x11')
-
-            # Cast the floats in the string to floats and then bytes for packetization
-            for i in range(0, 3):
-                buf.extend(bytes(float(match.group(i))))
-            self.ser.write(bytes(buffer))
         elif data.startswith("Move"):
             # Move along a circular path with a radius and angle
             match = self.move_pattern.match(data)
