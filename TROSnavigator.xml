@@ -6,7 +6,12 @@
     <node name="arduino_publisher" pkg="arduino_publisher" type="arduino_publisher.py">
            <param name="port" value="/dev/ACM0"/>
     </node>
-    <node name="localino_server" pkg="localino_server" type="localino_server.py"/>
+    <node name="localino_server" pkg="localino_server" type="localino_server.py">
+        <param name="base_tag_id" value="1002"/>
+        <param name="rate" value="4000"/>
+        <param name="port" value="10000"/>
+        <param name="timeout" value="0.00005"/>
+    </node>
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
         <param name="port" value="/dev/ttyS0"/>
