@@ -10,7 +10,7 @@ env:
   global:
     - ROS_DISTRO=kinetic
     - ROS_CI_DESKTOP=xenial
-    - CI_SOURCE_PATH=/travis
+    - CI_SOURCE_PATH=/catkin_ws/src
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
 
 before_install:
@@ -22,9 +22,7 @@ install:
     rosdep update"
 
 before_script:
-  - docker exec -t ubuntu-test bash -c "mkdir -p catkin_ws/src;
-    ln -s /travis ./catkin_ws/src;
-    cd ./catkin_ws/src;
+  - docker exec -t ubuntu-test bash -c "cd $CI_SOURCE_PATH;
     wstool init;
     if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi;
     wstool up;
@@ -34,7 +32,7 @@ before_script:
 
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
-    cd ./catkin_ws/src &&
+    cd $CI_SOURCE_PATH &&
     catkin_init_workspace &&
     cd .. &&
     catkin_make &&
