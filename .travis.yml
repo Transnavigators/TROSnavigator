@@ -14,7 +14,7 @@ env:
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
 
 before_install:
-  - docker run -it ros:$ROS_DISTRO-ros-core-$ROS_CI_DESKTOP -v $(pwd):/$CI_SOURCE_PATH tail -f /dev/null
+  - docker run -v $(pwd):/$CI_SOURCE_PATH -t ros:$ROS_DISTRO-ros-core-$ROS_CI_DESKTOP tail -f /dev/null
   - docker ps
 
 install:
