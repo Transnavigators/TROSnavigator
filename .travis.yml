@@ -40,4 +40,4 @@ script:
     catkin_make &&
     source devel/setup.bash &&
     cd src &&
-    roslaunch TROSnagivator.xml"
+    roslaunch TROSnavigator.xml"
