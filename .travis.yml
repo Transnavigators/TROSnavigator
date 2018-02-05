@@ -1,14 +1,8 @@
-sudo: required
 dist: trusty
+sudo: required
 language: generic
 compiler:
   - gcc
-notifications:
-  email:
-    on_success: always
-    on_failure: always
-#    recipients:
-#      - jane@doe
 env:
   matrix:
     - USE_DEB=true  ROS_DISTRO="kinetic"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
