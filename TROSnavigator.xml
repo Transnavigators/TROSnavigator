@@ -1,11 +1,12 @@
 <launch>
     <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py"/>
     <node name="arduino_control" pkg="arduino_control" type="arduino_control.py">
-           <param name="port" value="/dev/ttyACM0"/>
+        <param name="port" value="/dev/ttyACM0"/>
     </node>
     <node name="arduino_publisher" pkg="arduino_publisher" type="arduino_publisher.py">
         <param name="port" value="/dev/ttyACM0"/>
-        <param name="poll_rate" value="100"/>
+        <param name="poll_rate" value="1000"/>
+        <param name="battery_capacity" value="35"/>
     </node>
     <node name="localino_server" pkg="localino_server" type="localino_server.py">
         <param name="base_tag_id" value="1002"/>
@@ -15,5 +16,24 @@
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
         <param name="port" value="/dev/ttyS0"/>
+    </node>
+    <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+        <param name="output_frame" value="odom"/>
+        <param name="freq" value="1000"/>
+        <param name="sensor_timeout" value="1.0"/>
+        <param name="odom_used" value="true"/>
+        <param name="imu_used" value="true"/>
+        <param name="vo_used" value="true"/>
+        <param name="debug" value="false"/>
+        <param name="self_diagnose" value="false"/>
+    </node>
+    <node name="map_server" pkg="map_server" type="map_server" args="nav_config/shiley3.yaml"/>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <rosparam file="nav_config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="nav_config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+        <rosparam file="nav_config/local_costmap_params.yaml" command="load"/>
+        <rosparam file="nav_config/global_costmap_params.yaml" command="load"/>
+        <rosparam file="nav_config/base_local_planner_params.yaml" command="load"/>
     </node>
 </launch>

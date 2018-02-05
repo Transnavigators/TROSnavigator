@@ -75,8 +75,9 @@ class LocalinoPublisher:
         # initialize the node
         self.pub = rospy.Publisher('vo', Odometry, queue_size=10)
         rospy.init_node('localino', anonymous=True)
-        self.vo_broadcaster = tf.TransformBroadcaster()
-
+        # vo_broadcaster = tf.TransformBroadcaster()
+        # vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
+        #                                  odom.header.stamp, "base_link", "vo")
         # The tag ID of the localino tag mounted to the wheelchair
         if rospy.has_param("~base_tag_id"):
             self.base_id = rospy.get_param("~base_tag_id")
@@ -154,8 +155,8 @@ class LocalinoPublisher:
                 anchor_id = data_arr[0]
                 tag_id = data_arr[1]
                 dist = data_arr[2]
-                seq_num = data_arr[3]
-                tag_power = data_arr[4]
+                # seq_num = data_arr[3]
+                # tag_power = data_arr[4]
                 # TODO: verify inputs to prevent crashing
                 # TODO: scale distances to make sure we get a correct coordinate
                 # TODO: test if expiring data via timeout or seq_num is better
@@ -201,9 +202,6 @@ class LocalinoPublisher:
 
                             self.pub.publish(odom)
 
-                            # Send a copy of the data to tf
-                            self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
-                                                              odom.header.stamp, "base_link", "vo")
                         else:
                             # Publish a the tag's location to let Alexa know where to send the wheelchair
                             self.other_pubs[tag_id].publish(center)
