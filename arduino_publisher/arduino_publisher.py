@@ -121,16 +121,16 @@ class ArduinoPublisher:
                         self.odom_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
 
                         # Construct a message with the position, rotation, and velocity
-                        odom = Odometry()
-                        odom.header.stamp = current_time
-                        odom.header.frame_id = "odom"
-                        odom.pose.pose = Pose(Point(x, y, 0), Quaternion(*odom_quat))
-                        odom.child_frame_id = "base_link"
-                        odom.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
+                        msg = Odometry()
+                        msg.header.stamp = current_time
+                        msg.header.frame_id = "odom"
+                        msg.pose.pose = Pose(Point(x, y, 0), Quaternion(*odom_quat))
+                        msg.child_frame_id = "base_link"
+                        msg.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
 
                         # TODO: measure covariance with experiment + statistics
                         # This says position estimate is accurate
-                        odom.pose.covariance = {99999, 0, 0, 0, 0, 0,  # covariance on gps_x
+                        msg.pose.covariance = {99999, 0, 0, 0, 0, 0,  # covariance on gps_x
                                                 0, 99999, 0, 0, 0, 0,  # covariance on gps_y
                                                 0, 0, 99999, 0, 0, 0,  # covariance on gps_z
                                                 0, 0, 0, 99999, 0, 0,  # large covariance on rot x
@@ -138,14 +138,14 @@ class ArduinoPublisher:
                                                 0, 0, 0, 0, 0, 99999}  # large covariance on rot z
 
                         # This says velocity estimate is accurate
-                        odom.twist.covariance = {99999, 0, 0, 0, 0, 0,  # covariance on gps_x
+                        msg.twist.covariance = {99999, 0, 0, 0, 0, 0,  # covariance on gps_x
                                                 0, 99999, 0, 0, 0, 0,  # covariance on gps_y
                                                 0, 0, 99999, 0, 0, 0,  # covariance on gps_z
                                                 0, 0, 0, 99999, 0, 0,  # large covariance on rot x
                                                 0, 0, 0, 0, 99999, 0,  # large covariance on rot y
                                                 0, 0, 0, 0, 0, 99999}  # large covariance on rot z
 
-                        self.pub.publish(odom)
+                        self.pub.publish(msg)
 
                         last_time = current_time
                     else:

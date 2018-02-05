@@ -169,6 +169,7 @@ class LocalinoPublisher:
                     # Check that the data isn't stale
                     if last_timestamp[tag_id][anchor_id] - min(last_timestamp[tag_id].values()) < self.TIMEOUT:
                         # Use trilateration to locate the tag
+                        # Algorithm from https://github.com/noomrevlis/trilateration
                         num_anchors_reported[tag_id] = 0
                         inner_points = []
                         for p in get_all_intersecting_points(dists[tag_id]):
