@@ -42,6 +42,7 @@ script:
     export INSIDEDOCKER=true &&
     cd src &&
     timeout 25s socat -d -d pty,link=/dev/inttyS0 pty,link=/dev/ttyS0 &
+    source /opt/ros/$ROS_DISTRO/setup.bash &&
     timeout 30s roslaunch TROSnavigator.xml"
 
 notifications:
