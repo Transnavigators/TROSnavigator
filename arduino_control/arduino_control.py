@@ -3,6 +3,7 @@
 import rospy
 import serial
 import math
+import os
 from geometry_msgs.msg import Twist
 from PyCRC.CRC16 import CRC16
 
