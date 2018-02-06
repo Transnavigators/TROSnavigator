@@ -17,7 +17,7 @@
         <param name="anchor_9003" value="3.78,0.28,0"/>
         <param name="anchor_9005" value="1.12,2.03,0"/>
         <param name="tag_names" value="1002"/>
-        <rosparam file="nav_config/localino.yaml" command="load"/>
+        <rosparam file="localino_server/localino.yaml" command="load"/>
     </node>
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
