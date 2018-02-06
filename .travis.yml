@@ -19,9 +19,6 @@ before_install:
 
 install:
   - docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash;
-    echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list;
-    echo \"deb http://us.archive.ubuntu.com/ubuntu/ xenial universe multiverse\" >> /etc/apt/sources.list;
-    apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
     apt-get update -qq;
     apt-get install -y ros-kinetic-xv-11-laser-driver ros-kinetic-robot-pose-ekf ros-kinetic-map-server ros-kinetic-base-local-planner ros-kinetic-costmap-2d ros-kinetic-amcl ros-kinetic-tf ros-kinetic-move-base;
     apt-get install -y python-smbus python-pip socat;
@@ -31,12 +28,13 @@ install:
 before_script:
   - docker exec -t ubuntu-test bash -c "cd $CI_SOURCE_PATH;
     wstool init;
-    if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi;
     wstool up;
     cd ..;
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
-    openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a"
+    openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a;
+    ln -s /dev/pts/0 /dev/ttyS0;
+    ln -s /dev/pts/0 /dev/ttyACM0"
 
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
@@ -46,7 +44,6 @@ script:
     catkin_make &&
     source devel/setup.bash &&
     cd src &&
-    socat -d -d /dev/ttyACM0,raw,echo=0 /dev/ttyS0,raw,echo=0 &
     timeout 30s roslaunch TROSnavigator.xml"
 
 notifications:
