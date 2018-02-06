@@ -114,14 +114,14 @@ class LocalinoPublisher:
     def begin(self):
 
         if rospy.has_param("~anchor_names"):
-            anchor_names = rospy.get_param("~anchor_names").split(',')
+            anchor_names = str(rospy.get_param("~anchor_names")).split(',')
         else:
             anchor_names = ["9002", "2003", "9005"]
 
         anchor_coords = {anchor_name: None for anchor_name in anchor_names}
 
         if rospy.has_param("~tag_names"):
-            tag_ids = rospy.get_param("~tag_names").split(',')
+            tag_ids = str(rospy.get_param("~tag_names")).split(',')
         else:
             tag_ids = ["1002"]
 
