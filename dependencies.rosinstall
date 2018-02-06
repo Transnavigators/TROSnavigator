@@ -5,3 +5,4 @@ ps3joy
 map-server
 base-local-planner
 costmap-2d
+neato_laser_publisher

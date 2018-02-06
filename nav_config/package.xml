@@ -18,7 +18,6 @@
     <run_depend>map_server</run_depend>
     <run_depend>costmap_2d</run_depend>
     <run_depend>base_local_planner</run_depend>
-    <run_depend>neato_laser_publisher</run_depend>
 
     <!-- The export tag contains other, unspecified, tags -->
     <export>
