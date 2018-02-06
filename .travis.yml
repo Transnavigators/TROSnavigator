@@ -40,10 +40,10 @@ script:
     catkin_make &&
     source devel/setup.bash &&
     export INSIDEDOCKER=true &&
-    cd src &&
-    timeout 25s socat -d -d pty,link=/dev/inttyS0 pty,link=/dev/ttyS0 &
+    cd $CI_SOURCE_PATH &&
+    timeout 25s socat pty,link=/dev/inttyS0 pty,link=/dev/ttyS0 &
     source /opt/ros/$ROS_DISTRO/setup.bash &&
-    timeout 30s roslaunch TROSnavigator.xml"
+    timeout 30s roslaunch $CI_SOURCE_PATH/TROSnavigator.xml"
 
 notifications:
     email: false
