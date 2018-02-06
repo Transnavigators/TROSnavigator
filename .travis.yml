@@ -41,7 +41,7 @@ script:
     source devel/setup.bash &&
     export INSIDEDOCKER=true &&
     cd $CI_SOURCE_PATH &&
-    timeout 25s socat pty,link=/dev/inttyS0 pty,link=/dev/ttyS0 &
+    timeout 25s socat pty,link=/dev/inttyAMA0 pty,link=/dev/ttyAMA0 &
     source /opt/ros/$ROS_DISTRO/setup.bash &&
     timeout 30s roslaunch $CI_SOURCE_PATH/TROSnavigator.xml"
 

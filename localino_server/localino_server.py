@@ -115,7 +115,7 @@ class LocalinoPublisher:
         if rospy.has_param("~anchor_names"):
             anchor_names = str(rospy.get_param("~anchor_names")).split(',')
         else:
-            anchor_names = ["9002", "2003", "9005"]
+            anchor_names = ["9002", "9003", "9005"]
 
         anchor_coords = {anchor_name: None for anchor_name in anchor_names}
 
@@ -204,7 +204,7 @@ class LocalinoPublisher:
                             self.pub.publish(odom)
 
                             self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
-                                                              odom.header.stamp, "base_link", "vo")
+                                                              odom.header.stamp, "map", "vo")
                         else:
                             # Publish a the tag's location to let Alexa know where to send the wheelchair
                             self.other_pubs[tag_id].publish(center)

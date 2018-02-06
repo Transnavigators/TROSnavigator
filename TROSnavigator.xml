@@ -16,12 +16,12 @@
         <param name="anchor_9002" value="0,0,0"/>
         <param name="anchor_9003" value="3.78,0.28,0"/>
         <param name="anchor_9005" value="1.12,2.03,0"/>
-        <param name="tag_names" value="1002"/>
+        <param name="tag_names" value="1001,1002"/>
         <rosparam file="$(find localino_server)/localino.yaml" command="load"/>
     </node>
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
-        <param name="port" value="/dev/ttyS0"/>
+        <param name="port" value="/dev/ttyAMA0"/>
     </node>
     <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
         <param name="output_frame" value="odom"/>
