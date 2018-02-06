@@ -27,7 +27,6 @@ install:
 
 before_script:
   - docker exec -t ubuntu-test bash -c "cd $CI_SOURCE_PATH/..;
-    cd ..;
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
     openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a;
