@@ -28,6 +28,9 @@ install:
     git clone https://github.com/bivab/smbus-cffi.git;
     python setup.py install;
     cd ..;
+    git clone https://github.com/pyserial/pyserial.git
+    python setup.py install;
+    cd ..;
     rosdep update"
 
 before_script:
@@ -37,7 +40,7 @@ before_script:
     wstool up;
     cd ..;
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
-    cd $CI_SOURCE_PATH/alexa_voice_control/Cetrificates;
+    cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
     openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a"
 
 script:
