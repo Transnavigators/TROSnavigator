@@ -1,8 +1,9 @@
 obstacle_range: 6.0
 raytrace_range: 3.0
+transform_tolerance: 0.2
 footprint: [[0.381, 0.3937], [0.381, -0.3937], [-0.381, 0.3937], [-0.381,-0.3937]]
 inflation_radius: 0.25
 
 observation_sources: laser_scan_sensor
 
-laser_scan_sensor: {sensor_frame: neato_laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+laser_scan_sensor: {sensor_frame: neato_laser, data_type: LaserScan, expected_update_rate: 0.2, topic: /scan, marking: true, clearing: true}
