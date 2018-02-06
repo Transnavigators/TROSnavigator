@@ -42,7 +42,7 @@ script:
     export INSIDEDOCKER=true &&
     cd src &&
     socat -d -d pty,link=/dev/inttyS0 pty,link=/dev/ttyS0 &&
-    timeout 25s cat <<\EOF >> /dev/inttyS0 &
+    timeout 25s echo << EOF >> /dev/inttyS0 &
     timeout 30s roslaunch TROSnavigator.xml"
 
 notifications:
