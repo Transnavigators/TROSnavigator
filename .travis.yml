@@ -45,8 +45,7 @@ script:
     source devel/setup.bash &&
     export INSIDEDOCKER=true &&
     cd src &&
-    timeout 30s roslaunch TROSnavigator.xml &&
-    exit 0"
+    timeout 30s roslaunch TROSnavigator.xml || true"
 
 notifications:
     email: false

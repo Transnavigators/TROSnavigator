@@ -23,7 +23,7 @@ class Alexa:
 
         # TODO: find real tag id of user's localino
         rospy.Subscriber("tag_1000", Point, self.callback_localino)
-        rospy.Subscriber("robot_pose_ekf/odom_combined", PointWithCovarianceStamped, self.callback_wheelchair)
+        rospy.Subscriber("robot_pose_ekf/odom_combined", PoseWithCovarianceStamped, self.callback_wheelchair)
 
         self.target_x = 0
         self.target_y = 0
