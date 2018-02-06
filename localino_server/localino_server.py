@@ -74,9 +74,9 @@ class LocalinoPublisher:
         # initialize the node
         self.pub = rospy.Publisher('vo', Odometry, queue_size=10)
         rospy.init_node('localino', anonymous=True)
-        # vo_broadcaster = tf.TransformBroadcaster()
-        # vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
-        #                                  odom.header.stamp, "base_link", "vo")
+        self.vo_broadcaster = tf.TransformBroadcaster()
+
+        # TODO: parse settings from yaml file instead
         # The tag ID of the localino tag mounted to the wheelchair
         if rospy.has_param("~base_tag_id"):
             self.base_id = rospy.get_param("~base_tag_id")
@@ -85,7 +85,7 @@ class LocalinoPublisher:
 
         # The number of nanoseconds between samples before the data is ignored
         # 50 us is approx 2x the time between responses from all 3 anchors
-        if rospy.has_param("~port"):
+        if rospy.has_param("~timeout"):
             self.timeout = float(rospy.get_param("~timeout"))
         else:
             self.timeout = 50e-6
@@ -204,6 +204,8 @@ class LocalinoPublisher:
 
                             self.pub.publish(odom)
 
+                            self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
+                                                              odom.header.stamp, "base_link", "vo")
                         else:
                             # Publish a the tag's location to let Alexa know where to send the wheelchair
                             self.other_pubs[tag_id].publish(center)

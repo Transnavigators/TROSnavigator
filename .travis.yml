@@ -23,9 +23,11 @@ install:
     echo \"deb http://us.archive.ubuntu.com/ubuntu/ xenial universe multiverse\" >> /etc/apt/sources.list;
     apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
     apt-get update -qq;
-    apt-get install -y ros-kinetic-xv-11-laser-driver ros-kinetic-robot-pose-ekf ros-kinetic-map-server ros-kinetic-base-local-planner ros-kinetic-costmap-2d ros-kinetic-amcl ros-kinetic-tf;
+    apt-get install -y ros-kinetic-xv-11-laser-driver ros-kinetic-robot-pose-ekf ros-kinetic-map-server ros-kinetic-base-local-planner ros-kinetic-costmap-2d ros-kinetic-amcl ros-kinetic-tf ros-kinetic-move-base;
     apt-get install -y python-smbus python-pip;
-    pip install pyserial AWSIoTPythonSDK;
+    pip install pyserial AWSIoTPythonSDK PyCRC;
+    touch /dev/ttyACM0;
+    touch /dev/ttyS0;
     rosdep update"
 
 before_script:
@@ -47,3 +49,6 @@ script:
     source devel/setup.bash &&
     cd src &&
     roslaunch TROSnavigator.xml"
+
+notifications:
+    email: false
