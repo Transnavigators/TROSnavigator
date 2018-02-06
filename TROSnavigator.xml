@@ -77,4 +77,6 @@
         <param name="recovery_alpha_slow" value="0.0"/>
         <param name="recovery_alpha_fast" value="0.0"/>
     </node>
+    <!-- TODO: use actual numbers for lidar to base -->
+    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 base_link neato_scan 100" />
 </launch>
