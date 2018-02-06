@@ -43,8 +43,10 @@ script:
     cd .. &&
     catkin_make &&
     source devel/setup.bash &&
+    export INSIDEDOCKER=true &&
     cd src &&
-    timeout 30s roslaunch TROSnavigator.xml"
+    timeout 30s roslaunch TROSnavigator.xml &&
+    exit 0"
 
 notifications:
     email: false

@@ -4,6 +4,7 @@ import rospy
 import serial
 import tf
 import math
+import os
 from PyCRC.CRC16 import CRC16
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
@@ -23,8 +24,11 @@ class ArduinoPublisher:
         else:
             self.baud_rate = 115200
 
-        self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
-
+        # Change how ports are configured if in a docker container with virtual ports
+        if 'INSIDEDOCKER' in os.environ:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0,rtscts=True,dsrdtr=True)
+        else:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
         # make sure the port is closed on exit
         rospy.on_shutdown(self.close_port)
 

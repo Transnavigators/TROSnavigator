@@ -10,7 +10,7 @@ import os
 import math
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from geometry_msgs.msg import Point, PointWithCovarianceStamped
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 class Alexa:

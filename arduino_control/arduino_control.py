@@ -13,9 +13,23 @@ class ArduinoController:
         # Subscribe to the arduino_commands topic
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
-        # set up the port
-        port_name = rospy.get_param("~port")
-        self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
+        # Check serial port name
+        if rospy.has_param("~port"):
+            self.port_name = rospy.get_param("~port")
+        else:
+            self.port_name = '/dev/ttyACM0'
+
+        # Check serial baud rate
+        if rospy.has_param("~baud_rate"):
+            self.baud_rate = int(rospy.get_param("~baud_rate"))
+        else:
+            self.baud_rate = 115200
+
+        # Change how ports are configured if in a docker container with virtual ports
+        if 'INSIDEDOCKER' in os.environ:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+        else:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
 
         self.stop_crc = CRC16().calculate(bytes(b'\xEE\x00'))
         self.STOP_CMD = b'\xEE\x00'
