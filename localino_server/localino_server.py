@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import socket
-import configparser
 import math
 import rospy
 import rospkg
@@ -113,24 +112,27 @@ class LocalinoPublisher:
 
     # start the triangulation
     def begin(self):
-        # Read the config file for anchor positions
-        config = configparser.ConfigParser()
 
-        # Find the path to the config file and read it
-        package_dir = rospkg.RosPack().get_path('localino_server')
-        config.read(package_dir + '/config.ini')
-        anchor_names = config.options('anchorpos')
-        anchor_coords = {anchorName: None for anchorName in anchor_names}
-        tag_ids = config.options('tagnames')
+        if rospy.has_param("~anchor_names"):
+            anchor_names = rospy.get_param("~anchor_names").split(',')
+        else:
+            anchor_names = ["9002", "2003", "9005"]
+
+        anchor_coords = {anchor_name: None for anchor_name in anchor_names}
+
+        if rospy.has_param("~tag_names"):
+            tag_ids = rospy.get_param("~tag_names").split(',')
+        else:
+            tag_ids = ["1002"]
 
         # Initialize publishers for the other tags
         for tag_id in tag_ids:
             if tag_id != self.base_id:
                 self.other_pubs[tag_id] = self.pub = rospy.Publisher('tag_' + tag_id, Point, queue_size=10)
 
-        for anchorName in anchor_names:
-            coords = config['anchorpos'][anchorName].split(',')
-            anchor_coords[anchorName] = Point(float(coords[0]), float(coords[1]), 0.)
+        for anchor_name in anchor_names:
+            coords = rospy.get_param("~anchor_%s" % anchor_name).split(',')
+            anchor_coords[anchor_name] = Point(float(coords[0]), float(coords[1]), 0.)
 
         # Create 2D dictionaries to store distances reported from each anchor\tag pair
         dists = {tagID: {anchorID: None for anchorID in anchor_names} for tagID in tag_ids}

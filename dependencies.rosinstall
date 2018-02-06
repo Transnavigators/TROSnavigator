@@ -1,0 +1,7 @@
+robot-pose-ekf
+joystick-drivers
+xv-11-laser-driver
+ps3joy
+map-server
+base-local-planner
+costmap-2d
