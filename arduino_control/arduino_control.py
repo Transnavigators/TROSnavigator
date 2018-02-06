@@ -17,6 +17,9 @@ class ArduinoController:
         port_name = rospy.get_param("~port")
         self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
 
+        # make sure the port is closed on exit
+        rospy.on_shutdown(self.close_port)
+
         if rospy.has_param("~width"):
             self.radius = float(rospy.get_param("~width")) / 2
         else:
@@ -47,6 +50,9 @@ class ArduinoController:
             buf.extend(vel_l)
             buf.extend(vel_r)
             self.ser.write(bytes(buf))
+
+    def close_port(self):
+        self.ser.close()
 
     # start the node: spin forever
     def begin(self):

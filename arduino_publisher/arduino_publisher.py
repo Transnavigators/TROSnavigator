@@ -25,6 +25,9 @@ class ArduinoPublisher:
 
         self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
 
+        # make sure the port is closed on exit
+        rospy.on_shutdown(self.close_port)
+
         # set up node
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
         self.battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
@@ -68,6 +71,9 @@ class ArduinoPublisher:
             self.BATTERY_CAPACITY = float(rospy.get_param("~battery_capacity"))
         else:
             self.BATTERY_CAPACITY = 35.0
+
+    def close_port(self):
+        self.ser.close()
 
     # start node
     def begin(self):

@@ -68,7 +68,6 @@ catkin_python_setup()
 #   DEPENDENCIES
 #   std_msgs  # Or other packages containing msgs
 # )
-
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
