@@ -33,7 +33,7 @@ before_script:
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
     openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a;
-    ln -s /dev/pts/0 /dev/ttyS0;
+    socat -d -d /dev/inttyS0,raw,echo=0 /dev/ttyS0,raw,echo=0;
     ln -s /dev/pts/0 /dev/ttyACM0"
 
 script:
@@ -45,7 +45,8 @@ script:
     source devel/setup.bash &&
     export INSIDEDOCKER=true &&
     cd src &&
-    timeout 30s roslaunch TROSnavigator.xml || true"
+    timeout 25s cat <<\EOF >> /dev/inttyS0 &
+    timeout 30s roslaunch TROSnavigator.xml"
 
 notifications:
     email: false
