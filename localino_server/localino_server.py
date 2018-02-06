@@ -3,7 +3,6 @@
 import socket
 import math
 import rospy
-import rospkg
 import tf
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3

@@ -24,7 +24,7 @@ install:
     apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
     apt-get update -qq;
     apt-get install -y ros-kinetic-xv-11-laser-driver ros-kinetic-robot-pose-ekf ros-kinetic-map-server ros-kinetic-base-local-planner ros-kinetic-costmap-2d ros-kinetic-amcl ros-kinetic-tf ros-kinetic-move-base;
-    apt-get install -y python-smbus python-pip;
+    apt-get install -y python-smbus python-pip socat;
     pip install pyserial AWSIoTPythonSDK PyCRC;
     rosdep update"
 
@@ -37,8 +37,7 @@ before_script:
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
     openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a;
-    ln /dev/zero /dev/ttyACM0;
-    ln /dev/zero /dev/ttyS0"
+    socat -d -d /dev/ttyACM0,raw,echo=0 /dev/ttyS0,raw,echo=0"
 
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&

@@ -4,7 +4,7 @@ import rospy
 import serial
 import math
 from geometry_msgs.msg import Twist
-
+from PyCRC.CRC16 import CRC16
 
 class ArduinoController:
     def __init__(self):
@@ -17,6 +17,9 @@ class ArduinoController:
         port_name = rospy.get_param("~port")
         self.ser = serial.Serial(port=port_name, baudrate=115200, timeout=0)
 
+        self.stop_crc = CRC16().calculate(bytes(b'\xEE\x00'))
+        self.STOP_CMD = b'\xEE\x00'
+        self.GO_CMD = b'\xEE\x20'
         # make sure the port is closed on exit
         rospy.on_shutdown(self.close_port)
 
@@ -39,17 +42,21 @@ class ArduinoController:
         ang_vel = msg.angular.z * self.radius * 1e6
         vel_l = self.int_to_bytes(int(lin_vel - ang_vel))
         vel_r = self.int_to_bytes(int(lin_vel + ang_vel))
+        buf = bytearray()
 
-        # TODO: make sure the linear direction is same as actual bearing
         if msg.linear.x == 0 and msg.linear.y == 0 and msg.linear.z == 0 and msg.angular.x == 0 and msg.angular.y == 0 and msg.angular.z == 0:
             # Stop
-            self.ser.write(b'\xEE\x00')
+            buf.extend(self.STOP_CMD)
+            buf.extend(self.stop_crc)
         else:
-            buf = bytearray()
-            buf.extend(b'\xEE\x20')
+            buf.extend(self.GO_CMD)
             buf.extend(vel_l)
             buf.extend(vel_r)
-            self.ser.write(bytes(buf))
+            calc_crc = CRC16().calculate(bytes(buf))
+            buf.extend(calc_crc)
+
+        # Write packet to Arduino's serial port
+        self.ser.write(bytes(buf))
 
     def close_port(self):
         self.ser.close()
