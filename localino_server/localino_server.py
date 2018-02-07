@@ -169,48 +169,51 @@ class LocalinoPublisher:
                         # Algorithm from https://github.com/noomrevlis/trilateration
                         num_anchors_reported[tag_id] = 0
                         inner_points = []
-                        for p in get_all_intersecting_points(dists[tag_id].values()):
-                            if is_contained_in_circles(p, dists[tag_id]):
-                                inner_points.append(p)
-                        center = get_polygon_center(inner_points)
+                        if None not in dists[tag_id].values():
+                            for p in get_all_intersecting_points(dists[tag_id].values()):
+                                if is_contained_in_circles(p, dists[tag_id]):
+                                    inner_points.append(p)
+                            center = get_polygon_center(inner_points)
 
-                        # An Odometry message generated at time=stamp and published on topic /vo
-                        odom = Odometry()
-                        odom.header.stamp = rospy.Time().now()
-                        if tag_id == self.base_id:
-                            odom.header.frame_id = "vo"
+                            # An Odometry message generated at time=stamp and published on topic /vo
+                            odom = Odometry()
+                            odom.header.stamp = rospy.Time().now()
+                            if tag_id == self.base_id:
+                                odom.header.frame_id = "vo"
 
-                            # Give the XY coordinates and set the covariance high on the rest so they aren't used
-                            odom.pose.pose = Pose(center, Quaternion(1, 0, 0, 0))
+                                # Give the XY coordinates and set the covariance high on the rest so they aren't used
+                                odom.pose.pose = Pose(center, Quaternion(1, 0, 0, 0))
 
-                            # TODO: measure covariance with experiment + statistics
-                            # This should be less accurate than the Arduino encoder odometry
-                            odom.pose.covariance = {1000, 0, 0, 0, 0, 0,  # covariance on gps_x
-                                                    0, 1000, 0, 0, 0, 0,  # covariance on gps_y
-                                                    0, 0, 0, 0, 0, 0,  # covariance on gps_z
-                                                    0, 0, 0, 0, 0, 0,  # large covariance on rot x
-                                                    0, 0, 0, 0, 0, 0,  # large covariance on rot y
-                                                    0, 0, 0, 0, 0, 0}  # large covariance on rot z
-                            odom.child_frame_id = "map"
-                            odom.twist.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
-                            odom.twist.covariance = {0, 0, 0, 0, 0, 0,  # Ignore twist
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0}
+                                # TODO: measure covariance with experiment + statistics
+                                # This should be less accurate than the Arduino encoder odometry
+                                odom.pose.covariance = {1000, 0, 0, 0, 0, 0,  # covariance on gps_x
+                                                        0, 1000, 0, 0, 0, 0,  # covariance on gps_y
+                                                        0, 0, 0, 0, 0, 0,  # covariance on gps_z
+                                                        0, 0, 0, 0, 0, 0,  # large covariance on rot x
+                                                        0, 0, 0, 0, 0, 0,  # large covariance on rot y
+                                                        0, 0, 0, 0, 0, 0}  # large covariance on rot z
+                                odom.child_frame_id = "map"
+                                odom.twist.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
+                                odom.twist.covariance = {0, 0, 0, 0, 0, 0,  # Ignore twist
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0}
 
-                            self.pub.publish(odom)
+                                self.pub.publish(odom)
 
-                            self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
-                                                              odom.header.stamp, "map", "vo")
+                                self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
+                                                                  odom.header.stamp, "map", "vo")
+                            else:
+                                # Publish a the tag's location to let Alexa know where to send the wheelchair
+                                self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
+                                                                  odom.header.stamp, "map", 'tag_' + str(tag_id))
+                            # Immediately after receiving all of a frame, the localinos will take 0.2-0.3ms before sending
+                            # a new packet, so wait until then
+                            self.rate.sleep()
                         else:
-                            # Publish a the tag's location to let Alexa know where to send the wheelchair
-                            self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
-                                                              odom.header.stamp, "map", 'tag_' + str(tag_id))
-                        # Immediately after receiving all of a frame, the localinos will take 0.2-0.3ms before sending
-                        # a new packet, so wait until then
-                        self.rate.sleep()
+                            rospy.logwarn("Found none in circle list")
                     else:
                         rospy.logwarn("Localino packet timed out at "+str(delta_time)+" ns")
 
