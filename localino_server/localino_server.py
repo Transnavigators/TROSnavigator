@@ -116,7 +116,7 @@ class LocalinoPublisher:
         else:
             anchor_names = ["9002", "9003", "9005"]
 
-        anchor_coords = defaultdict(anchor_names)
+        anchor_coords = defaultdict(Point)
 
         if rospy.has_param("~tag_names"):
             tag_ids = str(rospy.get_param("~tag_names")).split(',')
