@@ -12,6 +12,7 @@ import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from tf import TransformListener
 
 class Alexa:
     # set up note and constants
@@ -20,16 +21,12 @@ class Alexa:
         self.pub = rospy.Publisher('voice_control', String, queue_size=10)
         rospy.init_node('alexa', anonymous=True)
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        self.tf = TransformListener()
 
-        # TODO: find real tag id of user's localino
-        rospy.Subscriber("tag_1000", Point, self.callback_localino)
-        rospy.Subscriber("robot_pose_ekf/odom_combined", PoseWithCovarianceStamped, self.callback_wheelchair)
-
-        self.target_x = 0
-        self.target_y = 0
-        self.my_x = 0
-        self.my_y = 0
-        self.myq = [0]*4
+        if rospy.has_param("~user_tag_id"):
+            self.tag_id = rospy.get_param("~user_tag_id")
+        else:
+            self.tag_id = '1001'
 
         self.FEET_TO_M = 0.3048
         self.DEGREES_TO_RAD = math.pi/180
@@ -59,52 +56,50 @@ class Alexa:
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.pose.position.z = 0
         # TODO: Use tf instead of calculating new position manually
-        if data.type == 'forward':
-            angles = euler_from_quaternion(self.myq)
-            goal.target_pose.pose.orientation.x = self.myq[0]
-            goal.target_pose.pose.orientation.y = self.myq[1]
-            goal.target_pose.pose.orientation.z = self.myq[2]
-            goal.target_pose.pose.orientation.w = self.myq[3]
-            if 'distance' in data and 'distanceUnit' in data:
-                dist = float(data.distance)
-                if data.angleUnit == 'feet':
-                    dist = dist * self.FEET_TO_M
-            else:
-                dist = 100000.0
-            goal.target_pose.pose.position.x = self.my_x + dist * math.sin(angles[2])
-            goal.target_pose.pose.position.y = self.my_y + dist * math.cos(angles[2])
+        if self.tf.frameExists("/base_link") and self.tf.frameExists("/map"):
+            t = self.tf.getLatestCommonTime("/base_link", '/' + self.tag_id)
+            pos, quat = self.tf.lookupTransform("/base_link", "/map", t)
+            if data.type == 'forward':
+                angles = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+                goal.target_pose.pose.orientation = quat
+                if 'distance' in data and 'distanceUnit' in data:
+                    dist = float(data.distance)
+                    if data.angleUnit == 'feet':
+                        dist = dist * self.FEET_TO_M
+                else:
+                    dist = 100000.0
+                goal.target_pose.pose.position.x = pos.x + dist * math.sin(angles[2])
+                goal.target_pose.pose.position.y = pos.y + dist * math.cos(angles[2])
 
-        elif data.type == 'turn':
-            angles = euler_from_quaternion(self.myq)
-            new_angle = angles[2]
-            if data.angleUnit == 'degrees':
-                new_angle = new_angle + float(data.angle) * self.DEGREES_TO_RAD
-            else:
-                new_angle = new_angle + float(data.angle)
-            goal_quat = quaternion_from_euler(0,0,new_angle)
-            goal.target_pose.pose.orientation.x = goal_quat[0]
-            goal.target_pose.pose.orientation.y = goal_quat[1]
-            goal.target_pose.pose.orientation.z = goal_quat[2]
-            goal.target_pose.pose.orientation.w = goal_quat[3]
+            elif data.type == 'turn':
+                angles = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+                if data.angleUnit == 'degrees':
+                    angles[2] = angles[2] + float(data.angle) * self.DEGREES_TO_RAD
+                else:
+                    angles[2] = angles[2] + float(data.angle)
+                goal_quat = quaternion_from_euler(0, 0, angles[2])
+                goal.target_pose.pose.orientation.x = goal_quat[0]
+                goal.target_pose.pose.orientation.y = goal_quat[1]
+                goal.target_pose.pose.orientation.z = goal_quat[2]
+                goal.target_pose.pose.orientation.w = goal_quat[3]
 
-        elif data.type == 'stop':
-            goal.target_pose.pose.position.x = self.my_x
-            goal.target_pose.pose.position.y = self.my_y
-            goal.target_pose.pose.orientation.x = self.myq[0]
-            goal.target_pose.pose.orientation.y = self.myq[1]
-            goal.target_pose.pose.orientation.z = self.myq[2]
-            goal.target_pose.pose.orientation.w = self.myq[3]
+            elif data.type == 'stop':
+                goal.target_pose.pose.position = pos
+                goal.target_pose.pose.orientation = quat
 
-        # elif data.type == 'moveto':
+        if self.tf.frameExists("/base_link") and self.tf.frameExists("/tag_"+self.tag_id):
+            t = self.tf.getLatestCommonTime("/base_link", '/tag_' + self.tag_id)
+            pos, quat = self.tf.lookupTransform("/base_link", "/tag_"+self.tag_id, t)
+            if data.type == 'locateme':
+                # Go to the target, don't care about rotation
+                goal.target_pose.pose.position.x = pos.x
+                goal.target_pose.pose.position.y = pos.y
+                goal.target_pose.pose.orientation.w = 1.0
+            # if data.type == 'moveto':
             # TODO: use transforms and static_tf to publish info about other landmarks
-
-        elif data.type == 'locateme':
-            # Go to the target, don't care about rotation
-            goal.target_pose.pose.position.x = self.target_x
-            goal.target_pose.pose.position.y = self.target_y
-            goal.target_pose.pose.orientation.w = 1.0
-
-        self.action_client.send_goal(goal)
+            self.action_client.send_goal(goal)
+        else:
+            rospy.logerror("Could not find transform from base_link to map")
 
     # callback for removing message
     def callback_delete(self, payload, responseStatus, token):
@@ -114,15 +109,6 @@ class Alexa:
             print("Delete request " + token + " time out")
         if responseStatus == "rejected":
             print("Delete request " + token + " rejected")
-
-    def callback_localino(self, data):
-        self.target_x = data.x
-        self.target_y = data.y
-
-    def callback_wheelchair(self, data):
-        self.my_x = data.pose.pose.position.x
-        self.my_y = data.pose.pose.position.y
-        self.myq = [data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w]
 
     # sets up communication with AWS
     def begin(self):
@@ -148,7 +134,7 @@ class Alexa:
 
         aws_iot_mqtt_shadow_client.connect()
         self.deviceShadowHandler = aws_iot_mqtt_shadow_client.createShadowHandlerWithName("Pi", True)
-        self.deviceShadowHandler.shadowRegisterDeltaCallback(self.callback);
+        self.deviceShadowHandler.shadowRegisterDeltaCallback(self.callback)
 
         self.action_client.wait_for_server()
 

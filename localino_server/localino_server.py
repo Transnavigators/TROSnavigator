@@ -52,7 +52,7 @@ def get_two_points_distance(p1, p2):
 
 def is_contained_in_circles(point, circles):
     for i in range(len(circles)):
-        if get_two_points_distance(point, circles[i].center) > (circles[i].radius):
+        if get_two_points_distance(point, circles[i].center) > circles[i].radius:
             return False
     return True
 
@@ -107,8 +107,6 @@ class LocalinoPublisher:
         else:
             self.ip = ''
 
-        self.other_pubs = {}
-
     # start the triangulation
     def begin(self):
 
@@ -122,12 +120,7 @@ class LocalinoPublisher:
         if rospy.has_param("~tag_names"):
             tag_ids = str(rospy.get_param("~tag_names")).split(',')
         else:
-            tag_ids = ["1002"]
-
-        # Initialize publishers for the other tags
-        for tag_id in tag_ids:
-            if tag_id != self.base_id:
-                self.other_pubs[tag_id] = self.pub = rospy.Publisher('tag_' + tag_id, Point, queue_size=10)
+            tag_ids = ["1002", "1001"]
 
         for anchor_name in anchor_names:
             coords = rospy.get_param("~anchor_%s" % anchor_name).split(',')
@@ -169,7 +162,7 @@ class LocalinoPublisher:
                 if num_anchors_reported[tag_id] >= num_anchors:
 
                     # Check that the data isn't stale
-                    if last_timestamp[tag_id][anchor_id] - min(last_timestamp[tag_id].values()) < self.TIMEOUT:
+                    if last_timestamp[tag_id][anchor_id] - min(last_timestamp[tag_id].values()) < self.timeout:
                         # Use trilateration to locate the tag
                         # Algorithm from https://github.com/noomrevlis/trilateration
                         num_anchors_reported[tag_id] = 0
@@ -179,11 +172,10 @@ class LocalinoPublisher:
                                 inner_points.append(p)
                         center = get_polygon_center(inner_points)
 
+                        # An Odometry message generated at time=stamp and published on topic /vo
+                        odom = Odometry()
+                        odom.header.stamp = rospy.Time().now()
                         if tag_id == self.base_id:
-
-                            # An Odometry message generated at time=stamp and published on topic /vo
-                            odom = Odometry()
-                            odom.header.stamp = rospy.Time().now()
                             odom.header.frame_id = "vo"
 
                             # Give the XY coordinates and set the covariance high on the rest so they aren't used
@@ -197,9 +189,14 @@ class LocalinoPublisher:
                                                     0, 0, 0, 0, 0, 0,  # large covariance on rot x
                                                     0, 0, 0, 0, 0, 0,  # large covariance on rot y
                                                     0, 0, 0, 0, 0, 0}  # large covariance on rot z
-                            odom.child_frame_id = str(tag_id)
+                            odom.child_frame_id = "map"
                             odom.twist.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
-                            odom.twist.covariance = {0} * 36  # Ignore twist from this topic
+                            odom.twist.covariance = {0, 0, 0, 0, 0, 0,  # Ignore twist
+                                                     0, 0, 0, 0, 0, 0,
+                                                     0, 0, 0, 0, 0, 0,
+                                                     0, 0, 0, 0, 0, 0,
+                                                     0, 0, 0, 0, 0, 0,
+                                                     0, 0, 0, 0, 0, 0}
 
                             self.pub.publish(odom)
 
@@ -207,7 +204,8 @@ class LocalinoPublisher:
                                                               odom.header.stamp, "map", "vo")
                         else:
                             # Publish a the tag's location to let Alexa know where to send the wheelchair
-                            self.other_pubs[tag_id].publish(center)
+                            self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
+                                                              odom.header.stamp, "map", 'tag_' + str(tag_id))
                         # Immediately after receiving all of a frame, the localinos will take 0.2-0.3ms before sending
                         # a new packet, so wait until then
                         self.rate.sleep()

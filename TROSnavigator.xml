@@ -1,5 +1,7 @@
 <launch>
-    <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py"/>
+    <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py">
+        <param name="user_tag_id" value="1001"/>
+    </node>>
     <node name="arduino_control" pkg="arduino_control" type="arduino_control.py">
         <param name="port" value="/dev/ttyACM0"/>
     </node>
