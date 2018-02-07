@@ -87,7 +87,7 @@ class LocalinoPublisher:
         if rospy.has_param("~timeout"):
             self.timeout = float(rospy.get_param("~timeout"))
         else:
-            self.timeout = 150e-6
+            self.timeout = 150000
 
         # The rate at which each localino sends packets
         if rospy.has_param("~poll_rate"):
@@ -155,14 +155,15 @@ class LocalinoPublisher:
                 # TODO: scale distances to make sure we get a correct coordinate
                 # TODO: test if expiring data via timeout or seq_num is better
                 dists[tag_id][anchor_id] = Circle(anchor_coords[anchor_id], float(dist))
-                last_timestamp[tag_id][anchor_id] = rospy.get_time()
+                last_timestamp[tag_id][anchor_id] = rospy.get_time().nsecs
                 num_anchors_reported[tag_id] += 1
 
                 # Each anchor responded with a distance to this tag
                 if num_anchors_reported[tag_id] >= num_anchors:
 
                     # Check that the data isn't stale
-                    if last_timestamp[tag_id][anchor_id] - min(last_timestamp[tag_id].values()) < self.timeout:
+                    delta_time = last_timestamp[tag_id][anchor_id] - min(last_timestamp[tag_id].values())
+                    if delta_time < self.timeout:
                         # Use trilateration to locate the tag
                         # Algorithm from https://github.com/noomrevlis/trilateration
                         num_anchors_reported[tag_id] = 0
@@ -209,6 +210,8 @@ class LocalinoPublisher:
                         # Immediately after receiving all of a frame, the localinos will take 0.2-0.3ms before sending
                         # a new packet, so wait until then
                         self.rate.sleep()
+                    else:
+                        rospy.logwarn("Localino packet timed out at "+str(delta_time)+" ns")
 
 
 if __name__ == "__main__":
