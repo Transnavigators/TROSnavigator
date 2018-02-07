@@ -136,7 +136,6 @@ class ArduinoPublisher:
                         y = y + dy
                         vx = dx * delta_time
                         vy = dy * delta_time
-                        # TODO link with localino server to provide periodic fix on location
 
                         # Convert 1D Euler rotation to quaternion
                         odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)

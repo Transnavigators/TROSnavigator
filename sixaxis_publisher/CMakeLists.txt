@@ -12,6 +12,10 @@ find_package(catkin REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+catkin_python_setup()
+
+catkin_install_python(PROGRAMS sixaxis_publisher.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed

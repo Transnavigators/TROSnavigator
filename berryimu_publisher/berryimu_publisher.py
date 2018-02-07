@@ -115,10 +115,10 @@ class BerryIMUPublisher:
             rospy.loginfo_throttle(1, "Heading: %s" % tilt_compensated_heading)
 
             # self.imu_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
-            #rospy.logdebug("BerryIMU orientation,%5.2f,%5.2f,%5.2f" % gyro_x_angle, gyro_y_angle, gyro_z_angle)
-            #rospy.logdebug("BerryIMU velocity,%5.2f,%5.2f,5.2f" % msg.angular_velocity.x, msg.angular_velocity.y,
+            # rospy.logdebug("BerryIMU orientation,%5.2f,%5.2f,%5.2f" % gyro_x_angle, gyro_y_angle, gyro_z_angle)
+            # rospy.logdebug("BerryIMU velocity,%5.2f,%5.2f,5.2f" % msg.angular_velocity.x, msg.angular_velocity.y,
             #               msg.angular_velocity.z)
-            #rospy.logdebug("BerryIMU acceleration,%5.2f,%5.2f,%5.2f" % msg.linear_acceleration.x,
+            # rospy.logdebug("BerryIMU acceleration,%5.2f,%5.2f,%5.2f" % msg.linear_acceleration.x,
             #               msg.linear_acceleration.y, msg.linear_acceleration.z)
 
             self.rate.sleep()
