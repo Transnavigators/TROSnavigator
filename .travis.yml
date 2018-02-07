@@ -30,7 +30,8 @@ before_script:
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
     openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a;
-    ln -s /dev/pts/0 /dev/ttyACM0"
+    ln -s /dev/pts/0 /dev/ttyACM0;
+    ln -s /dev/pts/0 /dev/ttyAMA0"
 
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
@@ -41,9 +42,8 @@ script:
     source devel/setup.bash &&
     export INSIDEDOCKER=true &&
     cd $CI_SOURCE_PATH &&
-    timeout 25s socat pty,link=/dev/inttyAMA0 pty,link=/dev/ttyAMA0 &
     source /opt/ros/$ROS_DISTRO/setup.bash &&
-    timeout 30s roslaunch $CI_SOURCE_PATH/TROSnavigator.xml"
+    timeout 30s roslaunch TROSnavigator.xml"
 
 notifications:
     email: false
