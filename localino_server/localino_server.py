@@ -79,7 +79,7 @@ class LocalinoPublisher:
         # TODO: parse settings from yaml file instead
         # The tag ID of the localino tag mounted to the wheelchair
         if rospy.has_param("~base_tag_id"):
-            self.base_id = rospy.get_param("~base_tag_id")
+            self.base_id = str(rospy.get_param("~base_tag_id"))
         else:
             self.base_id = "1002"
 
@@ -147,8 +147,9 @@ class LocalinoPublisher:
             data_arr = data.decode("utf-8").split(",")
             if len(data_arr) == 5 and data_arr[0] in anchor_names and data_arr[1] in tag_ids:
                 # Give array of results human readable names
-                anchor_id = data_arr[0]
-                tag_id = data_arr[1]
+                anchor_id = str(data_arr[0])
+                tag_id = str(data_arr[1])
+                # rospy.loginfo("Found tag "+tag_id+" type")
                 dist = data_arr[2]
                 # seq_num = data_arr[3]
                 # tag_power = data_arr[4]
