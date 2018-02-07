@@ -21,6 +21,9 @@
         <param name="tag_names" value="1001,1002"/>
         <rosparam file="$(find localino_server)/localino.yaml" command="load"/>
     </node>
+    <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
+        <param name="poll_rate" value="10"/>
+    </node>>
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
         <param name="port" value="/dev/ttyAMA0"/>
@@ -46,7 +49,7 @@
         <rosparam file="$(find nav_config)/local_costmap_params.yaml" command="load"/>
         <rosparam file="$(find nav_config)/global_costmap_params.yaml" command="load"/>
     </node>
-    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <node pkg="amcl" type="amcl" name="amcl">
         <!-- Publish scans from best pose at a max of 10 Hz -->
         <param name="odom_model_type" value="diff"/>
         <param name="odom_alpha5" value="0.1"/>

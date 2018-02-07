@@ -18,7 +18,6 @@ class Alexa:
     # set up note and constants
     def __init__(self):
         # create a new node that publishes on topic voice_control
-        self.pub = rospy.Publisher('voice_control', String, queue_size=10)
         rospy.init_node('alexa', anonymous=True)
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.tf = TransformListener()
@@ -50,7 +49,6 @@ class Alexa:
         # publish data
         data = json.dumps(data)
         rospy.loginfo(data)
-        self.pub.publish(data)
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now()
