@@ -214,7 +214,7 @@ class LocalinoPublisher:
                             # a new packet, so wait until then
                             self.rate.sleep()
                         else:
-                            rospy.logwarn("Found none in circle list")
+                            rospy.logwarn("Found none in circle list. Circles: "+str(dists[tag_id]))
                     else:
                         rospy.logwarn("Localino packet timed out at "+str(delta_time)+" ns")
 
