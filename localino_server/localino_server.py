@@ -32,7 +32,7 @@ def get_two_circles_intersecting_points(c1, c2):
     y0 = p1.y + a * (p2.y - p1.y) / d
     rx = -(p2.y - p1.y) * (h / d)
     ry = -(p2.x - p1.x) * (h / d)
-    return [Point(x0 + rx, y0 - ry), Point(x0 - rx, y0 + ry)]
+    return [Point(x0 + rx, y0 - ry, 0), Point(x0 - rx, y0 + ry, 0)]
 
 
 def get_all_intersecting_points(circles):
