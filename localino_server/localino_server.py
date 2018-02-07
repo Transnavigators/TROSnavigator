@@ -155,7 +155,7 @@ class LocalinoPublisher:
                 # TODO: scale distances to make sure we get a correct coordinate
                 # TODO: test if expiring data via timeout or seq_num is better
                 dists[tag_id][anchor_id] = Circle(anchor_coords[anchor_id], float(dist))
-                last_timestamp[tag_id][anchor_id] = rospy.get_time().nsecs
+                last_timestamp[tag_id][anchor_id] = rospy.get_rostime().nsecs
                 num_anchors_reported[tag_id] += 1
 
                 # Each anchor responded with a distance to this tag
