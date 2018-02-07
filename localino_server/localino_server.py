@@ -212,6 +212,10 @@ class LocalinoPublisher:
                         self.rate.sleep()
                     else:
                         rospy.logwarn("Localino packet timed out at "+str(delta_time)+" ns")
+                else:
+                    for anchor, dist in dists[tag_id].items():
+                        if dist is None:
+                            rospy.loginfo("Waiting for packet from anchor %s" % anchor)
 
 
 if __name__ == "__main__":
