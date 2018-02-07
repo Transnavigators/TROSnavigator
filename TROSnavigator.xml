@@ -20,7 +20,7 @@
         <param name="anchor_9005" value="1.12,2.03,0"/>
         <param name="tag_names" value="1001,1002"/>
         <param name="timeout" value="1000000000"/>
-        <rosparam file="$(find localino_server)/localino.yaml" command="load"/>
+        <!--<rosparam file="$(find localino_server)/localino.yaml" command="load"/>-->
     </node>
     <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
         <param name="poll_rate" value="10"/>
@@ -28,6 +28,13 @@
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
         <param name="port" value="/dev/ttyAMA0"/>
+    </node>
+    <node name="sixaxis_publisher" pkg="sixaxis_publisher" type="sixasix_publisher.py">
+        <param name="max_speed" value="2.2"/>
+        <param name="max_reverse_speed" value="0.5"/>
+        <param name="max_rot_speed" value="1.75"/>
+        <param name="rate" value="120"/>
+        <param name="direct_control" value="false"/>
     </node>
     <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
         <param name="output_frame" value="odom"/>
@@ -93,6 +100,11 @@
         <param name="update_min_a" value="0.5"/>
         <param name="odom_frame_id" value="odom"/>
     </node>
-    <!-- TODO: use actual numbers for lidar to base -->
+    <!-- TODO: use actual numbers for static transforms -->
     <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 base_link neato_scan 100" />
+    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map table 100" />
+    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map desk 100" />
+    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map chair 100" />
+    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map couch 100" />
+    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map bed 100" />
 </launch>

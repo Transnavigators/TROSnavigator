@@ -10,7 +10,7 @@ import os
 import math
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped, Quaternion
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from tf import TransformListener
 
@@ -50,54 +50,53 @@ class Alexa:
         data = json.dumps(data)
         rospy.loginfo(data)
         goal = MoveBaseGoal()
-        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.frame_id = "base_link"
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.pose.position.z = 0
-        # TODO: Use tf instead of calculating new position manually
-        if self.tf.frameExists("/base_link") and self.tf.frameExists("/map"):
-            t = self.tf.getLatestCommonTime("/base_link", '/' + self.tag_id)
-            pos, quat = self.tf.lookupTransform("/base_link", "/map", t)
-            if data.type == 'forward':
-                angles = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
-                goal.target_pose.pose.orientation = quat
-                if 'distance' in data and 'distanceUnit' in data:
-                    dist = float(data.distance)
-                    if data.angleUnit == 'feet':
-                        dist = dist * self.FEET_TO_M
-                else:
-                    dist = 100000.0
-                goal.target_pose.pose.position.x = pos.x + dist * math.sin(angles[2])
-                goal.target_pose.pose.position.y = pos.y + dist * math.cos(angles[2])
 
-            elif data.type == 'turn':
-                angles = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
-                if data.angleUnit == 'degrees':
-                    angles[2] = angles[2] + float(data.angle) * self.DEGREES_TO_RAD
-                else:
-                    angles[2] = angles[2] + float(data.angle)
-                goal_quat = quaternion_from_euler(0, 0, angles[2])
-                goal.target_pose.pose.orientation.x = goal_quat[0]
-                goal.target_pose.pose.orientation.y = goal_quat[1]
-                goal.target_pose.pose.orientation.z = goal_quat[2]
-                goal.target_pose.pose.orientation.w = goal_quat[3]
+        # Move forward
+        if data.type == 'forward':
+            if 'distance' in data and 'distanceUnit' in data:
+                goal.target_pose.pose.position.x = float(data.distance)
+                if data.angleUnit == 'feet':
+                    goal.target_pose.pose.position.x *= self.FEET_TO_M
+            else:
+                goal.target_pose.pose.position.x = 100000.0
 
-            elif data.type == 'stop':
-                goal.target_pose.pose.position = pos
-                goal.target_pose.pose.orientation = quat
+        # Turn the wheelchair
+        elif data.type == 'turn':
+            angle = float(data.angle)
+            if data.angleUnit == 'degrees':
+                angle *= self.DEGREES_TO_RAD
+            goal_quat = quaternion_from_euler(0, 0, angle)
+            goal.target_pose.pose.orientation = Quaternion(goal_quat[0], goal_quat[1], goal_quat[2], goal_quat[3])
 
-        if self.tf.frameExists("/base_link") and self.tf.frameExists("/tag_"+self.tag_id):
+        # Stop the wheelchair
+        elif data.type == 'stop':
+            goal.target_pose.pose.position = Point(0, 0, 0)
+            goal.target_pose.pose.orientation.x = Quaternion(0, 0, 0, 1)
+
+        # Go to the localino tag
+        elif data.type == 'locateme' and self.tf.frameExists("/base_link") and self.tf.frameExists("/tag_"+self.tag_id):
             t = self.tf.getLatestCommonTime("/base_link", '/tag_' + self.tag_id)
             pos, quat = self.tf.lookupTransform("/base_link", "/tag_"+self.tag_id, t)
-            if data.type == 'locateme':
-                # Go to the target, don't care about rotation
-                goal.target_pose.pose.position.x = pos.x
-                goal.target_pose.pose.position.y = pos.y
-                goal.target_pose.pose.orientation.w = 1.0
-            # if data.type == 'moveto':
-            # TODO: use transforms and static_tf to publish info about other landmarks
-            self.action_client.send_goal(goal)
+
+            # Go to the target, don't care about rotation
+            goal.target_pose.pose.position = pos
+            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
+
+        # Go to the static landmark
+        elif data.type == 'moveto' and self.tf.frameExists("/map") and self.tf.frameExists("/%s" % str(data.location)):
+            t = self.tf.getLatestCommonTime("/base_link", "/%s" % str(data.location))
+            pos, quat = self.tf.lookupTransform("/base_link", "/%s" % str(data.location), t)
+
+            # Go to the target, don't care about rotation
+            goal.target_pose.pose.position = pos
+            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
         else:
             rospy.logerror("Could not find transform from base_link to map")
+
+        self.action_client.send_goal(goal)
 
     # callback for removing message
     def callback_delete(self, payload, responseStatus, token):
