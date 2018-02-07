@@ -2,6 +2,7 @@
 
 import socket
 import math
+from collections import defaultdict
 import rospy
 import tf
 from nav_msgs.msg import Odometry
@@ -115,7 +116,7 @@ class LocalinoPublisher:
         else:
             anchor_names = ["9002", "9003", "9005"]
 
-        anchor_coords = {anchor_name: None for anchor_name in anchor_names}
+        anchor_coords = defaultdict(anchor_names)
 
         if rospy.has_param("~tag_names"):
             tag_ids = str(rospy.get_param("~tag_names")).split(',')
@@ -168,7 +169,7 @@ class LocalinoPublisher:
                         # Algorithm from https://github.com/noomrevlis/trilateration
                         num_anchors_reported[tag_id] = 0
                         inner_points = []
-                        for p in get_all_intersecting_points(dists[tag_id]):
+                        for p in get_all_intersecting_points(dists[tag_id].values()):
                             if is_contained_in_circles(p, dists[tag_id]):
                                 inner_points.append(p)
                         center = get_polygon_center(inner_points)
