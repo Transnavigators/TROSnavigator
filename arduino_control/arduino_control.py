@@ -9,11 +9,6 @@ from PyCRC.CRC16 import CRC16
 
 class ArduinoController:
     def __init__(self):
-        # Initialize the serial port
-        rospy.init_node('arduino_controller', anonymous=True)
-        # Subscribe to the arduino_commands topic
-        rospy.Subscriber("cmd_vel", Twist, self.callback)
-
         # Check serial port name
         if rospy.has_param("~port"):
             self.port_name = rospy.get_param("~port")
@@ -26,18 +21,10 @@ class ArduinoController:
         else:
             self.baud_rate = 115200
 
-        # Change how ports are configured if in a docker container with virtual ports
-        if 'INSIDEDOCKER' in os.environ:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
-        else:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
-
         self.stop_crc = CRC16().calculate(bytes(b'\xEE\x00'))
         self.STOP_CMD = b'\xEE\x00'
         self.GO_CMD = b'\xEE\x20'
-        # make sure the port is closed on exit
-        rospy.on_shutdown(self.close_port)
-
+        
         if rospy.has_param("~width"):
             self.radius = float(rospy.get_param("~width")) / 2
         else:
@@ -78,6 +65,21 @@ class ArduinoController:
 
     # start the node: spin forever
     def begin(self):
+        # Initialize the serial port
+        rospy.init_node('arduino_controller', anonymous=True)
+        # Subscribe to the arduino_commands topic
+        rospy.Subscriber("cmd_vel", Twist, self.callback)
+        
+        # Change how ports are configured if in a docker container with virtual ports
+        if 'INSIDEDOCKER' in os.environ:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+        else:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
+        
+        
+        # make sure the port is closed on exit
+        rospy.on_shutdown(self.close_port)
+        
         # never exit
         rospy.spin()
 

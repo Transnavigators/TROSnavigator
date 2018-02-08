@@ -6,7 +6,7 @@ from LSM9DS0 import *
 from LSM9DS1 import *
 import time
 
-LSM9DS0 = 1
+LSM9DS0 = 0
 
 
 def detectIMU():
