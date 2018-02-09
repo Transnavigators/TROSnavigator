@@ -121,7 +121,7 @@ class ArduinoPublisher:
 
                         # TODO adjust straight error according to tests
                         # Math from https://robotics.stackexchange.com/questions/1653/calculate-position-of-differential-drive-robot
-                        if math.abs(delta_left - delta_right) < 1e-6:
+                        if abs(delta_left - delta_right) < 1e-6:
                             dx = delta_left * math.cos(th)
                             dy = delta_right * math.sin(th)
                             vth = 0
