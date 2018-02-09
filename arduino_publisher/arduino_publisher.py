@@ -24,20 +24,6 @@ class ArduinoPublisher:
         else:
             self.baud_rate = 115200
 
-        # Change how ports are configured if in a docker container with virtual ports
-        if 'INSIDEDOCKER' in os.environ:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
-        else:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
-        # make sure the port is closed on exit
-        rospy.on_shutdown(self.close_port)
-
-        # set up node
-        self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
-        self.battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
-        self.odom_broadcaster = tf.TransformBroadcaster()
-        rospy.init_node('arduino_pub', anonymous=True)
-
         # Conversion factor from Arduino's AnalogRead to actual battery voltage
         if rospy.has_param("~analog_to_volts"):
             self.ANALOG_TO_VOLTAGE = rospy.get_param("~analog_to_volts")
@@ -81,6 +67,26 @@ class ArduinoPublisher:
 
     # start node
     def begin(self):
+    
+        # set up node
+        rospy.init_node('arduino_pub', anonymous=True)
+        self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
+        self.battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
+        self.odom_broadcaster = tf.TransformBroadcaster()
+
+        
+        # Change how ports are configured if in a docker container with virtual ports
+        if 'INSIDEDOCKER' in os.environ:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+        else:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
+        # make sure the port is closed on exit
+        rospy.on_shutdown(self.close_port)
+
+    
+    
+    
+    
         x = 0.0
         y = 0.0
         th = 0.0
