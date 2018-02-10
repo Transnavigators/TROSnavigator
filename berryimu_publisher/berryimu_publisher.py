@@ -94,7 +94,7 @@ class BerryIMUPublisher:
 
             # Convert from euler to quaternion for ROS
             q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle)
-            msg.orientation.x = Quaternion(q[0], q[1], q[2], q[3])
+            msg.orientation = Quaternion(q[0], q[1], q[2], q[3])
             # TODO: measure covariance
             msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
                                           0, 99999, 0,  # covariance on y axis
