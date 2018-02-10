@@ -98,7 +98,7 @@ class Alexa:
             goal.target_pose.pose.position = pos
             goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
         else:
-            rospy.logerror("Could not find transform from base_link to map")
+            rospy.logerr("Could not find transform from base_link to map")
 
         self.action_client.send_goal(goal)
 
