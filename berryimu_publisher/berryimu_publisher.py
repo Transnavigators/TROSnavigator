@@ -90,7 +90,7 @@ class BerryIMUPublisher:
 
             msg = Imu()
             msg.header.stamp = rospy.Time.now()
-            msg.header.frame_id = "imu_data"
+            msg.header.frame_id = "base_link"
 
             # Convert from euler to quaternion for ROS
             q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle)
@@ -123,7 +123,7 @@ class BerryIMUPublisher:
             #               msg.angular_velocity.z)
             # rospy.logdebug("BerryIMU acceleration,%5.2f,%5.2f,%5.2f" % msg.linear_acceleration.x,
             #               msg.linear_acceleration.y, msg.linear_acceleration.z)
-
+            self.pub(msg);
             self.rate.sleep()
 
 
