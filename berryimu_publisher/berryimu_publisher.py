@@ -123,7 +123,7 @@ class BerryIMUPublisher:
             #               msg.angular_velocity.z)
             # rospy.logdebug("BerryIMU acceleration,%5.2f,%5.2f,%5.2f" % msg.linear_acceleration.x,
             #               msg.linear_acceleration.y, msg.linear_acceleration.z)
-            self.pub.publish(msg);
+            self.pub.publish(msg)
             self.rate.sleep()
 
 
