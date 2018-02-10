@@ -33,7 +33,7 @@ class BerryIMUPublisher:
         gyro_y_angle = 0.0
         gyro_z_angle = 0.0
 
-        last_timestamp = rospy.Time.now()
+        last_timestamp = rospy.get_time()
 
         while not rospy.is_shutdown():
 
