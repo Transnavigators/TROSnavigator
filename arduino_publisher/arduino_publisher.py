@@ -16,9 +16,9 @@ class ArduinoPublisher:
     def __init__(self):
         # set up node
         rospy.init_node('arduino_pub', anonymous=True)
-        pub = rospy.Publisher("odom", Odometry, queue_size=50)
-        battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
-        odom_broadcaster = tf.TransformBroadcaster()
+        self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
+        self.battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
+        self.odom_broadcaster = tf.TransformBroadcaster()
 
         # initialize port
         if rospy.has_param("~port"):
@@ -140,11 +140,11 @@ class ArduinoPublisher:
                         # Convert 1D Euler rotation to quaternion
                         odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
 
-                        odom_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
+                        self.odom_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
 
                         # Construct a message with the position, rotation, and velocity
                         msg = Odometry()
-                        msg.header.stamp = current_time
+                        msg.header.stamp = rospy.get_time()
                         msg.header.frame_id = "odom"
                         msg.pose.pose = Pose(Point(x, y, 0), Quaternion(*odom_quat))
                         msg.child_frame_id = "base_link"
@@ -167,7 +167,7 @@ class ArduinoPublisher:
                                                 0, 0, 0, 0, 99999, 0,  # large covariance on rot y
                                                 0, 0, 0, 0, 0, 99999}  # large covariance on rot z
 
-                        pub.publish(msg)
+                        self.pub.publish(msg)
 
                         last_time = current_time
                     else:
@@ -203,7 +203,7 @@ class ArduinoPublisher:
                         msg.location = ""
                         msg.serial_number = ""
 
-                        battery_pub.publish(msg)
+                        self.battery_pub.publish(msg)
 
             rate.sleep()
 

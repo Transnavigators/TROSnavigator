@@ -49,8 +49,8 @@ class BerryIMUPublisher:
             mag_z = IMU.readMAGz()
 
             # Calculate loop Period(LP). How long between Gyro Reads
-            period = (rospy.Time.now() - last_timestamp).nsecs / 1.0e9
-            last_timestamp = rospy.Time.now()
+            period = rospy.get_time() - last_timestamp
+            last_timestamp = rospy.get_time()
 
             # Convert Gyro raw to degrees per second
             rate_gyr_x = gyr_x * self.G_GAIN

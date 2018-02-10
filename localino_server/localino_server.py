@@ -124,15 +124,12 @@ class LocalinoPublisher:
             
         anchor_coords = defaultdict(Point)
 
-
         for anchor_name in anchor_names:
             coords = rospy.get_param("~anchor_%s" % anchor_name).split(',')
             anchor_coords[anchor_name] = Point(float(coords[0]), float(coords[1]), 0.)
 
         # Create 2D dictionaries to store distances reported from each anchor\tag pair
         dists = {tagID: {anchorID: None for anchorID in anchor_names} for tagID in tag_ids}
-
-        num_anchors = len(anchor_names)
 
         # Bind to IP 0.0.0.0 UDP port 10000 to capture the tag's traffic
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -177,7 +174,7 @@ class LocalinoPublisher:
                         dists = {tagID: {anchorID: None for anchorID in anchor_names} for tagID in tag_ids}
                         # An Odometry message generated at time=stamp and published on topic /vo
                         odom = Odometry()
-                        odom.header.stamp = rospy.Time().now()
+                        odom.header.stamp = rospy.get_time()
                         if tag_id == self.base_id:
                             odom.header.frame_id = "vo"
 

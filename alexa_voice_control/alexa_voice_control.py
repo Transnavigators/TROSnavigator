@@ -53,7 +53,7 @@ class Alexa:
         rospy.loginfo(dataStr)
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "base_link"
-        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.header.stamp = rospy.get_time()
         goal.target_pose.pose.position.z = 0
 
         # Move forward

@@ -105,7 +105,7 @@ class SixaxisPublisher:
                 if new_x != 0 or new_y != 0 or new_rot != 0 or stop:
                     goal = MoveBaseGoal()
                     goal.target_pose.header.frame_id = "base_link"
-                    goal.target_pose.header.stamp = rospy.Time.now()
+                    goal.target_pose.header.stamp = rospy.get_time()
                     goal.target_pose.pose.position = Point(new_x, new_y, 0)
                     quat = quaternion_from_euler(0, 0, new_rot)
                     goal.target_pose.pose.orientation = Quaternion(quat[0], quat[1], quat[2], quat[3])
