@@ -47,8 +47,8 @@ class Alexa:
         self.deviceShadowHandler.shadowDelete(self.callback_delete, 5)
 
         # publish data
-        data = json.dumps(data)
-        rospy.loginfo(data)
+        dataStr = json.dumps(data)
+        rospy.loginfo(dataStr)
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "base_link"
         goal.target_pose.header.stamp = rospy.Time.now()
