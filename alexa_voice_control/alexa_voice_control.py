@@ -138,7 +138,8 @@ class Alexa:
         self.deviceShadowHandler.shadowRegisterDeltaCallback(self.callback)
 
         self.action_client.wait_for_server()
-
+        self.deviceShadowHandler.shadowDelete(self.callback_delete, 5)
+        
         # wait
         rospy.spin()
 
