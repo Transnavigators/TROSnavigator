@@ -73,6 +73,7 @@ class SixaxisPublisher:
                 new_y = 0
                 new_rot = 0
                 stop = False
+                rospy.loginfo("Received joystick event: "+str(event))
                 # TODO: optionally publish to cmd_vel topic instead and bypass move_base
                 # Event key mapping can be found here http://www.ev3dev.org/docs/tutorials/using-ps3-sixaxis/
                 # Analog stick moved
@@ -118,6 +119,7 @@ class SixaxisPublisher:
                 x_vel = 0
                 rot_vel = 0
                 stop = False
+                rospy.loginfo("Received joystick event: "+(event))
                 # TODO: test if this works or only goes in one direction
                 # Analog stick moved
                 if event.type == 3:
