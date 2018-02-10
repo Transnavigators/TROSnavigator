@@ -96,24 +96,24 @@ class BerryIMUPublisher:
             q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle)
             msg.orientation.x = Quaternion(q[0], q[1], q[2], q[3])
             # TODO: measure covariance
-            msg.orientation_covariance = {99999, 0, 0,  # covariance on x axis
+            msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
                                           0, 99999, 0,  # covariance on y axis
-                                          0, 0, 99999}  # covariance on z axis
+                                          0, 0, 99999]  # covariance on z axis
 
             msg.angular_velocity = Vector3(rate_gyr_x * self.GYRO_TO_RADS, rate_gyr_y * self.GYRO_TO_RADS,
                                            rate_gyr_z * self.GYRO_TO_RADS)
-            msg.angular_velocity_covariance = {99999, 0, 0,  # covariance on x axis
+            msg.angular_velocity_covariance = [99999, 0, 0,  # covariance on x axis
                                                0, 99999, 0,  # covariance on y axis
-                                               0, 0, 99999}  # covariance on z axis
+                                               0, 0, 99999]  # covariance on z axis
 
-            msg.orientation_covariance = {99999, 0, 0,  # covariance on x axis
+            msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
                                           0, 99999, 0,  # covariance on y axis
-                                          0, 0, 99999}  # covariance on z axis
+                                          0, 0, 99999]  # covariance on z axis
 
             msg.linear_acceleration = Vector3(acc_x * self.ACC_TO_MS2, acc_y * self.ACC_TO_MS2, acc_z * self.ACC_TO_MS2)
-            msg.linear_acceleration_covariance = {99999, 0, 0,  # covariance on x axis
+            msg.linear_acceleration_covariance = [99999, 0, 0,  # covariance on x axis
                                                   0, 99999, 0,  # covariance on y axis
-                                                  0, 0, 99999}  # covariance on z axis
+                                                  0, 0, 99999]  # covariance on z axis
 
             rospy.loginfo_throttle(1, "Heading: %s" % tilt_compensated_heading)
 
