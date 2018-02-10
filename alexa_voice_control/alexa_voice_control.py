@@ -14,6 +14,7 @@ from geometry_msgs.msg import Point, PoseWithCovarianceStamped, Quaternion
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from tf import TransformListener
 
+
 class Alexa:
     # set up constants
     def __init__(self):
@@ -28,7 +29,7 @@ class Alexa:
             self.tag_id = '1001'
 
         self.FEET_TO_M = 0.3048
-        self.DEGREES_TO_RAD = math.pi/180
+        self.DEGREES_TO_RAD = math.pi / 180
 
         # set up constants
         self.host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
@@ -40,6 +41,7 @@ class Alexa:
         self.deviceShadowHandler = None
 
         # callback for receiving AWS message
+
     def callback(self, payload, response_status, token):
         data = json.loads(payload)['state']
 
@@ -55,40 +57,42 @@ class Alexa:
         goal.target_pose.pose.position.z = 0
 
         # Move forward
-        if data.type == 'forward':
+        if data['type'] == 'forward':
             if 'distance' in data and 'distanceUnit' in data:
-                goal.target_pose.pose.position.x = float(data.distance)
-                if data.angleUnit == 'feet':
+                goal.target_pose.pose.position.x = float(data['distance'])
+                if data['angleUnit'] == 'feet':
                     goal.target_pose.pose.position.x *= self.FEET_TO_M
             else:
                 goal.target_pose.pose.position.x = 100000.0
 
         # Turn the wheelchair
-        elif data.type == 'turn':
-            angle = float(data.angle)
-            if data.angleUnit == 'degrees':
+        elif data['type'] == 'turn':
+            angle = float(data['angle'])
+            if data['angleUnit'] == 'degrees':
                 angle *= self.DEGREES_TO_RAD
             goal_quat = quaternion_from_euler(0, 0, angle)
             goal.target_pose.pose.orientation = Quaternion(goal_quat[0], goal_quat[1], goal_quat[2], goal_quat[3])
 
         # Stop the wheelchair
-        elif data.type == 'stop':
+        elif data['type'] == 'stop':
             goal.target_pose.pose.position = Point(0, 0, 0)
             goal.target_pose.pose.orientation.x = Quaternion(0, 0, 0, 1)
 
         # Go to the localino tag
-        elif data.type == 'locateme' and self.tf.frameExists("/base_link") and self.tf.frameExists("/tag_"+self.tag_id):
+        elif data['type'] == 'locateme' and self.tf.frameExists("/base_link") and self.tf.frameExists(
+                "/tag_" + self.tag_id):
             t = self.tf.getLatestCommonTime("/base_link", '/tag_' + self.tag_id)
-            pos, quat = self.tf.lookupTransform("/base_link", "/tag_"+self.tag_id, t)
+            pos, quat = self.tf.lookupTransform("/base_link", "/tag_" + self.tag_id, t)
 
             # Go to the target, don't care about rotation
             goal.target_pose.pose.position = pos
             goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
 
         # Go to the static landmark
-        elif data.type == 'moveto' and self.tf.frameExists("/map") and self.tf.frameExists("/%s" % str(data.location)):
-            t = self.tf.getLatestCommonTime("/base_link", "/%s" % str(data.location))
-            pos, quat = self.tf.lookupTransform("/base_link", "/%s" % str(data.location), t)
+        elif data['type'] == 'moveto' and self.tf.frameExists("/map") and self.tf.frameExists(
+                "/%s" % str(data['location'])):
+            t = self.tf.getLatestCommonTime("/base_link", "/%s" % str(data['location']))
+            pos, quat = self.tf.lookupTransform("/base_link", "/%s" % str(data['location']), t)
 
             # Go to the target, don't care about rotation
             goal.target_pose.pose.position = pos
@@ -109,7 +113,6 @@ class Alexa:
 
     # sets up communication with AWS
     def begin(self):
-
 
         # Configure logging
         logger = logging.getLogger("AWSIoTPythonSDK.core")
