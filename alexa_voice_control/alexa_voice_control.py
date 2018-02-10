@@ -70,13 +70,13 @@ class Alexa:
             angle = float(data['angle'])
             if data['angleUnit'] == 'degrees':
                 angle *= self.DEGREES_TO_RAD
-            goal_quat = quaternion_from_euler(0., 0., angle)
+            goal_quat = quaternion_from_euler(0, 0, angle)
             goal.target_pose.pose.orientation = Quaternion(goal_quat[0], goal_quat[1], goal_quat[2], goal_quat[3])
 
         # Stop the wheelchair
         elif data['type'] == 'stop':
-            goal.target_pose.pose.position = Point(0., 0., 0.)
-            goal.target_pose.pose.orientation.x = Quaternion(0., 0., 0., 1.)
+            goal.target_pose.pose.position = Point(0, 0, 0)
+            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
 
         # Go to the localino tag
         elif data['type'] == 'locateme' and self.tf.frameExists("/base_link") and self.tf.frameExists(
@@ -86,7 +86,7 @@ class Alexa:
 
             # Go to the target, don't care about rotation
             goal.target_pose.pose.position = pos
-            goal.target_pose.pose.orientation = Quaternion(0., 0., 0., 1.)
+            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
 
         # Go to the static landmark
         elif data['type'] == 'moveto' and self.tf.frameExists("/map") and self.tf.frameExists(
@@ -96,7 +96,7 @@ class Alexa:
 
             # Go to the target, don't care about rotation
             goal.target_pose.pose.position = pos
-            goal.target_pose.pose.orientation = Quaternion(0., 0., 0., 1.)
+            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
         else:
             rospy.logerr("Could not find transform from base_link to map")
 
@@ -139,7 +139,7 @@ class Alexa:
 
         self.action_client.wait_for_server()
         self.deviceShadowHandler.shadowDelete(self.callback_delete, 5)
-        
+
         # wait
         rospy.spin()
 
