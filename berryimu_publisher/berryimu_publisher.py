@@ -70,60 +70,62 @@ class BerryIMUPublisher:
                 heading += 360
 
             # Normalize accelerometer raw values.
-            acc_x_norm = acc_x / math.sqrt(acc_x * acc_x + acc_y * acc_y + acc_z * acc_z)
-            acc_y_norm = acc_y / math.sqrt(acc_x * acc_x + acc_y * acc_y + acc_z * acc_z)
+            norm = math.sqrt(acc_x * acc_x + acc_y * acc_y + acc_z * acc_z)
+            if norm > 1e-9:
+                acc_x_norm = acc_x / norm
+                acc_y_norm = acc_y / norm
 
-            # Calculate pitch and roll
-            pitch = math.asin(acc_x_norm)
-            roll = -math.asin(acc_y_norm / math.cos(pitch))
+                # Calculate pitch and roll
+                pitch = math.asin(acc_x_norm)
+                roll = -math.asin(acc_y_norm / math.cos(pitch))
 
-            # Calculate the new tilt compensated values
-            mag_x_comp = mag_x * math.cos(pitch) + mag_z * math.sin(pitch)
-            mag_y_comp = mag_x * math.sin(roll) * math.sin(pitch) + mag_y * math.cos(roll) - mag_z * math.sin(
-                roll) * math.cos(pitch)
+                # Calculate the new tilt compensated values
+                mag_x_comp = mag_x * math.cos(pitch) + mag_z * math.sin(pitch)
+                mag_y_comp = mag_x * math.sin(roll) * math.sin(pitch) + mag_y * math.cos(roll) - mag_z * math.sin(
+                    roll) * math.cos(pitch)
 
-            # Calculate tilt compensated heading
-            tilt_compensated_heading = math.atan2(mag_y_comp, mag_x_comp) * self.RAD_TO_DEG
+                # Calculate tilt compensated heading
+                tilt_compensated_heading = math.atan2(mag_y_comp, mag_x_comp) * self.RAD_TO_DEG
 
-            if tilt_compensated_heading < 0:
-                tilt_compensated_heading += 360
+                if tilt_compensated_heading < 0:
+                    tilt_compensated_heading += 360
 
-            msg = Imu()
-            msg.header.stamp = rospy.Time.now()
-            msg.header.frame_id = "base_link"
+                msg = Imu()
+                msg.header.stamp = rospy.Time.now()
+                msg.header.frame_id = "base_link"
 
-            # Convert from euler to quaternion for ROS
-            q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle)
-            msg.orientation = Quaternion(q[0], q[1], q[2], q[3])
-            # TODO: measure covariance
-            msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
-                                          0, 99999, 0,  # covariance on y axis
-                                          0, 0, 99999]  # covariance on z axis
+                # Convert from euler to quaternion for ROS
+                q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle)
+                msg.orientation = Quaternion(q[0], q[1], q[2], q[3])
+                # TODO: measure covariance
+                msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
+                                              0, 99999, 0,  # covariance on y axis
+                                              0, 0, 99999]  # covariance on z axis
 
-            msg.angular_velocity = Vector3(rate_gyr_x * self.GYRO_TO_RADS, rate_gyr_y * self.GYRO_TO_RADS,
-                                           rate_gyr_z * self.GYRO_TO_RADS)
-            msg.angular_velocity_covariance = [99999, 0, 0,  # covariance on x axis
-                                               0, 99999, 0,  # covariance on y axis
-                                               0, 0, 99999]  # covariance on z axis
+                msg.angular_velocity = Vector3(rate_gyr_x * self.GYRO_TO_RADS, rate_gyr_y * self.GYRO_TO_RADS,
+                                               rate_gyr_z * self.GYRO_TO_RADS)
+                msg.angular_velocity_covariance = [99999, 0, 0,  # covariance on x axis
+                                                   0, 99999, 0,  # covariance on y axis
+                                                   0, 0, 99999]  # covariance on z axis
 
-            msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
-                                          0, 99999, 0,  # covariance on y axis
-                                          0, 0, 99999]  # covariance on z axis
+                msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
+                                              0, 99999, 0,  # covariance on y axis
+                                              0, 0, 99999]  # covariance on z axis
 
-            msg.linear_acceleration = Vector3(acc_x * self.ACC_TO_MS2, acc_y * self.ACC_TO_MS2, acc_z * self.ACC_TO_MS2)
-            msg.linear_acceleration_covariance = [99999, 0, 0,  # covariance on x axis
-                                                  0, 99999, 0,  # covariance on y axis
-                                                  0, 0, 99999]  # covariance on z axis
+                msg.linear_acceleration = Vector3(acc_x * self.ACC_TO_MS2, acc_y * self.ACC_TO_MS2, acc_z * self.ACC_TO_MS2)
+                msg.linear_acceleration_covariance = [99999, 0, 0,  # covariance on x axis
+                                                      0, 99999, 0,  # covariance on y axis
+                                                      0, 0, 99999]  # covariance on z axis
 
-            rospy.loginfo_throttle(1, "Heading: %s" % tilt_compensated_heading)
+                rospy.loginfo_throttle(1, "Heading: %s" % tilt_compensated_heading)
 
-            # self.imu_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
-            # rospy.logdebug("BerryIMU orientation,%5.2f,%5.2f,%5.2f" % gyro_x_angle, gyro_y_angle, gyro_z_angle)
-            # rospy.logdebug("BerryIMU velocity,%5.2f,%5.2f,5.2f" % msg.angular_velocity.x, msg.angular_velocity.y,
-            #               msg.angular_velocity.z)
-            # rospy.logdebug("BerryIMU acceleration,%5.2f,%5.2f,%5.2f" % msg.linear_acceleration.x,
-            #               msg.linear_acceleration.y, msg.linear_acceleration.z)
-            self.pub.publish(msg)
+                # self.imu_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
+                # rospy.logdebug("BerryIMU orientation,%5.2f,%5.2f,%5.2f" % gyro_x_angle, gyro_y_angle, gyro_z_angle)
+                # rospy.logdebug("BerryIMU velocity,%5.2f,%5.2f,5.2f" % msg.angular_velocity.x, msg.angular_velocity.y,
+                #               msg.angular_velocity.z)
+                # rospy.logdebug("BerryIMU acceleration,%5.2f,%5.2f,%5.2f" % msg.linear_acceleration.x,
+                #               msg.linear_acceleration.y, msg.linear_acceleration.z)
+                self.pub.publish(msg)
             self.rate.sleep()
 
 
