@@ -14,6 +14,12 @@ from sensor_msgs.msg import BatteryState
 
 class ArduinoPublisher:
     def __init__(self):
+        # set up node
+        rospy.init_node('arduino_pub', anonymous=True)
+        pub = rospy.Publisher("odom", Odometry, queue_size=50)
+        battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
+        odom_broadcaster = tf.TransformBroadcaster()
+
         # initialize port
         if rospy.has_param("~port"):
             self.port_name = rospy.get_param("~port")
@@ -71,11 +77,6 @@ class ArduinoPublisher:
     # start node
     def begin(self):
     
-        # set up node
-        rospy.init_node('arduino_pub', anonymous=True)
-        pub = rospy.Publisher("odom", Odometry, queue_size=50)
-        battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
-        odom_broadcaster = tf.TransformBroadcaster()
 
         # Change how ports are configured if in a docker container with virtual ports
         if 'INSIDEDOCKER' in os.environ:

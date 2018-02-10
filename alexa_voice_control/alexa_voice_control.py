@@ -17,6 +17,11 @@ from tf import TransformListener
 class Alexa:
     # set up constants
     def __init__(self):
+        # create a new node
+        rospy.init_node('alexa', anonymous=True)
+        self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        self.tf = TransformListener()
+
         if rospy.has_param("~user_tag_id"):
             self.tag_id = rospy.get_param("~user_tag_id")
         else:
@@ -104,10 +109,6 @@ class Alexa:
 
     # sets up communication with AWS
     def begin(self):
-        # create a new node
-        rospy.init_node('alexa', anonymous=True)
-        self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.tf = TransformListener()
 
 
         # Configure logging

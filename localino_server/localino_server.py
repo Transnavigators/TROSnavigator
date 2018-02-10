@@ -72,6 +72,11 @@ def get_polygon_center(points):
 class LocalinoPublisher:
     def __init__(self):
 
+        # initialize the node
+        self.pub = rospy.Publisher('vo', Odometry, queue_size=10)
+        rospy.init_node('localino', anonymous=True)
+        self.vo_broadcaster = tf.TransformBroadcaster()
+        
         # TODO: parse settings from yaml file instead
         # The tag ID of the localino tag mounted to the wheelchair
         if rospy.has_param("~base_tag_id"):
@@ -106,11 +111,6 @@ class LocalinoPublisher:
 
     # start the triangulation
     def begin(self):
-        # initialize the node
-        self.pub = rospy.Publisher('vo', Odometry, queue_size=10)
-        rospy.init_node('localino', anonymous=True)
-        self.vo_broadcaster = tf.TransformBroadcaster()
-        
         
         if rospy.has_param("~anchor_names"):
             anchor_names = str(rospy.get_param("~anchor_names")).split(',')
