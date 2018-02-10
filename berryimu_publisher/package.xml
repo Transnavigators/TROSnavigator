@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>berryimu_publisher</name>
-    <version>0.0.0</version>
+    <version>1.0.0</version>
     <description>The berryimu_publisher package</description>
 
     <maintainer email="donaldsa18@up.edu">Anthony Donaldson</maintainer>
