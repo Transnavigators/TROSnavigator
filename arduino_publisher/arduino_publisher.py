@@ -5,6 +5,7 @@ import serial
 import tf
 import math
 import os
+from struct import pack, unpack
 from PyCRC.CRC16 import CRC16
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
@@ -23,20 +24,6 @@ class ArduinoPublisher:
             self.baud_rate = int(rospy.get_param("~baud_rate"))
         else:
             self.baud_rate = 115200
-
-        # Change how ports are configured if in a docker container with virtual ports
-        if 'INSIDEDOCKER' in os.environ:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
-        else:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
-        # make sure the port is closed on exit
-        rospy.on_shutdown(self.close_port)
-
-        # set up node
-        self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
-        self.battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
-        self.odom_broadcaster = tf.TransformBroadcaster()
-        rospy.init_node('arduino_pub', anonymous=True)
 
         # Conversion factor from Arduino's AnalogRead to actual battery voltage
         if rospy.has_param("~analog_to_volts"):
@@ -76,11 +63,29 @@ class ArduinoPublisher:
         else:
             self.BATTERY_CAPACITY = 35.0
 
+        self.ser = None
+
     def close_port(self):
         self.ser.close()
 
     # start node
     def begin(self):
+    
+        # set up node
+        rospy.init_node('arduino_pub', anonymous=True)
+        pub = rospy.Publisher("odom", Odometry, queue_size=50)
+        battery_pub = rospy.Publisher("battery", BatteryState, queue_size=10)
+        odom_broadcaster = tf.TransformBroadcaster()
+
+        # Change how ports are configured if in a docker container with virtual ports
+        if 'INSIDEDOCKER' in os.environ:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+        else:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
+
+        # make sure the port is closed on exit
+        rospy.on_shutdown(self.close_port)
+    
         x = 0.0
         y = 0.0
         th = 0.0
@@ -93,35 +98,29 @@ class ArduinoPublisher:
         # TODO: Adjust rate according to 2x Arduino's sending rate if possible
         while not rospy.is_shutdown():
             data = self.ser.read()
-            if data == 0xEE:
+            if data == b'\xEE':
                 data = self.ser.read()
-                if data == 0x01:
+                if data == b'\x01':
                     # Read 3 32bit ints and a 16bit CRC
-                    x1 = self.ser.read(4)
-                    x2 = self.ser.read(4)
-                    d_time = self.ser.read(4)
-                    crc = self.ser.read(2)
+                    packet = self.ser.read(14)
+                    x1, x2, d_time, crc = unpack('iiIH', packet)
 
                     # Calculate the CRC to verify packet integrity
-                    buf = bytearray()
-                    buf.extend(x1)
-                    buf.extend(x2)
-                    buf.extend(d_time)
-                    calc_crc = CRC16().calculate(bytes(buf))
+                    calc_crc = CRC16().calculate(packet[0:11])
                     if calc_crc == crc:
                         # Display the time frame each packet represents vs the node's refresh rate
                         current_time = rospy.Time.now()
-                        delta_time = int(d_time) * 1e-6
+                        delta_time = d_time * 1e-6
                         delta_ros_time = (current_time - last_time).to_nsec()
                         rospy.loginfo("Delta ROS Time: %f ns\tDelta Time: %f ns", delta_ros_time, delta_time * 1e9)
 
                         # Convert number of pulses to a distance
-                        delta_left = int(x1) * self.M_PER_PULSE
-                        delta_right = int(x2) * self.M_PER_PULSE
+                        delta_left = x1 * self.M_PER_PULSE
+                        delta_right = x2 * self.M_PER_PULSE
 
                         # TODO adjust straight error according to tests
                         # Math from https://robotics.stackexchange.com/questions/1653/calculate-position-of-differential-drive-robot
-                        if math.abs(delta_left - delta_right) < 1e-6:
+                        if abs(delta_left - delta_right) < 1e-6:
                             dx = delta_left * math.cos(th)
                             dy = delta_right * math.sin(th)
                             vth = 0
@@ -140,7 +139,7 @@ class ArduinoPublisher:
                         # Convert 1D Euler rotation to quaternion
                         odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
 
-                        self.odom_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
+                        odom_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
 
                         # Construct a message with the position, rotation, and velocity
                         msg = Odometry()
@@ -167,28 +166,25 @@ class ArduinoPublisher:
                                                 0, 0, 0, 0, 99999, 0,  # large covariance on rot y
                                                 0, 0, 0, 0, 0, 99999}  # large covariance on rot z
 
-                        self.pub.publish(msg)
+                        pub.publish(msg)
 
                         last_time = current_time
                     else:
                         rospy.logwarn("Packet didn't pass checksum, something is wrong with Arduino->Pi communication.")
                 elif data == 0x02:
-                    batt = self.ser.read(2)
-                    crc = self.ser.read(2)
-                    buf = bytearray()
-                    buf.extend(batt)
-                    buf.extend(crc)
-                    calc_crc = CRC16().calculate(bytes(buf))
+                    packet = self.ser.read(4)
+                    batt, crc = unpack('HH', packet)
+                    calc_crc = CRC16().calculate(packet[2:3])
                     if calc_crc == crc:
                         msg = BatteryState()
-                        msg.voltage = int(batt) * self.ANALOG_TO_VOLTAGE
+                        msg.voltage = batt * self.ANALOG_TO_VOLTAGE
 
                         msg.capacity = self.BATTERY_CAPACITY
                         msg.design_capacity = self.BATTERY_CAPACITY
 
                         # Linear trendline generated by Excel of voltages vs SoC
                         msg.percentage = 86.558 * msg.voltage - 1015.4
-                        msg.charge = 35 * msg.percentage / 100
+                        msg.charge = msg.capacity * msg.percentage / 100
                         msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
                         msg.power_supply_health = BatteryState.POWER_SUPPLY_HEALTH_GOOD
 
@@ -206,7 +202,7 @@ class ArduinoPublisher:
                         msg.location = ""
                         msg.serial_number = ""
 
-                        self.battery_pub.publish(msg)
+                        battery_pub.publish(msg)
 
             rate.sleep()
 
