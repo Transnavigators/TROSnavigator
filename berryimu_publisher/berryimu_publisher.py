@@ -49,7 +49,7 @@ class BerryIMUPublisher:
             mag_z = IMU.readMAGz()
 
             # Calculate loop Period(LP). How long between Gyro Reads
-            period = rospy.get_time() - last_timestamp
+            period = (rospy.get_time() - last_timestamp)
             last_timestamp = rospy.get_time()
 
             # Convert Gyro raw to degrees per second
@@ -89,7 +89,7 @@ class BerryIMUPublisher:
                 tilt_compensated_heading += 360
 
             msg = Imu()
-            msg.header.stamp = last_timestamp
+            msg.header.stamp = rospy.Time.now()
             msg.header.frame_id = "imu_data"
 
             # Convert from euler to quaternion for ROS
