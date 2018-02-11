@@ -2,6 +2,7 @@
 
 import socket
 import math
+import errno
 from collections import defaultdict
 import rospy
 import tf
@@ -144,82 +145,89 @@ class LocalinoPublisher:
         last_timestamp = {tagID: {anchorID: 0 for anchorID in anchor_names} for tagID in tag_ids}
 
         while not rospy.is_shutdown():
-            data, addr = sock.recvfrom(100)
-            rospy.loginfo("Received message:" + data.decode("ascii"))
+            try:
+                data, addr = sock.recvfrom(100)
+                rospy.loginfo("Received message:" + data.decode("ascii"))
 
-            data_arr = data.decode("utf-8").split(",")
-            if len(data_arr) == 5 and data_arr[0] in anchor_names and data_arr[1] in tag_ids:
-                # Give array of results human readable names
-                anchor_id = str(data_arr[0])
-                tag_id = str(data_arr[1])
-                # rospy.loginfo("Found tag "+tag_id+" type")
-                dist = data_arr[2]
-                # seq_num = data_arr[3]
-                # tag_power = data_arr[4]
-                # TODO: verify inputs to prevent crashing
-                # TODO: scale distances to make sure we get a correct coordinate
-                # TODO: test if expiring data via timeout or seq_num is better
-                dists[tag_id][anchor_id] = Circle(anchor_coords[anchor_id], float(dist))
-                last_timestamp[tag_id][anchor_id] = rospy.get_rostime().nsecs
+                data_arr = data.decode("utf-8").split(",")
+                if len(data_arr) == 5 and data_arr[0] in anchor_names and data_arr[1] in tag_ids:
+                    # Give array of results human readable names
+                    anchor_id = str(data_arr[0])
+                    tag_id = str(data_arr[1])
+                    # rospy.loginfo("Found tag "+tag_id+" type")
+                    dist = data_arr[2]
+                    # seq_num = data_arr[3]
+                    # tag_power = data_arr[4]
+                    # TODO: verify inputs to prevent crashing
+                    # TODO: scale distances to make sure we get a correct coordinate
+                    # TODO: test if expiring data via timeout or seq_num is better
+                    dists[tag_id][anchor_id] = Circle(anchor_coords[anchor_id], float(dist))
+                    last_timestamp[tag_id][anchor_id] = rospy.get_rostime().nsecs
 
-                # Each anchor responded with a distance to this tag
-                if None not in dists[tag_id].values():
-                    # Check that the data isn't stale
-                    delta_time = last_timestamp[tag_id][anchor_id] - min(last_timestamp[tag_id].values())
-                    if delta_time < self.timeout:
-                        # Use trilateration to locate the tag
-                        # Algorithm from https://github.com/noomrevlis/trilateration
+                    # Each anchor responded with a distance to this tag
+                    if None not in dists[tag_id].values():
+                        # Check that the data isn't stale
+                        delta_time = last_timestamp[tag_id][anchor_id] - min(last_timestamp[tag_id].values())
+                        if delta_time < self.timeout:
+                            # Use trilateration to locate the tag
+                            # Algorithm from https://github.com/noomrevlis/trilateration
 
-                        inner_points = []
+                            inner_points = []
 
-                        for p in get_all_intersecting_points(dists[tag_id].values()):
-                            if is_contained_in_circles(p, dists[tag_id]):
-                                inner_points.append(p)
-                        center = get_polygon_center(inner_points)
-                        dists = {tagID: {anchorID: None for anchorID in anchor_names} for tagID in tag_ids}
-                        # An Odometry message generated at time=stamp and published on topic /vo
-                        odom = Odometry()
-                        odom.header.stamp = rospy.get_time()
-                        if tag_id == self.base_id:
-                            odom.header.frame_id = "vo"
+                            for p in get_all_intersecting_points(dists[tag_id].values()):
+                                if is_contained_in_circles(p, dists[tag_id]):
+                                    inner_points.append(p)
+                            center = get_polygon_center(inner_points)
+                            dists = {tagID: {anchorID: None for anchorID in anchor_names} for tagID in tag_ids}
+                            # An Odometry message generated at time=stamp and published on topic /vo
+                            odom = Odometry()
+                            odom.header.stamp = rospy.get_time()
+                            if tag_id == self.base_id:
+                                odom.header.frame_id = "vo"
 
-                            # Give the XY coordinates and set the covariance high on the rest so they aren't used
-                            odom.pose.pose = Pose(center, Quaternion(1, 0, 0, 0))
+                                # Give the XY coordinates and set the covariance high on the rest so they aren't used
+                                odom.pose.pose = Pose(center, Quaternion(1, 0, 0, 0))
 
-                            # TODO: measure covariance with experiment + statistics
-                            # This should be less accurate than the Arduino encoder odometry
-                            odom.pose.covariance = {1000, 0, 0, 0, 0, 0,  # covariance on gps_x
-                                                    0, 1000, 0, 0, 0, 0,  # covariance on gps_y
-                                                    0, 0, 0, 0, 0, 0,  # covariance on gps_z
-                                                    0, 0, 0, 0, 0, 0,  # large covariance on rot x
-                                                    0, 0, 0, 0, 0, 0,  # large covariance on rot y
-                                                    0, 0, 0, 0, 0, 0}  # large covariance on rot z
-                            odom.child_frame_id = "map"
-                            odom.twist.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
-                            odom.twist.covariance = {0, 0, 0, 0, 0, 0,  # Ignore twist
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0,
-                                                     0, 0, 0, 0, 0, 0}
+                                # TODO: measure covariance with experiment + statistics
+                                # This should be less accurate than the Arduino encoder odometry
+                                odom.pose.covariance = {1000, 0, 0, 0, 0, 0,  # covariance on gps_x
+                                                        0, 1000, 0, 0, 0, 0,  # covariance on gps_y
+                                                        0, 0, 0, 0, 0, 0,  # covariance on gps_z
+                                                        0, 0, 0, 0, 0, 0,  # large covariance on rot x
+                                                        0, 0, 0, 0, 0, 0,  # large covariance on rot y
+                                                        0, 0, 0, 0, 0, 0}  # large covariance on rot z
+                                odom.child_frame_id = "map"
+                                odom.twist.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
+                                odom.twist.covariance = {0, 0, 0, 0, 0, 0,  # Ignore twist
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0}
 
-                            self.pub.publish(odom)
+                                self.pub.publish(odom)
 
-                            self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
-                                                              odom.header.stamp, "map", "vo")
+                                self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
+                                                                  odom.header.stamp, "map", "vo")
+                            else:
+                                # Publish a the tag's location to let Alexa know where to send the wheelchair
+                                self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
+                                                                  odom.header.stamp, "map", 'tag_' + str(tag_id))
+                            # Immediately after receiving all of a frame, the localinos will take 0.2-0.3ms before sending
+                            # a new packet, so wait until then
+                            self.rate.sleep()
                         else:
-                            # Publish a the tag's location to let Alexa know where to send the wheelchair
-                            self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
-                                                              odom.header.stamp, "map", 'tag_' + str(tag_id))
-                        # Immediately after receiving all of a frame, the localinos will take 0.2-0.3ms before sending
-                        # a new packet, so wait until then
-                        self.rate.sleep()
+                            rospy.logwarn("Localino packet timed out at " + str(delta_time) + " ns")
                     else:
-                        rospy.logwarn("Localino packet timed out at " + str(delta_time) + " ns")
+                        for anchor, dist in dists[tag_id].items():
+                            if dist is None:
+                                rospy.loginfo("Waiting for packet from anchor %s" % anchor)
+            except socket.error as serr:
+                if serr.errno != errno.EINTR:
+                    raise
                 else:
-                    for anchor, dist in dists[tag_id].items():
-                        if dist is None:
-                            rospy.loginfo("Waiting for packet from anchor %s" % anchor)
+                    break
+
 
 
 if __name__ == "__main__":
