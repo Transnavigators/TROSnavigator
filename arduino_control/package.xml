@@ -18,7 +18,7 @@
 
     <run_depend>rospy</run_depend>
     <run_depend>geometry_msgs</run_depend>
-
+    <build_depend>rostest</build_depend>
     <export>
         <!-- Other tools can request additional information be placed here -->
 
