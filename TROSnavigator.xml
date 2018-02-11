@@ -47,7 +47,7 @@
         <param name="self_diagnose" value="false"/>
         <remap from="robot_pose_ekf/odom_combined" to="initialpose"/>
     </node>
-    <node name="map_server" pkg="map_server" type="map_server" args="shiley3.yaml" respawn="false"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="nav_config/shiley3.yaml" respawn="false"/>
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <rosparam file="nav_config/move_base_params.yaml" command="load" />
         <rosparam file="nav_config/costmap_common_params.yaml" command="load" ns="global_costmap"/>

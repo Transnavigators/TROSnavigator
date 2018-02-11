@@ -25,7 +25,7 @@ class SixaxisPublisher:
             if device.name == 'PLAYSTATION(R)3 Controller':
                 ps3dev = device.fn
         if ps3dev is None:
-            rospy.logerr("Could not find the PS3 controller.")
+            rospy.logfatal("Could not find the PS3 controller.")
         else:
             self.gamepad = evdev.InputDevice(ps3dev)
 
