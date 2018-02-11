@@ -22,7 +22,7 @@ install:
     apt-get update -qq;
     apt-get install -y ros-kinetic-xv-11-laser-driver ros-kinetic-robot-pose-ekf ros-kinetic-map-server ros-kinetic-base-local-planner ros-kinetic-costmap-2d ros-kinetic-amcl ros-kinetic-tf ros-kinetic-move-base;
     apt-get install -y python-smbus python-pip socat;
-    pip install pyserial AWSIoTPythonSDK PyCRC;
+    pip install pyserial AWSIoTPythonSDK PyCRC evdev;
     rosdep update"
 
 before_script:
