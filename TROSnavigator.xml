@@ -20,7 +20,7 @@
         <param name="anchor_9005" value="1.12,2.03,0"/>
         <param name="tag_names" value="1001,1002"/>
         <param name="timeout" value="1000000000"/>
-        <!--<rosparam file="$(find localino_server)/localino.yaml" command="load"/>-->
+        <rosparam file="localino_server/localino.yaml" command="load"/>
     </node>
     <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
         <param name="poll_rate" value="10"/>
@@ -29,7 +29,7 @@
         <param name="firmware_version" value="2"/>
         <param name="port" value="/dev/ttyAMA0"/>
     </node>
-    <node name="sixaxis_publisher" pkg="sixaxis_publisher" type="sixasix_publisher.py">
+    <node name="sixaxis_publisher" pkg="sixaxis_publisher" type="sixaxis_publisher.py">
         <param name="max_speed" value="2.2"/>
         <param name="max_reverse_speed" value="0.5"/>
         <param name="max_rot_speed" value="1.75"/>
@@ -47,15 +47,15 @@
         <param name="self_diagnose" value="false"/>
         <remap from="robot_pose_ekf/odom_combined" to="initialpose"/>
     </node>
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find nav_config)/shiley3.yaml" respawn="false"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="shiley3.yaml" respawn="false"/>
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-        <rosparam file="$(find nav_config)/move_base_params.yaml" command="load" />
-        <rosparam file="$(find nav_config)/costmap_common_params.yaml" command="load" ns="global_costmap"/>
-        <rosparam file="$(find nav_config)/costmap_common_params.yaml" command="load" ns="local_costmap"/>
-        <rosparam file="$(find nav_config)/base_local_planner_params.yaml" command="load" ns="TrajectoryPlannerROS"/>
-        <rosparam file="$(find nav_config)/base_local_planner_params.yaml" command="load"/>
-        <rosparam file="$(find nav_config)/local_costmap_params.yaml" command="load"/>
-        <rosparam file="$(find nav_config)/global_costmap_params.yaml" command="load"/>
+        <rosparam file="nav_config/move_base_params.yaml" command="load" />
+        <rosparam file="nav_config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="nav_config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+        <rosparam file="nav_config/base_local_planner_params.yaml" command="load" ns="TrajectoryPlannerROS"/>
+        <rosparam file="nav_config/base_local_planner_params.yaml" command="load"/>
+        <rosparam file="nav_config/local_costmap_params.yaml" command="load"/>
+        <rosparam file="nav_config/global_costmap_params.yaml" command="load"/>
     </node>
     <node pkg="amcl" type="amcl" name="amcl">
         <!-- Publish scans from best pose at a max of 10 Hz -->
@@ -102,9 +102,9 @@
     </node>
     <!-- TODO: use actual numbers for static transforms -->
     <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 base_link neato_scan 100" />
-    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map table 100" />
-    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map desk 100" />
-    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map chair 100" />
-    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map couch 100" />
-    <node pkg="tf" type="static_transform_publisher" name="scan_to_base_broadcaster" args="1 0 0 0 0 0 1 map bed 100" />
+    <node pkg="tf" type="static_transform_publisher" name="table_to_map_broadcaster" args="1 0 0 0 0 0 1 map table 100" />
+    <node pkg="tf" type="static_transform_publisher" name="desk_to_map_broadcaster" args="1 0 0 0 0 0 1 map desk 100" />
+    <node pkg="tf" type="static_transform_publisher" name="chair_to_map_broadcaster" args="1 0 0 0 0 0 1 map chair 100" />
+    <node pkg="tf" type="static_transform_publisher" name="couch_to_map_broadcaster" args="1 0 0 0 0 0 1 map couch 100" />
+    <node pkg="tf" type="static_transform_publisher" name="bed_to_map_broadcaster" args="1 0 0 0 0 0 1 map bed 100" />
 </launch>

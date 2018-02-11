@@ -11,7 +11,7 @@ from geometry_msgs.msg import Vector3, Quaternion
 
 class BerryIMUPublisher:
     def __init__(self):
-        rospy.init_node('berryimu',anonymous=True)
+        rospy.init_node('berryimu', anonymous=True)
         self.RAD_TO_DEG = 180 / math.pi
         self.M_PI = 3.14159265358979323846
         self.ACC_TO_MS2 = (1.0 / (0.101972 * 2 ** 11))  # 2^15 = 16G, 1G ~= 9.8m/s^2
@@ -22,7 +22,7 @@ class BerryIMUPublisher:
         if rospy.has_param("~poll_rate"):
             self.rate = rospy.Rate(int(rospy.get_param("~poll_rate")))
         else:
-            self.rate = rospy.Rate(30)
+            self.rate = rospy.Rate(20)
 
         IMU.detectIMU()  # Detect if BerryIMUv1 or BerryIMUv2 is connected.
         IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass

@@ -76,7 +76,7 @@ class LocalinoPublisher:
         self.pub = rospy.Publisher('vo', Odometry, queue_size=10)
         rospy.init_node('localino', anonymous=True)
         self.vo_broadcaster = tf.TransformBroadcaster()
-        
+
         # TODO: parse settings from yaml file instead
         # The tag ID of the localino tag mounted to the wheelchair
         if rospy.has_param("~base_tag_id"):
@@ -111,7 +111,7 @@ class LocalinoPublisher:
 
     # start the triangulation
     def begin(self):
-        
+
         if rospy.has_param("~anchor_names"):
             anchor_names = str(rospy.get_param("~anchor_names")).split(',')
         else:
@@ -121,13 +121,18 @@ class LocalinoPublisher:
             tag_ids = str(rospy.get_param("~tag_names")).split(',')
         else:
             tag_ids = ["1002", "1001"]
-            
+
         anchor_coords = defaultdict(Point)
 
-        for anchor_name in anchor_names:
-            coords = rospy.get_param("~anchor_%s" % anchor_name).split(',')
-            anchor_coords[anchor_name] = Point(float(coords[0]), float(coords[1]), 0.)
-
+        if all(rospy.has_param("~anchor_%s" % anchor_name) for anchor_name in anchor_names):
+            for anchor_name in anchor_names:
+                coords = rospy.get_param("~anchor_%s" % anchor_name).split(',')
+                anchor_coords[anchor_name] = Point(float(coords[0]), float(coords[1]), 0)
+        else:
+            anchor_coords = {'anchor_9002': Point(0, 0, 0),
+                             'anchor_9003': Point(3.78, 0.28, 0),
+                             'anchor_9005': Point(1.12, 2.03, 0)
+                             }
         # Create 2D dictionaries to store distances reported from each anchor\tag pair
         dists = {tagID: {anchorID: None for anchorID in anchor_names} for tagID in tag_ids}
 
@@ -210,7 +215,7 @@ class LocalinoPublisher:
                         # a new packet, so wait until then
                         self.rate.sleep()
                     else:
-                        rospy.logwarn("Localino packet timed out at "+str(delta_time)+" ns")
+                        rospy.logwarn("Localino packet timed out at " + str(delta_time) + " ns")
                 else:
                     for anchor, dist in dists[tag_id].items():
                         if dist is None:
