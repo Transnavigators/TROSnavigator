@@ -11,6 +11,7 @@ env:
     - ROS_DISTRO=kinetic
     - ROS_CI_DESKTOP=xenial
     - CI_SOURCE_PATH=/catkin_ws/src
+    - CI_DEVEL_PATH=/catkin_ws/devel
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
     - secure: YgJWCOncmGBg+7i4yC9SAZ36C24dUgb3t7G8ISnCv4mpycuEdhmv6O7BQCIPdopjF3VPV8+edx5MzV7d8Vcu8mDkLcb00Is/BC0Vfx6RJyPHeTadCFxdEjrYl37yx9seQDxBErecGBox54+oMgOfk1a30j1dXkitY/wjkTuVUmg++B2cRAdBReUKi9dwq5bLXd3d3YbHmovicl2szd1gYX00dgFMH7vbzJWjiBENiarBHVgEqwWEIqsvlUQetpcV12lTgJlEn9pSg0EjTlxWcw90KH4361pUgtzF354UN0MpD0f8NaQoqWuvZainiguV8oDC4IiDd1urXYGw2zWthE6e89KTwoolEOfD5pFDjlyU/0ANC4Pp6EiFUMRQHMe5C+KW4252dapU2etntQhDxTMRi8r/Kpe0Z34sdmW939YVzOpVzkbWZerpfezf2Yj6yiXJ854rWSOzfwKz4u73M/kYf6aeK7UCm2lfLENNU41I36y1UbJ4PgGZ3afPuzjUPkJwsHKhK9HGxfNPD7jO4YUur5mPNol/Hc5GaMieZ5tXDyqJZgXaVEhlttTP3LaZV18GJH425l2Qw0vLd0sS6YGUZrAP+Qg4IidQkNYvwpAnsXg2M6xeyM1A3ygunIU6a2Xr56lIkxnXUsBmfzm0kObdrdvmTDxTc1lGY+doguA=
 
@@ -38,11 +39,11 @@ script:
     cd $CI_SOURCE_PATH &&
     catkin_init_workspace;
     cd .. &&
-    source $CI_SOURCE_PATH/../devel/setup.bash &&
+    source $CI_DEVEL_PATH/setup.bash &&
     catkin_make &&
     export INSIDEDOCKER=true &&
     cd $CI_SOURCE_PATH &&
-    source $CI_SOURCE_PATH/../devel/setup.bash &&
+    source $CI_DEVEL_PATH/setup.bash &&
     timeout 30s roslaunch TROSnavigator.xml"
 
 notifications:
