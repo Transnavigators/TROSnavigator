@@ -193,4 +193,7 @@ catkin_install_python(PROGRAMS arduino_control.py
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-catkin_add_nosetests(test_arduino_control.py)
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(TestFile.test)
+endif()
