@@ -14,7 +14,9 @@ package_name = 'test_arduino_control'
 
 
 class TestArduinoControl(unittest.TestCase):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(TestingClass, self).__init__(*args, **kwargs)
+        
         # Initialize the node
         rospy.init_node('test_arduino_controller', anonymous=True)
         # Publish to the cmd_vel topic
@@ -52,14 +54,8 @@ class TestArduinoControl(unittest.TestCase):
                     data = ser.read(2)
                     self.assertEquals(data,self.STOP_CRC,"STOP FAILED")
                     break
-                
-
-if __name__ == '__main__':
-    try:
-        #Testing our function
-        move()
-    except rospy.ROSInterruptException: pass
-    
+                    
+                    
 if __name__ == '__main__':
     import rostest
     rostest.rosrun(package_name, test_name, TestArduinoControl)
