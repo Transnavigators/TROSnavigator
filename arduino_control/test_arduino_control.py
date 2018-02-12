@@ -40,7 +40,7 @@ class TestArduinoControl(unittest.TestCase):
         vel_msg.angular.z = 0
         
         # publish the message
-        publisher.publish(vel_msg)
+        self.publisher.publish(vel_msg)
         
         # expected values
         self.STOP_CMD = b'\xEE\x00'
