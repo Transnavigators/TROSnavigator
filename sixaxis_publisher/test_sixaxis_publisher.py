@@ -4,8 +4,8 @@ import unittest
 
 
 package_name = 'sixaxis_publisher'
-test_name = 'sixaxis_publisher'
-package_name = 'test_sixaxis_publisher'
+test_name = 'test_sixaxis_publisher'
+package_name = 'sixaxis_publisher'
 
 
 class TestSixaxisPublisher(unittest.TestCase):

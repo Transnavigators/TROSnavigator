@@ -3,7 +3,6 @@ import sys
 import unittest
 
 
-package_name = 'localino_server'
 test_name = 'localino_server'
 package_name = 'test_localino_server'
 
