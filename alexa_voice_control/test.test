@@ -1,0 +1,4 @@
+<launch>
+  <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py" />
+  <test test-name="test_alexa_voice_control" pkg="alexa_voice_control" type="test_alexa_voice_control.py" />
+</launch>

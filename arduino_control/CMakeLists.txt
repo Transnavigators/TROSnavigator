@@ -195,5 +195,5 @@ catkin_install_python(PROGRAMS arduino_control.py
 # catkin_add_nosetests(test)
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest(TestFile.test)
+  add_rostest(test.test)
 endif()

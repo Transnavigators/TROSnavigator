@@ -1,0 +1,4 @@
+<launch>
+  <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py" />
+  <test test-name="test_berryimu_publisher" pkg="berryimu_publisher" type="test_berryimu_publisher.py" />
+</launch>

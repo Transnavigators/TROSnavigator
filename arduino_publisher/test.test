@@ -1,0 +1,4 @@
+<launch>
+  <node name="arduino_publisher" pkg="arduino_publisher" type="arduino_publisher.py" />
+  <test test-name="test_arduino_publisher" pkg="arduino_publisher" type="test_arduino_publisher.py" />
+</launch>

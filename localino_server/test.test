@@ -1,0 +1,4 @@
+<launch>
+  <node name="localino_server" pkg="localino_server" type="localino_server.py" />
+  <test test-name="test_localino_server" pkg="localino_server" type="test_localino_server.py" />
+</launch>
