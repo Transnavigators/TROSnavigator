@@ -36,13 +36,13 @@ before_script:
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
     cd $CI_SOURCE_PATH &&
-    catkin_init_workspace &&
+    catkin_init_workspace;
     cd .. &&
+    source $CI_SOURCE_PATH/../devel/setup.bash &&
     catkin_make &&
-    source devel/setup.bash &&
     export INSIDEDOCKER=true &&
     cd $CI_SOURCE_PATH &&
-    source /opt/ros/$ROS_DISTRO/setup.bash &&
+    source $CI_SOURCE_PATH/../devel/setup.bash &&
     timeout 30s roslaunch TROSnavigator.xml"
 
 notifications:
