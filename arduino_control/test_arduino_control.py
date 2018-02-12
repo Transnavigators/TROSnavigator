@@ -15,7 +15,7 @@ package_name = 'test_arduino_control'
 
 class TestArduinoControl(unittest.TestCase):
     def __init__(self, *args, **kwargs):
-        super(TestingClass, self).__init__(*args, **kwargs)
+        super(TestArduinoControl, self).__init__(*args, **kwargs)
         
         # Initialize the node
         rospy.init_node('test_arduino_controller', anonymous=True)
