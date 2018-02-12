@@ -46,6 +46,12 @@ class TestArduinoControl(unittest.TestCase):
         self.STOP_CMD = b'\xEE\x00'
         self.STOP_CRC = CRC16().calculate(bytes(self.STOP_CMD))
         
+        # set up serial
+        self.baud_rate = 115200
+        self.port_name = '/dev/ttyACM0'
+        self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
+        
+        
         while not rospy.is_shutdown():
             data = self.ser.read()
             if data == b'\xEE':
