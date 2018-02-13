@@ -34,6 +34,10 @@ class ArduinoController:
         else:
             self.baud_rate = 115200
 
+        if rospy.has_param("~virtual_port"):
+            self.has_virtual_port = True
+        else:
+            self.has_virtual_port = False
         self.STOP_CMD = b'\xEE\x00'
         self.STOP_CRC = CRC16().calculate(bytes(self.STOP_CMD))
         self.GO_CMD = b'\xEE\x20'
@@ -61,7 +65,7 @@ class ArduinoController:
     # start the node: spin forever
     def begin(self):
         # Change how ports are configured if in a docker container with virtual ports
-        if 'INSIDEDOCKER' in os.environ:
+        if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
         else:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
