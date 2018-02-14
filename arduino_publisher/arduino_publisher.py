@@ -172,7 +172,7 @@ class ArduinoPublisher:
                         last_time = current_time
                     else:
                         rospy.logwarn(
-                            "Packet didn't pass checksum. Calculated CRC: %d %s Packet CRC: %d %s Left %d Right %d Time: %d" % (calc_crc, str(type(calc_crc)), crc, str(type(crc))), x1, x2, d_time)
+                            "Packet didn't pass checksum. Calculated CRC: %d %s Packet CRC: %d %s Left %d Right %d Time: %d" % (calc_crc, str(type(calc_crc)), crc, str(type(crc)), x1, x2, d_time))
                 elif data == 0x02:
                     packet = self.ser.read(4)
                     batt, crc = unpack('HH', packet)
