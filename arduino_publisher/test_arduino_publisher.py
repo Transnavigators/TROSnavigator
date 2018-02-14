@@ -26,8 +26,7 @@ class TestArduinoPublisher(unittest.TestCase):
         stop_cmd = b'\xEE\x00'
         stop_crc = CRC16().calculate(bytes(stop_cmd))
         packet = pack('2si', stop_cmd, stop_crc)
-        ser.write(stop_cmd)
-        ser.write(stop_crc)
+        ser.write(packet)
         ser.stop()
         proc.kill()
 
