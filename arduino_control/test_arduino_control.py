@@ -27,7 +27,7 @@ class TestArduinoControl(unittest.TestCase):
 
         rospy.sleep(2.)
         print proc.communicate()
-        
+
         # set up serial
         baud_rate = 115200
         port_name = '/tmp/ttyTST1'

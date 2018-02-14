@@ -85,7 +85,7 @@ class ArduinoPublisher:
 
         # make sure the port is closed on exit
         rospy.on_shutdown(self.close_port)
-    
+
         x = 0.0
         y = 0.0
         th = 0.0
@@ -170,7 +170,8 @@ class ArduinoPublisher:
 
                         last_time = current_time
                     else:
-                        rospy.logwarn("Packet didn't pass checksum, something is wrong with Arduino->Pi communication.")
+                        rospy.logwarn(
+                            "Packet didn't pass checksum, something is wrong with Arduino->Pi communication. Calculated CRC: %d %s Packet CRC: %d %s" % (calc_crc, str(type(calc_crc))), crc, str(type(crc)))
                 elif data == 0x02:
                     packet = self.ser.read(4)
                     batt, crc = unpack('HH', packet)
