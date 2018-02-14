@@ -54,7 +54,7 @@ class TestArduinoControl(unittest.TestCase):
                 data = ser.read()
                 if data == b'\x00':
                     data = ser.read(2)
-                    self.assertEquals(data, stop_crc, "STOP FAILED")
+                    self.assertEquals(data, bytes(stop_crc), "STOP FAILED")
                     break
         proc.kill()
 

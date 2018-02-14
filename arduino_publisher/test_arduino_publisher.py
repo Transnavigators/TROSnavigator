@@ -4,6 +4,7 @@ import subprocess
 import rospy
 import serial
 from PyCRC.CRC16 import CRC16
+from struct import pack
 
 package_name = 'arduino_publisher'
 test_name = 'arduino_publisher'
@@ -24,6 +25,7 @@ class TestArduinoPublisher(unittest.TestCase):
         ser = serial.Serial(port='/tmp/ttyTST0', baudrate=115200, timeout=0, rtscts=True, dsrdtr=True)
         stop_cmd = b'\xEE\x00'
         stop_crc = CRC16().calculate(bytes(stop_cmd))
+        packet = pack('2si', stop_cmd, stop_crc)
         ser.write(stop_cmd)
         ser.write(stop_crc)
         ser.stop()
