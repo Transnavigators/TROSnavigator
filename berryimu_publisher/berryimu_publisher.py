@@ -16,7 +16,7 @@ class BerryIMUPublisher:
         self.M_PI = 3.14159265358979323846
         self.ACC_TO_MS2 = (1.0 / (0.101972 * 2 ** 11))  # 2^15 = 16G, 1G ~= 9.8m/s^2
         self.G_GAIN = 0.070  # [deg/s/LSB]  If you change the dps for gyro, you need to update this value accordingly
-        self.GYRO_TO_RADS = self.G_GAIN / self.RAD_TO_DEG
+        self.GYRO_TO_RADS = 1 / self.RAD_TO_DEG
         self.pub = rospy.Publisher("imu_data", Imu, queue_size=1000)
 
         if rospy.has_param("~poll_rate"):
