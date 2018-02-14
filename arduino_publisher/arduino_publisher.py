@@ -76,7 +76,6 @@ class ArduinoPublisher:
 
     # start node
     def begin(self):
-    
 
         # Change how ports are configured if in a docker container with virtual ports
         if 'INSIDEDOCKER' in os.environ:
