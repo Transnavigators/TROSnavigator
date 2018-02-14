@@ -1,6 +1,6 @@
 <launch>
     <node name="arduino_publisher" pkg="arduino_publisher" type="arduino_publisher.py">
-        <param name="port" value="/dev/ttyTST1"/>
+        <param name="port" value="/tmp/ttyTST1"/>
         <param name="poll_rate" value="1000"/>
         <param name="battery_capacity" value="35"/>
     </node>
