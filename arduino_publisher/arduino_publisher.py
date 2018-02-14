@@ -102,11 +102,12 @@ class ArduinoPublisher:
                 data = self.ser.read()
                 if data == b'\x01':
                     # Read 3 32bit ints and a 16bit CRC
+                    # 3*4+2=14
                     packet = self.ser.read(14)
                     x1, x2, d_time, crc = unpack('iiIH', packet)
 
                     # Calculate the CRC to verify packet integrity
-                    calc_crc = CRC16().calculate(packet[0:11])
+                    calc_crc = CRC16().calculate(packet[0:12])
                     if calc_crc == crc:
                         # Display the time frame each packet represents vs the node's refresh rate
                         current_time = rospy.Time.now()
@@ -171,7 +172,7 @@ class ArduinoPublisher:
                         last_time = current_time
                     else:
                         rospy.logwarn(
-                            "Packet didn't pass checksum, something is wrong with Arduino->Pi communication. Calculated CRC: %d %s Packet CRC: %d %s" % (calc_crc, str(type(calc_crc)), crc, str(type(crc))))
+                            "Packet didn't pass checksum. Calculated CRC: %d %s Packet CRC: %d %s Left %d Right %d Time: %d" % (calc_crc, str(type(calc_crc)), crc, str(type(crc))), x1, x2, d_time)
                 elif data == 0x02:
                     packet = self.ser.read(4)
                     batt, crc = unpack('HH', packet)
