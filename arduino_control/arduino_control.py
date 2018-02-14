@@ -51,11 +51,11 @@ class ArduinoController:
         vel_r = int(lin_vel + ang_vel)
         if msg.linear.x == 0 and msg.linear.y == 0 and msg.linear.z == 0 and msg.angular.x == 0 and msg.angular.y == 0 and msg.angular.z == 0:
             # Stop
-            packet = pack(self.STOP_CMD, self.STOP_CRC)
+            packet = pack('2s2s', self.STOP_CMD, self.STOP_CRC)
         else:
-            packet = pack(self.GO_CMD, vel_l, vel_r)
+            packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
             calc_crc = CRC16().calculate(bytes(packet))
-            packet = pack(self.GO_CMD, vel_l, vel_r, calc_crc)
+            packet = pack('2sii', self.GO_CMD, vel_l, vel_r, calc_crc)
         # Write packet to Arduino's serial port
         self.ser.write(packet)
 

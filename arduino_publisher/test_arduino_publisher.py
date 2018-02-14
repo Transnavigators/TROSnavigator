@@ -21,9 +21,9 @@ class TestArduinoPublisher(unittest.TestCase):
         cmd = ['/usr/bin/socat', '-d', '-d', 'pty,link=/tmp/ttyTST0', 'pty,link=/tmp/ttyTST1']
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         rospy.sleep(1.)
-        ser = serial.Serial(port='/tmp/ttyTST0', baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+        ser = serial.Serial(port='/tmp/ttyTST0', baudrate=115200, timeout=0, rtscts=True, dsrdtr=True)
         stop_cmd = b'\xEE\x00'
-        stop_crc = CRC16().calculate(bytes(self.STOP_CMD))
+        stop_crc = CRC16().calculate(bytes(stop_cmd))
         ser.write(stop_cmd)
         ser.write(stop_crc)
         ser.stop()
