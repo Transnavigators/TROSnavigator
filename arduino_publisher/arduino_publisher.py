@@ -5,6 +5,7 @@ import serial
 import tf
 import math
 import os
+import binascii
 from struct import pack, unpack
 from PyCRC.CRC16 import CRC16
 from nav_msgs.msg import Odometry
@@ -105,10 +106,9 @@ class ArduinoPublisher:
                     # 3*4+2=14
                     packetData = self.ser.read(14)
                     x1, x2, d_time, crc = unpack('iiIH', packetData)
-                    packet = bytearray(b'\xEE\x01')
-                    packet.append(packetData)
+                    packet = bytearray(b'\xEE\x01') + bytearray(packetData)
                     # Calculate the CRC to verify packet integrity
-                    calc_crc = CRC16().calculate(packet[0:14])
+                    calc_crc = CRC16().calculate(bytes(packet[0:14]))
                     if calc_crc == crc:
                         # Display the time frame each packet represents vs the node's refresh rate
                         current_time = rospy.Time.now()
@@ -173,7 +173,7 @@ class ArduinoPublisher:
                         last_time = current_time
                     else:
                         rospy.logwarn(
-                            "Packet didn't pass checksum. Calculated CRC: %d %s Packet CRC: %d %s Left %d Right %d Time: %d" % (calc_crc, str(type(calc_crc)), crc, str(type(crc)), x1, x2, d_time))
+                            "Packet didn't pass checksum. Packet: %s CalcCRC: %d PacketCRC: %d Left %d Right %d Time: %d" % (binascii.hexlify(packet),calc_crc, crc, x1, x2, d_time))
                 elif data == 0x02:
                     packet = self.ser.read(4)
                     batt, crc = unpack('HH', packet)
