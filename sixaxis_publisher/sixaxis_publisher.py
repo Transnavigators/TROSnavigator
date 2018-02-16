@@ -47,7 +47,7 @@ class SixaxisPublisher:
         if rospy.has_param("~rate"):
             self.rate = rospy.Rate(int(rospy.get_param("~rate")))
         else:
-            self.rate = rospy.Rate(300)
+            self.rate = rospy.Rate(100)
 
     # Some helpers
     def scale(self, val, src, dst):
@@ -118,17 +118,19 @@ class SixaxisPublisher:
     def begin_direct_control(self):
         if hasattr(self, 'gamepad'):
             used_key = False
+            x_vel = 0
+            rot_vel = 0
             while not rospy.is_shutdown():
                 event = self.gamepad.read_one()
                 if event is not None:
-                    x_vel = 0
-                    rot_vel = 0
                     stop = False
                     # rospy.loginfo("Received joystick event: "+str(event))
                     # TODO: test if this works or only goes in one direction
                     # Analog stick moved a sufficient amount
                     mag = abs(event.value-128)
-                    if event.type == 3 and (mag > 10 or not used_key):
+                    if event.type == 3 and not used_key:
+                        #if event.code not in [59,60,61]:                        
+                            #rospy.loginfo("Analog key:"+str(event))
                         if event.code == 5:
                             # moving forward
                             if(mag > 10):
@@ -174,19 +176,22 @@ class SixaxisPublisher:
                                 used_key = True
                         if event.value == 0:
                             stop = True
-                            used_key = True
+                            used_key = False
                     # Construct message if valid command was read
+                    if stop:
+                        x_vel = 0
+                        rot_vel = 0
                     if x_vel != 0 or rot_vel != 0 or stop:
                         twist = Twist()
                         twist.linear = Vector3(x_vel, 0, 0)
                         twist.angular = Vector3(0, 0, rot_vel)
                         self.pub.publish(twist)
 
-                        if stop:
-                            rospy.loginfo("Sent stop")
-                        else:
-                            rospy.loginfo("Sent command")
-                        self.rate.sleep()
+                        #if stop:
+                            #rospy.loginfo("Sent stop")
+                        #else:
+                            #rospy.loginfo("Sent command")
+                self.rate.sleep()
 
 if __name__ == "__main__":
     try:
