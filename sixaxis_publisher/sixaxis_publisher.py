@@ -175,11 +175,10 @@ class SixaxisPublisher:
                         twist.angular = Vector3(0, 0, rot_vel)
                         self.pub.publish(twist)
                         rospy.loginfo("Sent command")
+                        self.rate.sleep()
                     if stop:
                         rospy.loginfo("Sent stop")
                         self.rate.sleep()
-                    else:
-                        rospy.logfatal("Exiting...")
 
 if __name__ == "__main__":
     try:
