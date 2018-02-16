@@ -37,16 +37,13 @@ class Alexa:
         self.certificatePath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.cert.pem'
         self.privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.private.key'
         self.clientId = 'Pi'
-        self.topic = '/get/accepted'
-        self.deviceShadowHandler = None
+        self.topic = '/Transnavigators/Pi'
 
-        # callback for receiving AWS message
-
-    def callback(self, payload, response_status, token):
-        data = json.loads(payload)['state']
-
-        # Delete shadow JSON doc
-        self.deviceShadowHandler.shadowDelete(self.callback_delete, 5)
+    # callback for receiving AWS message
+    def callback(client, userdata, message):
+        # extract data
+        data_string = message.payload.decode("utf8").replace("'",'"')
+        data_json = json.loads(data_string)
 
         # publish data
         dataStr = json.dumps(data)
@@ -102,15 +99,6 @@ class Alexa:
 
         self.action_client.send_goal(goal)
 
-    # callback for removing message
-    def callback_delete(self, payload, responseStatus, token):
-        if responseStatus == "accepted":
-            pass
-        if responseStatus == "timeout":
-            print("Delete request " + token + " time out")
-        if responseStatus == "rejected":
-            print("Delete request " + token + " rejected")
-
     # sets up communication with AWS
     def begin(self):
 
@@ -122,23 +110,22 @@ class Alexa:
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
 
-        # Shadow Client
-        # Init AWSIoTMQTTClient
-        aws_iot_mqtt_shadow_client = AWSIoTMQTTShadowClient(self.clientId)
-        aws_iot_mqtt_shadow_client.configureEndpoint(self.host, 8883)
-        aws_iot_mqtt_shadow_client.configureCredentials(self.rootCAPath, self.privateKeyPath, self.certificatePath)
+        aws_iot_mqtt_client = AWSIoTMQTTClient(clientId)
+        aws_iot_mqtt_client.configureEndpoint(host, 8883)
+        aws_iot_mqtt_client.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
 
         # AWSIoTMQTTClient connection configuration
-        aws_iot_mqtt_shadow_client.configureAutoReconnectBackoffTime(1, 32, 20)
-        aws_iot_mqtt_shadow_client.configureConnectDisconnectTimeout(10)  # 10 sec
-        aws_iot_mqtt_shadow_client.configureMQTTOperationTimeout(5)  # 5 sec
+        aws_iot_mqtt_client.configureAutoReconnectBackoffTime(1, 32, 20)
+        aws_iot_mqtt_client.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
+        aws_iot_mqtt_client.configureDrainingFrequency(2)  # Draining: 2 Hz
+        aws_iot_mqtt_client.configureConnectDisconnectTimeout(10)  # 10 sec
+        aws_iot_mqtt_client.configureMQTTOperationTimeout(5)  # 5 sec
 
-        aws_iot_mqtt_shadow_client.connect()
-        self.deviceShadowHandler = aws_iot_mqtt_shadow_client.createShadowHandlerWithName("Pi", True)
-        self.deviceShadowHandler.shadowRegisterDeltaCallback(self.callback)
+        # Connect and subscribe to AWS IoT
+        aws_iot_mqtt_client.connect()
+        aws_iot_mqtt_client.subscribe(topic, 1, callback)
 
         self.action_client.wait_for_server()
-        self.deviceShadowHandler.shadowDelete(self.callback_delete, 5)
 
         # wait
         rospy.spin()
