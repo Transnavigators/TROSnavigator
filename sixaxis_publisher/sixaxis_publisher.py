@@ -127,15 +127,22 @@ class SixaxisPublisher:
                     # rospy.loginfo("Received joystick event: "+str(event))
                     # TODO: test if this works or only goes in one direction
                     # Analog stick moved a sufficient amount
-                    if event.type == 3 and not used_key:
+                    mag = abs(event.value-128)
+                    if event.type == 3 and (mag > 10 or not used_key):
                         if event.code == 5:
                             # moving forward
-                            x_vel = -self.scale_stick(event.value) * self.MAX_SPEED
+                            if(mag > 10):
+                                x_vel = -self.scale_stick(event.value) * self.MAX_SPEED
+                            else:
+                                x_vel = 0
                             #rospy.loginfo("Moving forward: " + str(x_vel))
                             used_key = False
                         elif event.code == 0:
                             # turning
-                            rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
+                            if(mag > 10):
+                                rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
+                            else:
+                                rot_vel = 0
                             #rospy.loginfo("Turning: " + str(rot_vel))
                             used_key = False
                     # Key presses
@@ -174,10 +181,11 @@ class SixaxisPublisher:
                         twist.linear = Vector3(x_vel, 0, 0)
                         twist.angular = Vector3(0, 0, rot_vel)
                         self.pub.publish(twist)
-                        rospy.loginfo("Sent command")
-                        self.rate.sleep()
-                    if stop:
-                        rospy.loginfo("Sent stop")
+
+                        if stop:
+                            rospy.loginfo("Sent stop")
+                        else:
+                            rospy.loginfo("Sent command")
                         self.rate.sleep()
 
 if __name__ == "__main__":
