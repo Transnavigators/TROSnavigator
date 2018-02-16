@@ -1,0 +1,246 @@
+<robot
+  name="FullPlatform">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0745063561130198 0.184363494853266 0.535269849567585"
+        rpy="0 0 0" />
+      <mass
+        value="0.217659776128559" />
+      <inertia
+        ixx="0.000182704982796443"
+        ixy="-1.74694139277066E-09"
+        ixz="1.6067207562699E-08"
+        iyy="0.000239666141330042"
+        iyz="-2.42384428835959E-05"
+        izz="0.000118133458469848" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="fl_link">
+    <inertial>
+      <origin
+        xyz="-0.0238026118791986 0.0521088826881013 4.90165898148209E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.198241985865067" />
+      <inertia
+        ixx="0.00022078910751661"
+        ixy="7.6271150311338E-05"
+        ixz="-9.53658664219765E-11"
+        iyy="0.000140244054480292"
+        iyz="9.77086475963436E-11"
+        izz="0.000302212208754132" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/fl_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/fl_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="fl_joint"
+    type="fixed">
+    <origin
+      xyz="-0.038271 -0.24307 0.25699"
+      rpy="-1.5708 -6.123E-17 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="fl_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="fr_link">
+    <inertial>
+      <origin
+        xyz="-0.0238026118791986 0.0521088826881013 4.90165896760431E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.198241985865067" />
+      <inertia
+        ixx="0.00022078910751661"
+        ixy="7.62711503113383E-05"
+        ixz="-9.53658665595123E-11"
+        iyy="0.000140244054480293"
+        iyz="9.77086476974012E-11"
+        izz="0.000302212208754134" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/fr_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/fr_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="fr_joint"
+    type="fixed">
+    <origin
+      xyz="0.18728 -0.24307 0.25699"
+      rpy="-1.5708 -6.123E-17 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="fr_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="bl_link">
+    <inertial>
+      <origin
+        xyz="-0.0238026118791986 0.0521088826881013 4.90165899535988E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.198241985865066" />
+      <inertia
+        ixx="0.00022078910751661"
+        ixy="7.62711503113382E-05"
+        ixz="-9.53658662682932E-11"
+        iyy="0.000140244054480292"
+        iyz="9.77086474904065E-11"
+        izz="0.000302212208754133" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/bl_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/bl_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="bl_joint"
+    type="fixed">
+    <origin
+      xyz="-0.2303 -0.76377 0.25699"
+      rpy="-1.5708 -6.123E-17 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="bl_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="br_link">
+    <inertial>
+      <origin
+        xyz="-0.0238026118791987 0.0521088826881013 4.90165902311546E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.198241985865066" />
+      <inertia
+        ixx="0.00022078910751661"
+        ixy="7.62711503113383E-05"
+        ixz="-9.53658664309667E-11"
+        iyy="0.000140244054480292"
+        iyz="9.77086475365698E-11"
+        izz="0.000302212208754133" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/br_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://FullPlatform/meshes/br_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="br_joint"
+    type="fixed">
+    <origin
+      xyz="0.3793 -0.76377 0.256
