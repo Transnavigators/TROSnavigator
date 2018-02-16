@@ -53,9 +53,11 @@ class ArduinoController:
             # Stop
             packet = pack('2s2s', self.STOP_CMD, self.STOP_CRC)
         else:
-            packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
-            calc_crc = CRC16().calculate(bytes(packet))
-            packet = pack('2sii', self.GO_CMD, vel_l, vel_r, calc_crc)
+            data_packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
+            calc_crc = CRC16().calculate(bytes(data_packet))
+            new_packet = bytearray(data_packet)
+            new_packet.append(calc_crc)
+            packet = bytes(new_packet)
         # Write packet to Arduino's serial port
         self.ser.write(packet)
 

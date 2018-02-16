@@ -108,7 +108,7 @@ class ArduinoPublisher:
                     x1, x2, d_time, crc = unpack('iiIH', packetData)
                     packet = bytearray(b'\xEE\x01') + bytearray(packetData)
                     # Calculate the CRC to verify packet integrity
-                    calc_crc = CRC16().calculate(bytes(packet[0:14]))
+                    calc_crc = CRC16().calculate(bytes(packet[0:13]))
                     if calc_crc == crc:
                         # Display the time frame each packet represents vs the node's refresh rate
                         current_time = rospy.Time.now()
