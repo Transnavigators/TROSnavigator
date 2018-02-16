@@ -47,7 +47,7 @@ class SixaxisPublisher:
         if rospy.has_param("~rate"):
             self.rate = rospy.Rate(int(rospy.get_param("~rate")))
         else:
-            self.rate = rospy.Rate(144)
+            self.rate = rospy.Rate(300)
 
     # Some helpers
     def scale(self, val, src, dst):
@@ -74,7 +74,7 @@ class SixaxisPublisher:
                     new_y = 0
                     new_rot = 0
                     stop = False
-                    rospy.loginfo("Received joystick event: "+str(event))
+                    rospy.loginfo("Received joystick event: " + str(event))
                     # TODO: optionally publish to cmd_vel topic instead and bypass move_base
                     # Event key mapping can be found here http://www.ev3dev.org/docs/tutorials/using-ps3-sixaxis/
                     # Analog stick moved
@@ -84,7 +84,7 @@ class SixaxisPublisher:
                             new_x = 0.1
                         elif event.code == 0:
                             # turning
-                            new_rot = self.scale_stick(event.value)*math.pi/32
+                            new_rot = self.scale_stick(event.value) * math.pi / 32
                     # Key presses
                     elif event.type == 1:
                         if event.code == 293 and event.value == 0:
@@ -117,7 +117,7 @@ class SixaxisPublisher:
 
     def begin_direct_control(self):
         if hasattr(self, 'gamepad'):
-            usedKey = False
+            used_key = False
             while not rospy.is_shutdown():
                 event = self.gamepad.read_one()
                 if event is not None:
@@ -127,47 +127,47 @@ class SixaxisPublisher:
                     # rospy.loginfo("Received joystick event: "+str(event))
                     # TODO: test if this works or only goes in one direction
                     # Analog stick moved a sufficient amount
-                    if event.type == 3 and not usedKey:
+                    if event.type == 3 and not used_key:
                         if event.code == 5:
                             # moving forward
                             x_vel = -self.scale_stick(event.value) * self.MAX_SPEED
-                            rospy.loginfo("Moving forward: "+str(x_vel))
-                            usedKey = False
+                            #rospy.loginfo("Moving forward: " + str(x_vel))
+                            used_key = False
                         elif event.code == 0:
                             # turning
                             rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
-                            rospy.loginfo("Turning: "+str(rot_vel))
-                            usedKey = False
+                            #rospy.loginfo("Turning: " + str(rot_vel))
+                            used_key = False
                     # Key presses
                     elif event.type == 1:
                         if event.value == 1:
-		                    if event.code == 293:
-		                        # turn right
-		                        rot_vel = -self.MAX_ROT_SPEED / 2
-		                        rospy.loginfo("Turning right key: "+str(event.value))
-                                usedKey = True
-		                    elif event.code == 292:
-		                        # move forward
-		                        x_vel = self.MAX_SPEED / 2
-		                        rospy.loginfo("Moving forward key: "+str(event.value))
-                                usedKey = True
-		                    elif event.code == 294:
-		                        # move back
-		                        x_vel = -self.MAX_SPEED / 2
-		                        rospy.loginfo("Moving backwards key: "+str(event.value))
-                                usedKey = True
-		                    elif event.code == 295:
-		                        # turn left
-		                        rot_vel = self.MAX_ROT_SPEED / 2
-		                        rospy.loginfo("Turning left key: "+str(event.value))
-                                usedKey = True
-		                    elif event.code == 302:
-		                        # stop
-		                        stop = True
-                                usedKey = True
+                            if event.code == 293:
+                                # turn right
+                                rot_vel = -self.MAX_ROT_SPEED / 2
+                                #rospy.loginfo("Turning right key: " + str(event.value))
+                                used_key = True
+                            elif event.code == 292:
+                                # move forward
+                                x_vel = self.MAX_SPEED / 2
+                                #rospy.loginfo("Moving forward key: " + str(event.value))
+                                used_key = True
+                            elif event.code == 294:
+                                # move back
+                                x_vel = -self.MAX_SPEED / 2
+                                #rospy.loginfo("Moving backwards key: " + str(event.value))
+                                used_key = True
+                            elif event.code == 295:
+                                # turn left
+                                rot_vel = self.MAX_ROT_SPEED / 2
+                                #rospy.loginfo("Turning left key: " + str(event.value))
+                                used_key = True
+                            elif event.code == 302:
+                                # stop
+                                stop = True
+                                used_key = True
                         if event.value == 0:
                             stop = True
-                            usedKey = True
+                            used_key = True
                     # Construct message if valid command was read
                     if x_vel != 0 or rot_vel != 0 or stop:
                         twist = Twist()
@@ -176,10 +176,10 @@ class SixaxisPublisher:
                         self.pub.publish(twist)
                         rospy.loginfo("Sent command")
                     if stop:
-						rospy.loginfo("Sent stop")
-                self.rate.sleep()
-        else:
-            rospy.logfatal("Exiting...")
+                        rospy.loginfo("Sent stop")
+                        self.rate.sleep()
+                    else:
+                        rospy.logfatal("Exiting...")
 
 if __name__ == "__main__":
     try:
