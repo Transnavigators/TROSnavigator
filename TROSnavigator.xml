@@ -33,9 +33,7 @@
         <param name="max_speed" value="2.2"/>
         <param name="max_reverse_speed" value="0.5"/>
         <param name="max_rot_speed" value="1.75"/>
-        <param name="rate" value="120"/>
-        <param name="direct_control" value="false"/>
-    </node>
+        <param name="joystick_threshold" value="5"/>
     <node name="robot_pose_ekf" pkg="robot_pose_ekf" type="robot_pose_ekf">
         <param name="output_frame" value="odom"/>
         <param name="freq" value="1000"/>
