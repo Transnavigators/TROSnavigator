@@ -5,13 +5,13 @@ import evdev
 import math
 import actionlib
 import sys
-from asyncore import file_dispatcher
+import asyncore
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
 
 
-class SixaxisPublisher(file_dispatcher):
+class SixaxisPublisher(asyncore.file_dispatcher):
     def __init__(self):
         # set up node
         rospy.init_node('sixaxis_pub', anonymous=True)
@@ -28,7 +28,7 @@ class SixaxisPublisher(file_dispatcher):
             sys.exit(1)
         else:
             self.gamepad = evdev.InputDevice(ps3dev)
-            file_dispatcher.__init__(self, self.gamepad)
+            asyncore.file_dispatcher.__init__(self, self.gamepad)
             rospy.loginfo("Found the PS3 controller.")
 
         # Either publish velocities to motor or send actions to move_base for assisted driving
@@ -75,7 +75,7 @@ class SixaxisPublisher(file_dispatcher):
         return self.scale(value, (0, 255), (-1, 1))
 
     def recv(self, ign=None):
-        return self.device.read()
+        return self.gamepad.read()
 
     def handle_read(self):
         for event in self.recv():
@@ -197,6 +197,6 @@ class SixaxisPublisher(file_dispatcher):
 if __name__ == "__main__":
     try:
         sp = SixaxisPublisher()
-        rospy.spin()
+        asyncore.loop()
     except rospy.ROSInterruptException:
         pass
