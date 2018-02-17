@@ -6,7 +6,8 @@ import tf
 import math
 import os
 import binascii
-from struct import pack, unpack
+import asyncore
+from struct import unpack
 from PyCRC.CRC16 import CRC16
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3

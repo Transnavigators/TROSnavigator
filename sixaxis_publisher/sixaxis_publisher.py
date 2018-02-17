@@ -2,10 +2,12 @@
 
 import rospy
 import evdev
-import math
 import actionlib
 import sys
 import asyncore
+import pyaudio
+import wave
+import rospkg
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
@@ -30,6 +32,11 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             self.gamepad = evdev.InputDevice(ps3dev)
             asyncore.file_dispatcher.__init__(self, self.gamepad)
             rospy.loginfo("Found the PS3 controller.")
+
+        rospack = rospkg.RosPack()
+        self.wav = wave.open(rospack.get_path('sixaxis_publisher') + '/dixie-horn_daniel-simion.wav')
+        self.audio = pyaudio.PyAudio()
+        self.chunk = 1024
 
         # Either publish velocities to motor or send actions to move_base for assisted driving
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
@@ -129,8 +136,17 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                         # x key, stop
                         stop = True
                         self.used_key = True
-                    # elif event.code == 301:
-                    # TODO: horn
+                    elif event.code == 301:
+                        stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
+                                                 channels=self.wav.getnchannels(),
+                                                 rate=self.wav.getframerate(),
+                                                 output=True)
+                        data = self.wav.readframes(self.chunk)
+                        while data:
+                            stream.write(data)
+                            data = self.wav.readframes(self.chunk)
+                        stream.stop_stream()
+                        stream.close()
                 if event.value == 0:
                     # Key up press
                     stop = True
@@ -144,59 +160,61 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                 twist.linear = Vector3(self.x_vel, 0, 0)
                 twist.angular = Vector3(0, 0, self.rot_vel)
                 self.pub.publish(twist)
-    #
-    # def begin(self):
-    #     if hasattr(self, 'gamepad'):
-    #         while not rospy.is_shutdown():
-    #             event = self.gamepad.read_one()
-    #             if event is not None:
-    #                 new_x = 0
-    #                 new_y = 0
-    #                 new_rot = 0
-    #                 stop = False
-    #                 # Event key mapping can be found here http://www.ev3dev.org/docs/tutorials/using-ps3-sixaxis/
-    #                 # Analog stick moved
-    #                 if event.type == 3:
-    #                     if event.code == 5:
-    #                         # moving forward
-    #                         new_x = 0.1
-    #                     elif event.code == 0:
-    #                         # turning
-    #                         new_rot = self.scale_stick(event.value) * math.pi / 32
-    #                 # Key presses
-    #                 elif event.type == 1:
-    #                     if event.code == 293 and event.value == 0:
-    #                         # turn right
-    #                         new_rot = -math.pi / 32
-    #                     elif event.code == 292 and event.value == 0:
-    #                         # move forward
-    #                         new_x = 0.1
-    #                     elif event.code == 294 and event.value == 0:
-    #                         # turn right
-    #                         new_rot = -math.pi / 32
-    #                     elif event.code == 295 and event.value == 0:
-    #                         # turn left
-    #                         new_rot = math.pi / 32
-    #                     if event.code == 302 and event.value == 1:
-    #                         # stop
-    #                         stop = True
-    #                 # Construct message if valid command was read
-    #                 if new_x != 0 or new_y != 0 or new_rot != 0 or stop:
-    #                     goal = MoveBaseGoal()
-    #                     goal.target_pose.header.frame_id = "base_link"
-    #                     goal.target_pose.header.stamp = rospy.get_time()
-    #                     goal.target_pose.pose.position = Point(new_x, new_y, 0)
-    #                     quat = quaternion_from_euler(0, 0, new_rot)
-    #                     goal.target_pose.pose.orientation = Quaternion(quat[0], quat[1], quat[2], quat[3])
-    #                     self.action_client.send_goal(goal)
-    #             self.rate.sleep()
-    #     else:
-    #         rospy.logfatal("Exiting...")
+                #
+                # def begin(self):
+                #     if hasattr(self, 'gamepad'):
+                #         while not rospy.is_shutdown():
+                #             event = self.gamepad.read_one()
+                #             if event is not None:
+                #                 new_x = 0
+                #                 new_y = 0
+                #                 new_rot = 0
+                #                 stop = False
+                #                 # Event key mapping can be found here http://www.ev3dev.org/docs/tutorials/using-ps3-sixaxis/
+                #                 # Analog stick moved
+                #                 if event.type == 3:
+                #                     if event.code == 5:
+                #                         # moving forward
+                #                         new_x = 0.1
+                #                     elif event.code == 0:
+                #                         # turning
+                #                         new_rot = self.scale_stick(event.value) * math.pi / 32
+                #                 # Key presses
+                #                 elif event.type == 1:
+                #                     if event.code == 293 and event.value == 0:
+                #                         # turn right
+                #                         new_rot = -math.pi / 32
+                #                     elif event.code == 292 and event.value == 0:
+                #                         # move forward
+                #                         new_x = 0.1
+                #                     elif event.code == 294 and event.value == 0:
+                #                         # turn right
+                #                         new_rot = -math.pi / 32
+                #                     elif event.code == 295 and event.value == 0:
+                #                         # turn left
+                #                         new_rot = math.pi / 32
+                #                     if event.code == 302 and event.value == 1:
+                #                         # stop
+                #                         stop = True
+                #                 # Construct message if valid command was read
+                #                 if new_x != 0 or new_y != 0 or new_rot != 0 or stop:
+                #                     goal = MoveBaseGoal()
+                #                     goal.target_pose.header.frame_id = "base_link"
+                #                     goal.target_pose.header.stamp = rospy.get_time()
+                #                     goal.target_pose.pose.position = Point(new_x, new_y, 0)
+                #                     quat = quaternion_from_euler(0, 0, new_rot)
+                #                     goal.target_pose.pose.orientation = Quaternion(quat[0], quat[1], quat[2], quat[3])
+                #                     self.action_client.send_goal(goal)
+                #             self.rate.sleep()
+                #     else:
+                #         rospy.logfatal("Exiting...")
 
 
 if __name__ == "__main__":
     try:
         sp = SixaxisPublisher()
-        asyncore.loop()
+        while not rospy.is_shutdown():
+            asyncore.loop(count=1)
     except rospy.ROSInterruptException:
         pass
+    asyncore.close_all()
