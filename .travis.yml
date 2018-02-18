@@ -39,7 +39,6 @@ script:
     cd $CI_SOURCE_PATH &&
     catkin_init_workspace;
     cd .. &&
-    source $CI_DEVEL_PATH/setup.bash &&
     catkin_make &&
     export INSIDEDOCKER=true &&
     cd $CI_SOURCE_PATH &&
