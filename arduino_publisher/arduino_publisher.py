@@ -93,7 +93,7 @@ class ArduinoPublisher:
         if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=1, rtscts=True, dsrdtr=True)
         else:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=1)
 
         # make sure the port is closed on exit
         rospy.on_shutdown(self.close_port)
