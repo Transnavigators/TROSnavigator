@@ -43,7 +43,9 @@ script:
     export INSIDEDOCKER=true &&
     cd $CI_SOURCE_PATH &&
     source $CI_DEVEL_PATH/setup.bash &&
-    timeout 30s roslaunch TROSnavigator.xml"
+    timeout 30s roslaunch TROSnavigator.xml ||
+    cd .. &&
+    catkin_make run_tests && catkin_test_results"
 
 notifications:
     email: false
