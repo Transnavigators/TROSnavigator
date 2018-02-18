@@ -42,11 +42,10 @@ class Alexa:
     def callback(self, client, userdata, message):
         # extract data
         data_string = message.payload.decode("utf8").replace("'",'"')
-        data_json = json.loads(data_string)
+        rospy.loginfo(data_string)
+        data = json.loads(data_string)
 
         # publish data
-        dataStr = json.dumps(data)
-        rospy.loginfo(dataStr)
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "base_link"
         goal.target_pose.header.stamp = rospy.Time.now()
