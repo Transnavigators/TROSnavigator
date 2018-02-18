@@ -23,6 +23,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_move_forward(self):
+        global POSE_LIST
         self.done = False
         # set up aws iot
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
@@ -44,6 +45,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         
         
         POSE_LIST.append(pose)
+        
         message = json.dumps({"type": "forward"})
         aws_iot_mqtt_client.publish(topic, message, 1)
 
@@ -82,6 +84,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         
         
     def callback(self, goal):
+        global POSE_LIST
         rospy.loginfo("In callback")
         for pose in POSE_LIST:
             if pose.position.x == goal.target_pose.pose.position.x \
