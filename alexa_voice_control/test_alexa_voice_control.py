@@ -27,7 +27,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         aws_iot_mqtt_client.publish(topic, message, 1)
 
         time.sleep(10)
-        self.assertEqual(self.done, "Timeout")
+        self.assertTrue(self.done)
         
     def callback(self, msg):
         rospy.log("In callback")
