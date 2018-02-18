@@ -4,7 +4,7 @@
         <param name="rootCAPath" value="/Certificates/root-CA.crt"/>
         <param name="certificatePath" value="/Certificates/Pi.cert.pem"/>
         <param name="privateKeyPath" value="/Certificates/Pi.private.key"/>
-        <param name="clientId" value="Pi"/>
+        <param name="clientId" value="test_pi_listener"/>
         <param name="topic" value="/Transnavigators/Pi"/>
         <param name="user_tag_id" value="1001"/>
     </node>
@@ -13,7 +13,7 @@
         <param name="rootCAPath" value="/Certificates/root-CA.crt"/>
         <param name="certificatePath" value="/Certificates/Pi.cert.pem"/>
         <param name="privateKeyPath" value="/Certificates/Pi.private.key"/>
-        <param name="clientId" value="test_pi"/>
+        <param name="clientId" value="test_pi_publisher"/>
         <param name="topic" value="/Transnavigators/Pi"/>
         <param name="user_tag_id" value="1001"/>
     </test>

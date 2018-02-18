@@ -73,13 +73,16 @@ class TestAlexaVoiceControl(unittest.TestCase):
 
         # Connect to AWS IoT
         self.aws_iot_mqtt_client.connect()
+        
+        
+        
         # test forward
         self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
         message = json.dumps({"type" : "forward"})
         self.aws_iot_mqtt_client.publish(self.topic, message, 1)
         while self.result == False:
-            pass
+            time.sleep(1)
         sub.unregister()
         
         
@@ -91,7 +94,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         message = json.dumps({"type" : "stop"})
         self.aws_iot_mqtt_client.publish(self.topic, message, 1)
         while self.result == False:
-            pass
+            time.sleep(1)
         sub.unregister()
         
     def move_forward_callback(self, msg):
