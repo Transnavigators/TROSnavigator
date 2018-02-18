@@ -167,20 +167,20 @@ class ArduinoPublisher:
 
                             # TODO: measure covariance with experiment + statistics
                             # This says position estimate is accurate
-                            msg.pose.covariance = {99999, 0, 0, 0, 0, 0,  # covariance on gps_x
+                            msg.pose.covariance = [99999, 0, 0, 0, 0, 0,  # covariance on gps_x
                                                    0, 99999, 0, 0, 0, 0,  # covariance on gps_y
                                                    0, 0, 99999, 0, 0, 0,  # covariance on gps_z
                                                    0, 0, 0, 99999, 0, 0,  # large covariance on rot x
                                                    0, 0, 0, 0, 99999, 0,  # large covariance on rot y
-                                                   0, 0, 0, 0, 0, 99999}  # large covariance on rot z
+                                                   0, 0, 0, 0, 0, 99999]  # large covariance on rot z
 
                             # This says velocity estimate is accurate
-                            msg.twist.covariance = {99999, 0, 0, 0, 0, 0,  # covariance on gps_x
+                            msg.twist.covariance = [99999, 0, 0, 0, 0, 0,  # covariance on gps_x
                                                     0, 99999, 0, 0, 0, 0,  # covariance on gps_y
                                                     0, 0, 99999, 0, 0, 0,  # covariance on gps_z
                                                     0, 0, 0, 99999, 0, 0,  # large covariance on rot x
                                                     0, 0, 0, 0, 99999, 0,  # large covariance on rot y
-                                                    0, 0, 0, 0, 0, 99999}  # large covariance on rot z
+                                                    0, 0, 0, 0, 0, 99999]  # large covariance on rot z
 
                             self.pub.publish(msg)
 
