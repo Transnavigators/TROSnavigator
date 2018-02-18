@@ -25,7 +25,6 @@ class TestAlexaVoiceControl(unittest.TestCase):
         rospy.init_node('test_alexa', anonymous=True)        
         
         # set up aws iot
-        rospy.loginfo("Connecting to AWS")
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
         
         
@@ -93,6 +92,7 @@ if __name__ == '__main__':
 
     # Connect to AWS IoT
     aws_iot_mqtt_client.connect()
+    rospy.loginfo("Connecting to AWS")
     
     # run tests
     rostest.rosrun(package_name, test_name, TestAlexaVoiceControl)
