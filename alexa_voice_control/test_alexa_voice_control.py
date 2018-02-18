@@ -18,14 +18,12 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def test_one_equals_one(self):
         self.assertEquals(1, 1, "1!=1")
 
-    def test_alexa(self):
+    def test_move_forward(self):
         self.done = False
         # set up aws iot
-        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
+        # self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
         # start client
-
-
         rospy.sleep(3)
 
         # test forward
@@ -35,24 +33,32 @@ class TestAlexaVoiceControl(unittest.TestCase):
         rospy.sleep(3)
         self.assertTrue(self.done)
         
+    def test_stop(self):
+        self.done = False
+        # set up aws iot
+        # self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
+        # start client
+        rospy.sleep(3)
+
+        # test forward
+        message = json.dumps({"type": "stop"})
+        aws_iot_mqtt_client.publish(topic, message, 1)
+
+        rospy.sleep(3)
+        self.assertTrue(self.done)
+        
         
     def callback(self, goal):
         rospy.loginfo("In callback")
-        self.assertEqual(goal.target_pose.pose.position.x, 100000.0,"move_forward pose.x")
-        self.assertEqual(goal.target_pose.pose.position.y, 0.0,"move_forward pose.y")
-        self.assertEqual(goal.target_pose.pose.position.z, 0.0,"move_forward pose.z")
-        self.assertEqual(goal.target_pose.pose.orientation.x, 0.0,"move_forward orientation.x")
-        self.assertEqual(goal.target_pose.pose.orientation.y, 0.0,"move_forward orientation.y")
-        self.assertEqual(goal.target_pose.pose.orientation.z, 0.0,"move_forward orientation.z")
-        self.assertEqual(goal.target_pose.pose.orientation.w, 0.0,"move_forward orientation.w")
         self.done = True
-        self.action_server.set_succeeded()
 
 
 if __name__ == '__main__':
     import rostest
 
     rospy.init_node('test_alexa', anonymous=True)
+    
     # set up AWS constants
     if rospy.has_param("~host"):
         host = rospy.get_param("~host")
