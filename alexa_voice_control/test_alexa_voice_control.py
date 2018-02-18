@@ -46,7 +46,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.done = True
 
         
-    def stop_callback(self, msg):
+    # def stop_callback(self, msg):
         
         # self.assertEqual(msg.goal.pose.x, 0.0,"stop pose.x")
         # self.assertEqual(msg.goal.pose.y, 0.0,"stop pose.y")
