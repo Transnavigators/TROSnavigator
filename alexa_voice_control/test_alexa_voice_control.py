@@ -55,6 +55,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEqual(goal.target_pose.pose.orientation.y, 0.0,"move_forward orientation.y")
         self.assertEqual(goal.target_pose.pose.orientation.z, 0.0,"move_forward orientation.z")
         self.assertEqual(goal.target_pose.pose.orientation.w, 0.0,"move_forward orientation.w")
+        self.action_server.set_succeeded()
         self.done = True
 
 
