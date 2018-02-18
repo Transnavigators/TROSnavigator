@@ -25,7 +25,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
         message = json.dumps({"type" : "forward"})
-        self.aws_iot_mqtt_client.publish(self.topic, message, 1)
+        aws_iot_mqtt_client.publish(topic, message, 1)
         while self.result == False:
             rospy.loginfo("Waiting for info 1")
             time.sleep(1)
@@ -36,7 +36,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.stop_callback)
         message = json.dumps({"type" : "stop"})
-        self.aws_iot_mqtt_client.publish(self.topic, message, 1)
+        aws_iot_mqtt_client.publish(topic, message, 1)
         while self.result == False:
             rospy.loginfo("Waiting for info 2")
             time.sleep(1)
