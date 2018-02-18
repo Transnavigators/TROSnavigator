@@ -52,6 +52,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def callback(self, goal):
         rospy.loginfo("In callback")
         self.done = True
+        self.action_server.set_succeeded()
 
 
 if __name__ == '__main__':
