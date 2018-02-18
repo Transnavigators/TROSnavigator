@@ -142,7 +142,7 @@ class Alexa:
         aws_iot_mqtt_client.connect()
         aws_iot_mqtt_client.subscribe(self.topic, 1, self.callback)
 
-        rospy.loginfo("Connected to " + topic)
+        rospy.loginfo("Connected to " + self.topic)
         
         
         self.action_client.wait_for_server()
