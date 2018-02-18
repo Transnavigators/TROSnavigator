@@ -67,7 +67,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         
 if __name__ == '__main__':
     import rostest
-        rospy.init_node('test_alexa', anonymous=True)
+    rospy.init_node('test_alexa', anonymous=True)
 
     # set up AWS constants
     if rospy.has_param("~host"):
