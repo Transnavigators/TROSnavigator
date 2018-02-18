@@ -105,7 +105,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         assertEqual(msg.goal.pose.y, 0.0,"pose.y")
         assertEqual(msg.goal.pose.z, 0.0,"pose.z")
         assertEqual(msg.goal.orientation.x, 0.0,"orientation.x")
-        assertEqual(msg.goal.orientation.y 0.0,"orientation.y")
+        assertEqual(msg.goal.orientation.y, 0.0,"orientation.y")
         assertEqual(msg.goal.orientation.z, 0.0,"orientation.z")
         assertEqual(msg.goal.orientation.w, 0.0,"orientation.w")
         
