@@ -19,7 +19,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_alexa(self):
-            rospy.init_node('test_alexa', anonymous=True)
+        rospy.init_node('test_alexa', anonymous=True)
 
         # set up AWS constants
         if rospy.has_param("~host"):
