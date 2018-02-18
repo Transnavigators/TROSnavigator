@@ -8,11 +8,15 @@ import os
 import time
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import Pose
 
 package_name = 'alexa_voice_control'
 test_name = 'alexa_voice_control'
 package_name = 'test_alexa_voice_control'
 
+
+# list of all expected poses
+POSE_LIST = []
 
 class TestAlexaVoiceControl(unittest.TestCase):
     def test_one_equals_one(self):
@@ -27,6 +31,19 @@ class TestAlexaVoiceControl(unittest.TestCase):
         rospy.sleep(3)
 
         # test forward
+        
+        # create and add the expected pose
+        pose = Pose
+        pose.position.x = 100000
+        pose.position.y = 0
+        pose.position.z = 0
+        pose.orientation.x = 0
+        pose.orientation.y = 0
+        pose.orientation.z = 0
+        pose.orientation.w = 0
+        
+        
+        POSE_LIST.append(pose)
         message = json.dumps({"type": "forward"})
         aws_iot_mqtt_client.publish(topic, message, 1)
 
@@ -34,6 +51,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertTrue(self.done)
         
     def test_stop(self):
+        global POSE_LIST
         self.done = False
         # set up aws iot
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
@@ -41,8 +59,22 @@ class TestAlexaVoiceControl(unittest.TestCase):
         # start client
         rospy.sleep(3)
 
-        # test forward
-        message = json.dumps({"type": "asdf"})
+        # test stop
+        
+        # create and add the expected pose
+        pose = Pose
+        pose.position.x = 0
+        pose.position.y = 0
+        pose.position.z = 0
+        pose.orientation.x = 0
+        pose.orientation.y = 0
+        pose.orientation.z = 0
+        pose.orientation.w = 0
+        
+        
+        POSE_LIST.append(pose)
+        
+        message = json.dumps({"type": "stop"})
         aws_iot_mqtt_client.publish(topic, message, 1)
 
         rospy.sleep(3)
@@ -51,8 +83,17 @@ class TestAlexaVoiceControl(unittest.TestCase):
         
     def callback(self, goal):
         rospy.loginfo("In callback")
-        self.done = True
-        self.action_server.set_succeeded()
+        for pose in POSE_LIST:
+            if pose.position.x == goal.target_pose.pose.position.x \
+            and pose.position.y == goal.target_pose.pose.position.y \
+            and pose.position.z == goal.target_pose.pose.position.z \
+            and pose.orientation.x == goal.target_pose.pose.orientation.x \
+            and pose.orientation.y == goal.target_pose.pose.orientation.y \
+            and pose.orientation.z == goal.target_pose.pose.orientation.z \
+            and pose.orientation.w == goal.target_pose.pose.orientation.w:
+                POSE_LIST.remove(pose)
+                self.done = True
+                self.action_server.set_succeeded()
 
 
 if __name__ == '__main__':
