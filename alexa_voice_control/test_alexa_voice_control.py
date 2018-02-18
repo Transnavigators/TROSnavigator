@@ -46,6 +46,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
             self.topic = '/Transnavigators/Pi'
 
         
+        self.test = 1
+        
         
         # set up aws iot
         rospy.loginfo("Connecting to AWS")
