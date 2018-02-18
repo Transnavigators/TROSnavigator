@@ -25,7 +25,7 @@ class TestArduinoControl(unittest.TestCase):
         cmd = ['/usr/bin/socat', '-d', '-d', 'pty,link=/tmp/ttyTST0', 'pty,link=/tmp/ttyTST1']
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        rospy.sleep(2.)
+        rospy.sleep(4)
         print proc.communicate()
 
         # set up serial

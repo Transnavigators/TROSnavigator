@@ -1,6 +1,7 @@
 <launch>
     <node name="arduino_control" pkg="arduino_control" type="arduino_control.py">
         <param name="port" value="/tmp/ttyTST0"/>
+        <param name="virtual_port" value="true"/>
     </node>
     <test test-name="test_arduino_control" pkg="arduino_control" type="test_arduino_control.py" />
 </launch>

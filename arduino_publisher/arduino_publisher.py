@@ -71,6 +71,11 @@ class ArduinoPublisher:
         else:
             self.BATTERY_CAPACITY = 35.0
 
+        if rospy.has_param("~virtual_port"):
+            self.has_virtual_port = True
+        else:
+            self.has_virtual_port = False
+
         self.ser = None
 
     def close_port(self):
@@ -80,7 +85,7 @@ class ArduinoPublisher:
     def begin(self):
 
         # Change how ports are configured if in a docker container with virtual ports
-        if 'INSIDEDOCKER' in os.environ:
+        if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
         else:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)

@@ -9,7 +9,6 @@
         <param name="anchor_9005" value="1.12,2.03,0"/>
         <param name="tag_names" value="1001,1002"/>
         <param name="timeout" value="1000000000"/>
-        <rosparam file="localino_server/localino.yaml"/>
     </node>
     <test test-name="test_localino_server" pkg="localino_server" type="test_localino_server.py"/>
 </launch>
