@@ -21,8 +21,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def test_move_forward(self):
         self.done = False
         # set up aws iot
-        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback_forward)
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback_forward)
 
 
         rospy.sleep(3)
@@ -44,14 +43,12 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEqual(goal.target_pose.pose.orientation.z, 0.0,"move_forward orientation.z")
         self.assertEqual(goal.target_pose.pose.orientation.w, 0.0,"move_forward orientation.w")
         self.done = True
-        self.action_server.set_succeeded()
 
 
     def test_stop(self):
         self.done = False
         # set up aws iot
-        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback_stop)
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback_stop)
        
         # test forward
         message = json.dumps({"type": "stop"})
@@ -70,7 +67,6 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEqual(goal.target_pose.pose.orientation.z, 0.0,"stop orientation.z")
         self.assertEqual(goal.target_pose.pose.orientation.w, 0.0,"stop orientation.w")
         self.done = True
-        self.action_server.set_succeeded()
         
 if __name__ == '__main__':
     import rostest
