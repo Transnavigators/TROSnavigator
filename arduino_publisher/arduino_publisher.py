@@ -159,7 +159,7 @@ class ArduinoPublisher:
 
                             # Construct a message with the position, rotation, and velocity
                             msg = Odometry()
-                            msg.header.stamp = rospy.get_time()
+                            msg.header.stamp = current_time
                             msg.header.frame_id = "odom"
                             msg.pose.pose = Pose(Point(x, y, 0), Quaternion(*odom_quat))
                             msg.child_frame_id = "base_link"
