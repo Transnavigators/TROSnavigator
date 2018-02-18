@@ -18,30 +18,7 @@ class TestArduinoPublisher(unittest.TestCase):
 
     def setUp(self):
         rospy.init_node('test_arduino_publisher', anonymous=True)
-
-        # Create virtual port
-        cmd = ['/usr/bin/socat', 'pty,link=/tmp/ttyTST0', 'pty,link=/tmp/ttyTST1']
-        self.proc = subprocess.Popen(cmd)
-
-        # serial params
-        baud_rate = 115200
-        port_name = '/tmp/ttyTST0'
-
-        # Wait 10s for
-        for i in range(0, 10):
-            if os.path.exists(port_name):
-                break
-            rospy.sleep(1)
-
-        if os.path.exists(port_name):
-            self.ser = serial.Serial(port=port_name, baudrate=baud_rate, timeout=0, rtscts=True, dsrdtr=True)
-        else:
-            self.fail("Port not found, exiting.")
-
         self.sub = rospy.Subscriber("odom", Odometry, self.callback)
-
-    def tearDown(self):
-        self.proc.kill()
 
     # test 1 == 1
     def test_one_equals_one(self):
@@ -49,21 +26,34 @@ class TestArduinoPublisher(unittest.TestCase):
 
     # test publisher
     def test_pub(self):
+        # serial params
+        port_name = '/tmp/ttyTST0'
+
+        # Create virtual port
+        proc = subprocess.Popen(['/usr/bin/socat', 'pty,link=%s' % port_name, 'pty,link=/tmp/ttyTST1'])
+        rospy.sleep(4)
+
+        ser = serial.Serial(port=port_name, baudrate=115200, timeout=1, rtscts=True, dsrdtr=True)
+
         cmd = pack('2siiI', b'\xEE\x01', 7500, 7500, 3600)
         crc = CRCCCITT().calculate(cmd[0:14])
         packet = pack('14sH', cmd[0:14], crc)
-        rospy.sleep(1)
-        self.ser.write(packet)
-        for i in range(10):
+
+        # Wait for the publisher
+        ser.write(packet)
+
+        # Wait for a response
+        for i in range(5):
             if len(self.msgList) > 0:
                 break
-            rospy.sleep(0.1)
+            rospy.sleep(1)
         if len(self.msgList) > 0:
-            self.assertTrue(self.msgList[0].pose.pose.position.x > 0)
-            self.assertTrue(self.msgList[0].twist.twist.linear.x > 0)
-            self.assertTrue(self.msgList[0].twist.twist.angular.z < 0.01)
+            self.assertTrue(self.msgList[0].pose.pose.position.x > 0, "Didn't move forward")
+            self.assertTrue(self.msgList[0].twist.twist.linear.x > 0, "Velocity is incorrect")
+            self.assertTrue(self.msgList[0].twist.twist.angular.z < 0.01, "Angle is incorrect")
         else:
             self.fail("Message never sent, exiting.")
+        proc.terminate()
 
     def callback(self, msg):
         self.msgList.append(msg)

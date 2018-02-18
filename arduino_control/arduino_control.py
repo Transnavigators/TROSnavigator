@@ -39,21 +39,18 @@ class ArduinoController:
             self.has_virtual_port = False
 
         # Wait for port in case it is being setup
-        for i in range(0, 10):
-            if os.path.exists(self.port_name):
-                break
-            rospy.sleep(1)
 
-        if not os.path.exists(self.port_name):
-            rospy.logfatal("Port not found, exiting.")
-            sys.exit(1)
-        elif 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=1, rtscts=True, dsrdtr=True)
+        if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
+            rospy.sleep(4)
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=5, rtscts=True, dsrdtr=True)
         else:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=1)
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=5)
 
-        self.STOP_CMD = b'\xEE\x00'
-        self.STOP_CRC = CRCCCITT().calculate(self.STOP_CMD)
+        # Preconstruct stop packet
+        stop_cmd = b'\xEE\x00'
+        stop_crc = CRCCCITT().calculate(stop_cmd)
+        self.stop_packet = pack('2sH', stop_cmd, stop_crc)
+
         self.GO_CMD = b'\xEE\x20'
 
         # Subscribe to the arduino_commands topic
@@ -69,11 +66,10 @@ class ArduinoController:
 
         if msg.linear.x == 0 and msg.linear.y == 0 and msg.linear.z == 0 and msg.angular.x == 0 and msg.angular.y == 0 and msg.angular.z == 0:
             # Stop
-            packet = pack('2sH', self.STOP_CMD, self.STOP_CRC)
-            self.ser.write(packet)
+            self.ser.write(self.stop_packet)
         else:
             data_packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
-            calc_crc = CRCCCITT().calculate(data_packet)
+            calc_crc = CRCCCITT().calculate(data_packet[0:10])
             packet = pack('2siiH', self.GO_CMD, vel_l, vel_r, calc_crc)
             self.ser.write(packet)
         rospy.loginfo_throttle(1, "Sending vel1=%d vel2=%d" % (vel_l, vel_r))
