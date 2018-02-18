@@ -19,9 +19,10 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_move_forward(self):
+        rospy.init_node('test_alexa_forward', anonymous=True)
+        rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback_forward)
+
         self.done = False
-        # set up aws iot
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback_forward)
 
 
         rospy.sleep(3)
@@ -46,9 +47,10 @@ class TestAlexaVoiceControl(unittest.TestCase):
 
 
     def test_stop(self):
+        rospy.init_node('test_alexa_stop', anonymous=True)
+        rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback_stop)
         self.done = False
         # set up aws iot
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback_stop)
        
         # test forward
         message = json.dumps({"type": "stop"})
@@ -71,7 +73,6 @@ class TestAlexaVoiceControl(unittest.TestCase):
 if __name__ == '__main__':
     import rostest
 
-    rospy.init_node('test_alexa', anonymous=True)
     # set up AWS constants
     if rospy.has_param("~host"):
         host = rospy.get_param("~host")
