@@ -26,8 +26,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
         global POSE_LIST
         self.done = False
         # set up aws iot
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
-        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
+        # self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
         # start client
         rospy.sleep(3)
 
@@ -56,8 +56,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
         global POSE_LIST
         self.done = False
         # set up aws iot
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
-        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
+        # self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
         # start client
         rospy.sleep(3)
 
@@ -96,7 +96,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
             and pose.orientation.w == goal.target_pose.pose.orientation.w:
                 POSE_LIST.remove(pose)
                 self.done = True
-                self.action_server.set_succeeded()
+                # self.action_server.set_succeeded()
 
 
 if __name__ == '__main__':
