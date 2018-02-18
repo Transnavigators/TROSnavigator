@@ -33,7 +33,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         # test forward
         
         # create and add the expected pose
-        pose = Pose
+        pose = Pose()
         pose.position.x = 100000
         pose.position.y = 0
         pose.position.z = 0
@@ -62,7 +62,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         # test stop
         
         # create and add the expected pose
-        pose = Pose
+        pose = Pose()
         pose.position.x = 0
         pose.position.y = 0
         pose.position.z = 0
