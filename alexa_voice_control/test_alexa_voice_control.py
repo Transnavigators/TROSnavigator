@@ -12,47 +12,7 @@ package_name = 'alexa_voice_control'
 test_name = 'alexa_voice_control'
 package_name = 'test_alexa_voice_control'
 
-class TestAlexaVoiceControl(unittest.TestCase):
-    
-    ## test 1 == 1
-    def test_one_equals_one(self):
-        self.assertEquals(1, 1, "1!=1")
 
-    def test_alexa(self):
-        rospy.init_node('test_alexa', anonymous=True)        
-        
-        # set up aws iot
-        rospy.loginfo("Connecting to AWS")
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
-        
-        
-        # test forward
-        message = json.dumps({"type" : "forward"})
-        aws_iot_mqtt_client.publish(topic, message, 1)
-        
-        
-        time.sleep(10)
-        self.assertEqual(self.done,"Timeout")
-        
-    def callback(self, msg):
-        rospy.log("In callback")
-        self.assertEqual(msg.goal.pose.x, 100000.0,"move_forward pose.x")
-        self.assertEqual(msg.goal.pose.y, 0.0,"move_forward pose.y")
-        self.assertEqual(msg.goal.pose.z, 0.0,"move_forward pose.z")
-        self.assertEqual(msg.goal.orientation.x, 0.0,"move_forward orientation.x")
-        self.assertEqual(msg.goal.orientation.y, 0.0,"move_forward orientation.y")
-        self.assertEqual(msg.goal.orientation.z, 0.0,"move_forward orientation.z")
-        self.assertEqual(msg.goal.orientation.w, 0.0,"move_forward orientation.w")
-        self.done = True
-
-
-        
-if __name__ == '__main__':
-    import rostest
-    setup_aws()
-    rostest.rosrun(package_name, test_name, TestAlexaVoiceControl)
-    
-    
 def setup_aws():
     # set up AWS constants
     if rospy.has_param("~host"):
@@ -94,3 +54,45 @@ def setup_aws():
 
     # Connect to AWS IoT
     aws_iot_mqtt_client.connect()
+
+class TestAlexaVoiceControl(unittest.TestCase):
+    
+    ## test 1 == 1
+    def test_one_equals_one(self):
+        self.assertEquals(1, 1, "1!=1")
+
+    def test_alexa(self):
+        rospy.init_node('test_alexa', anonymous=True)        
+        
+        # set up aws iot
+        rospy.loginfo("Connecting to AWS")
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
+        
+        
+        # test forward
+        message = json.dumps({"type" : "forward"})
+        aws_iot_mqtt_client.publish(topic, message, 1)
+        
+        
+        time.sleep(10)
+        self.assertEqual(self.done,"Timeout")
+        
+    def callback(self, msg):
+        rospy.log("In callback")
+        self.assertEqual(msg.goal.pose.x, 100000.0,"move_forward pose.x")
+        self.assertEqual(msg.goal.pose.y, 0.0,"move_forward pose.y")
+        self.assertEqual(msg.goal.pose.z, 0.0,"move_forward pose.z")
+        self.assertEqual(msg.goal.orientation.x, 0.0,"move_forward orientation.x")
+        self.assertEqual(msg.goal.orientation.y, 0.0,"move_forward orientation.y")
+        self.assertEqual(msg.goal.orientation.z, 0.0,"move_forward orientation.z")
+        self.assertEqual(msg.goal.orientation.w, 0.0,"move_forward orientation.w")
+        self.done = True
+
+
+        
+if __name__ == '__main__':
+    import rostest
+    setup_aws()
+    rostest.rosrun(package_name, test_name, TestAlexaVoiceControl)
+    
+    
