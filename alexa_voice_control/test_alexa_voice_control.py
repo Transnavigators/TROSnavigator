@@ -39,11 +39,13 @@ class TestAlexaVoiceControl(unittest.TestCase):
         aws_iot_mqtt_client.connect()
         rospy.loginfo("Connecting to AWS")
 
+        rospy.sleep(3)
+
         # test forward
         message = json.dumps({"type": "forward"})
         aws_iot_mqtt_client.publish(topic, message, 1)
 
-        time.sleep(10)
+        rospy.sleep(3)
         self.assertTrue(self.done)
         
     def callback(self, goal):
@@ -55,8 +57,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEqual(goal.target_pose.pose.orientation.y, 0.0,"move_forward orientation.y")
         self.assertEqual(goal.target_pose.pose.orientation.z, 0.0,"move_forward orientation.z")
         self.assertEqual(goal.target_pose.pose.orientation.w, 0.0,"move_forward orientation.w")
-        self.action_server.set_succeeded()
         self.done = True
+        self.action_server.set_succeeded()
 
 
 if __name__ == '__main__':
