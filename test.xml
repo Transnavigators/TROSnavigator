@@ -1,1 +1,5 @@
-<!-- TODO: make tests and stick them in here -->
+<launch>
+    <include file="$(find alexa_voice_control)/test.test"/>
+    <include file="$(find arduino_control)/test.test"/>
+    <include file="$(find arduino_publisher)/test.test"/>
+</launch>

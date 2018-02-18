@@ -4,7 +4,7 @@ import subprocess
 import rospy
 import serial
 from geometry_msgs.msg import Twist, Vector3
-from PyCRC.CRC16 import CRC16
+from PyCRC.CRCCCITT import CRCCCITT
 
 package_name = 'arduino_control'
 test_name = 'arduino_control'
@@ -47,7 +47,7 @@ class TestArduinoControl(unittest.TestCase):
 
         # expected values
         stop_cmd = b'\xEE\x00'
-        stop_crc = CRC16().calculate(bytes(stop_cmd))
+        stop_crc = CRCCCITT().calculate(bytes(stop_cmd))
 
         while not rospy.is_shutdown():
             data = ser.read()
