@@ -4,6 +4,7 @@ import rospy
 import serial
 import math
 import os
+import sys
 from geometry_msgs.msg import Twist
 from PyCRC.CRCCCITT import CRCCCITT
 from struct import pack
@@ -13,8 +14,6 @@ class ArduinoController:
     def __init__(self):
         # Initialize the serial port
         rospy.init_node('arduino_controller', anonymous=True)
-        # Subscribe to the arduino_commands topic
-        rospy.Subscriber("cmd_vel", Twist, self.callback)
 
         # The width between the wheels
         if rospy.has_param("~width"):
@@ -39,14 +38,26 @@ class ArduinoController:
         else:
             self.has_virtual_port = False
 
-        if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
+        # Wait for port in case it is being setup
+        for i in range(0, 10):
+            if os.path.exists(self.port_name):
+                break
+            rospy.sleep(1)
+
+        if not os.path.exists(self.port_name):
+            rospy.logfatal("Port not found, exiting.")
+            sys.exit(1)
+        elif 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
         else:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
 
         self.STOP_CMD = b'\xEE\x00'
-        self.STOP_CRC = CRCCCITT().calculate(bytes(self.STOP_CMD))
+        self.STOP_CRC = CRCCCITT().calculate(self.STOP_CMD)
         self.GO_CMD = b'\xEE\x20'
+
+        # Subscribe to the arduino_commands topic
+        rospy.Subscriber("cmd_vel", Twist, self.callback)
 
     # callback for receiving data from the Arduino
     def callback(self, msg):
@@ -57,10 +68,10 @@ class ArduinoController:
         vel_r = int(lin_vel + ang_vel)
         if msg.linear.x == 0 and msg.linear.y == 0 and msg.linear.z == 0 and msg.angular.x == 0 and msg.angular.y == 0 and msg.angular.z == 0:
             # Stop
-            packet = pack('2s2s', self.STOP_CMD, self.STOP_CRC)
+            packet = pack('2sH', self.STOP_CMD, self.STOP_CRC)
         else:
             data_packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
-            calc_crc = CRCCCITT().calculate(bytes(data_packet))
+            calc_crc = CRCCCITT().calculate(data_packet)
             packet = pack('2siiH', self.GO_CMD, vel_l, vel_r, calc_crc)
         # Write packet to Arduino's serial port
         self.ser.write(packet)

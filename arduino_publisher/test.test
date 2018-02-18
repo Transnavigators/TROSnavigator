@@ -5,5 +5,5 @@
         <param name="battery_capacity" value="35"/>
         <param name="virtual_port" value="true"/>
     </node>
-    <test test-name="test_arduino_publisher" pkg="arduino_publisher" type="test_arduino_publisher.py" />
+    <test test-name="test_arduino_publisher" pkg="arduino_publisher" type="test_arduino_publisher.py"/>
 </launch>

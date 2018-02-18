@@ -3,6 +3,8 @@ import unittest
 import subprocess
 import rospy
 import serial
+import binascii
+import os
 from geometry_msgs.msg import Twist, Vector3
 from PyCRC.CRCCCITT import CRCCCITT
 
@@ -12,26 +14,40 @@ package_name = 'test_arduino_control'
 
 
 class TestArduinoControl(unittest.TestCase):
-    ## test 1 == 1
-    def test_one_equals_one(self):
-        self.assertEquals(1, 1, "1!=1")
-
-    ## test stopping
-    def test_stop(self):
+    def setUp(self):
         # Initialize the node
         rospy.init_node('test_arduino_controller', anonymous=True)
         # Publish to the cmd_vel topic
-        publisher = rospy.Publisher("cmd_vel", Twist, queue_size=50)
-        cmd = ['/usr/bin/socat', '-d', '-d', 'pty,link=/tmp/ttyTST0', 'pty,link=/tmp/ttyTST1']
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.publisher = rospy.Publisher("cmd_vel", Twist, queue_size=50)
 
-        rospy.sleep(4)
-        print proc.communicate()
+        # Create a virtual serial port
+        cmd = ['/usr/bin/socat', 'pty,link=/tmp/ttyTST0', 'pty,link=/tmp/ttyTST1']
+        self.proc = subprocess.Popen(cmd)
 
-        # set up serial
+        # serial params
         baud_rate = 115200
         port_name = '/tmp/ttyTST1'
-        ser = serial.Serial(port=port_name, baudrate=baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+
+        # Wait 10s for
+        for i in range(0, 10):
+            if os.path.exists(port_name):
+                break
+            rospy.sleep(1)
+        if not os.path.exists(port_name):
+            self.fail("Port not found, exiting.")
+        else:
+            self.ser = serial.Serial(port=port_name, baudrate=baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+
+    def tearDown(self):
+        self.proc.kill()
+        self.ser.close()
+
+    # test 1 == 1
+    def test_one_equals_one(self):
+        self.assertEquals(1, 1, "1!=1")
+
+    # test stopping
+    def test_stop(self):
 
         # create Twist
         vel_msg = Twist()
@@ -41,23 +57,22 @@ class TestArduinoControl(unittest.TestCase):
         vel_msg.angular = Vector3(0, 0, 0)
 
         # publish the message
-        publisher.publish(vel_msg)
+        self.publisher.publish(vel_msg)
 
         rospy.sleep(1.)
 
         # expected values
         stop_cmd = b'\xEE\x00'
-        stop_crc = CRCCCITT().calculate(bytes(stop_cmd))
+        stop_crc = bytes(CRCCCITT().calculate(bytes(stop_cmd)))
+        stop_crc_str = binascii.hexlify(stop_crc).decode('ascii')
 
         while not rospy.is_shutdown():
-            data = ser.read()
-            if data == b'\xEE':
-                data = ser.read()
-                if data == b'\x00':
-                    data = ser.read(2)
-                    self.assertEquals(data, bytes(stop_crc), "STOP FAILED")
+            if self.ser.read() == b'\xEE':
+                if self.ser.read() == b'\x00':
+                    crc = self.ser.read(2)
+                    crc_str = binascii.hexlify(crc).decode('ascii')
+                    self.assertEquals(crc, stop_crc, "CRC Failed Packet CRC: %s Calc CRC: %s" % (crc_str, stop_crc_str))
                     break
-        proc.kill()
 
 
 if __name__ == '__main__':

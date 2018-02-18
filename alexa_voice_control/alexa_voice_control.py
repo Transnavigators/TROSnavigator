@@ -58,7 +58,7 @@ class Alexa:
     # callback for receiving AWS message
     def callback(self, client, userdata, message):
         # extract data
-        data_string = message.payload.decode("utf8").replace("'",'"')
+        data_string = message.payload.decode("utf8").replace("'", '"')
         rospy.loginfo(data_string)
         data = json.loads(data_string)
 
@@ -92,7 +92,7 @@ class Alexa:
 
         # Go to the localino tag
         elif data['type'] == 'locateme' and self.tf.frameExists("/base_link") and self.tf.frameExists(
-                "/tag_" + self.tag_id):
+                        "/tag_" + self.tag_id):
             t = self.tf.getLatestCommonTime("/base_link", '/tag_' + self.tag_id)
             pos, quat = self.tf.lookupTransform("/base_link", "/tag_" + self.tag_id, t)
 
@@ -102,7 +102,7 @@ class Alexa:
 
         # Go to the static landmark
         elif data['type'] == 'moveto' and self.tf.frameExists("/map") and self.tf.frameExists(
-                "/%s" % str(data['location'])):
+                        "/%s" % str(data['location'])):
             t = self.tf.getLatestCommonTime("/base_link", "/%s" % str(data['location']))
             pos, quat = self.tf.lookupTransform("/base_link", "/%s" % str(data['location']), t)
 
@@ -116,9 +116,9 @@ class Alexa:
 
     # sets up communication with AWS
     def begin(self):
-        
+
         rospy.loginfo("Connecting to AWS")
-    
+
         # Configure logging
         logger = logging.getLogger("AWSIoTPythonSDK.core")
         logger.setLevel(logging.WARN)
@@ -143,12 +143,11 @@ class Alexa:
         aws_iot_mqtt_client.subscribe(self.topic, 1, self.callback)
 
         rospy.loginfo("Connected to " + self.topic)
-        
-        
+
         self.action_client.wait_for_server()
 
         rospy.loginfo("Connected to the action server")
-        
+
         # wait
         rospy.spin()
 
