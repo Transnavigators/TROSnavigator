@@ -77,9 +77,12 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_move_forward(self):
+        self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
         message = json.dumps({"type" : "forward"})
         self.aws_iot_mqtt_client.publish(self.topic, message, 1)
+        while self.result == False:
+            pass
         sub.unregister()
         
     def move_forward_callback(self, msg):
@@ -91,12 +94,16 @@ class TestAlexaVoiceControl(unittest.TestCase):
         assertEqual(msg.goal.orientation.y, 0.0,"orientation.y")
         assertEqual(msg.goal.orientation.z, 0.0,"orientation.z")
         assertEqual(msg.goal.orientation.w, 0.0,"orientation.w")
+        self.result = True
         
     
     def test_stop(self):
+        self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.stop_callback)
         message = json.dumps({"type" : "stop"})
         self.aws_iot_mqtt_client.publish(self.topic, message, 1)
+        while self.result == False:
+            pass
         sub.unregister()
         
     def stop_callback(self, msg):
@@ -108,6 +115,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         assertEqual(msg.goal.orientation.y, 0.0,"orientation.y")
         assertEqual(msg.goal.orientation.z, 0.0,"orientation.z")
         assertEqual(msg.goal.orientation.w, 0.0,"orientation.w")
+        self.result = True
         
 if __name__ == '__main__':
     import rostest
