@@ -77,6 +77,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_move_forward(self):
+        while self.test != 1:
+            pass
         self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
         message = json.dumps({"type" : "forward"})
@@ -84,6 +86,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         while self.result == False:
             pass
         sub.unregister()
+        self.test += 1
         
     def move_forward_callback(self, msg):
         
@@ -98,6 +101,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
         
     
     def test_stop(self):
+        while self.test != 2:
+            pass
         self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.stop_callback)
         message = json.dumps({"type" : "stop"})
@@ -105,6 +110,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         while self.result == False:
             pass
         sub.unregister()
+        self.test += 1
         
     def stop_callback(self, msg):
         
