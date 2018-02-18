@@ -18,7 +18,6 @@ class TestAlexaVoiceControl(unittest.TestCase):
         
         
         rospy.init_node('test_alexa', anonymous=True)
-        rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
 
         # set up AWS constants
         if rospy.has_param("~host"):
@@ -73,16 +72,42 @@ class TestAlexaVoiceControl(unittest.TestCase):
         # Connect to AWS IoT
         self.aws_iot_mqtt_client.connect()
     
-    def callback(self):
-        assertTrue(True,"True")
     ## test 1 == 1
     def test_one_equals_one(self):
         self.assertEquals(1, 1, "1!=1")
 
     def test_move_forward(self):
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
         message = json.dumps({"type" : "forward"})
         self.aws_iot_mqtt_client.publish(self.topic, message, 1)
+        sub.unregister()
         
+    def move_forward_callback(self, msg):
+        
+        assertEqual(msg.goal.pose.x, 100000.0,"pose.x")
+        assertEqual(msg.goal.pose.y, 0.0,"pose.y")
+        assertEqual(msg.goal.pose.z, 0.0,"pose.z")
+        assertEqual(msg.goal.orientation.x, 0.0,"orientation.x")
+        assertEqual(msg.goal.orientation.y 0.0,"orientation.y")
+        assertEqual(msg.goal.orientation.z, 0.0,"orientation.z")
+        assertEqual(msg.goal.orientation.w, 0.0,"orientation.w")
+        
+    
+    def test_stop(self):
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.stop_callback)
+        message = json.dumps({"type" : "stop"})
+        self.aws_iot_mqtt_client.publish(self.topic, message, 1)
+        sub.unregister()
+        
+    def stop_callback(self, msg):
+        
+        assertEqual(msg.goal.pose.x, 0.0,"pose.x")
+        assertEqual(msg.goal.pose.y, 0.0,"pose.y")
+        assertEqual(msg.goal.pose.z, 0.0,"pose.z")
+        assertEqual(msg.goal.orientation.x, 0.0,"orientation.x")
+        assertEqual(msg.goal.orientation.y 0.0,"orientation.y")
+        assertEqual(msg.goal.orientation.z, 0.0,"orientation.z")
+        assertEqual(msg.goal.orientation.w, 0.0,"orientation.w")
         
 if __name__ == '__main__':
     import rostest
