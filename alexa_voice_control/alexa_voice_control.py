@@ -31,7 +31,7 @@ class Alexa:
 
         # set up AWS constants
         if rospy.has_param("~host"):
-            self.host = rospy.get_param("host")
+            self.host = rospy.get_param("~host")
         else:
             self.host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
         if rospy.has_param("~rootCAPath"):
