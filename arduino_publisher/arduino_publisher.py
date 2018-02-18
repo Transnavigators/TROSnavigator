@@ -126,8 +126,8 @@ class ArduinoPublisher:
                             current_time = rospy.Time.now()
                             delta_time = d_time * 1e-6
                             delta_ros_time = (current_time - last_time).to_nsec()
-                            rospy.loginfo_throttle(1, "Delta ROS Time: %f ns\tDelta Time: %f ns", delta_ros_time,
-                                                   delta_time * 1e9)
+                            rospy.loginfo_throttle(1, "Delta ROS Time: %f ns\tDelta Time: %f ns" % (delta_ros_time,
+                                                   delta_time * 1e9))
 
                             # Convert number of pulses to a distance
                             delta_left = x1 * self.M_PER_PULSE
