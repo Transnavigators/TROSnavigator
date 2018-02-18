@@ -21,7 +21,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
 
     def test_alexa(self):
         self.done = False
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
         
         
         # test forward
