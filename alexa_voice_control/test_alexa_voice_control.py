@@ -13,11 +13,13 @@ test_name = 'alexa_voice_control'
 package_name = 'test_alexa_voice_control'
 
 class TestAlexaVoiceControl(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestAlexaVoiceControl, self).__init__(*args, **kwargs)
-        
-        
-        rospy.init_node('test_alexa', anonymous=True)
+    
+    ## test 1 == 1
+    def test_one_equals_one(self):
+        self.assertEquals(1, 1, "1!=1")
+
+    def test_alexa(self):
+            rospy.init_node('test_alexa', anonymous=True)
 
         # set up AWS constants
         if rospy.has_param("~host"):
@@ -46,8 +48,6 @@ class TestAlexaVoiceControl(unittest.TestCase):
             self.topic = '/Transnavigators/Pi'
 
         
-        self.test = 1
-        
         
         # set up aws iot
         rospy.loginfo("Connecting to AWS")
@@ -73,14 +73,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
 
         # Connect to AWS IoT
         self.aws_iot_mqtt_client.connect()
-    
-    ## test 1 == 1
-    def test_one_equals_one(self):
-        self.assertEquals(1, 1, "1!=1")
-
-    def test_move_forward(self):
-        while self.test != 1:
-            pass
+        # test forward
         self.result = False
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
         message = json.dumps({"type" : "forward"})
@@ -88,21 +81,9 @@ class TestAlexaVoiceControl(unittest.TestCase):
         while self.result == False:
             pass
         sub.unregister()
-        self.test += 1
         
-    def move_forward_callback(self, msg):
         
-        assertEqual(msg.goal.pose.x, 100000.0,"pose.x")
-        assertEqual(msg.goal.pose.y, 0.0,"pose.y")
-        assertEqual(msg.goal.pose.z, 0.0,"pose.z")
-        assertEqual(msg.goal.orientation.x, 0.0,"orientation.x")
-        assertEqual(msg.goal.orientation.y, 0.0,"orientation.y")
-        assertEqual(msg.goal.orientation.z, 0.0,"orientation.z")
-        assertEqual(msg.goal.orientation.w, 0.0,"orientation.w")
-        self.result = True
-        
-    
-    def test_stop(self):
+        # test stop
         while self.test != 2:
             pass
         self.result = False
@@ -112,17 +93,28 @@ class TestAlexaVoiceControl(unittest.TestCase):
         while self.result == False:
             pass
         sub.unregister()
-        self.test += 1
+        
+    def move_forward_callback(self, msg):
+        
+        assertEqual(msg.goal.pose.x, 100000.0,"move_forward pose.x")
+        assertEqual(msg.goal.pose.y, 0.0,"move_forward pose.y")
+        assertEqual(msg.goal.pose.z, 0.0,"move_forward pose.z")
+        assertEqual(msg.goal.orientation.x, 0.0,"move_forward orientation.x")
+        assertEqual(msg.goal.orientation.y, 0.0,"move_forward orientation.y")
+        assertEqual(msg.goal.orientation.z, 0.0,"move_forward orientation.z")
+        assertEqual(msg.goal.orientation.w, 0.0,"move_forward orientation.w")
+        self.result = True
+
         
     def stop_callback(self, msg):
         
-        assertEqual(msg.goal.pose.x, 0.0,"pose.x")
-        assertEqual(msg.goal.pose.y, 0.0,"pose.y")
-        assertEqual(msg.goal.pose.z, 0.0,"pose.z")
-        assertEqual(msg.goal.orientation.x, 0.0,"orientation.x")
-        assertEqual(msg.goal.orientation.y, 0.0,"orientation.y")
-        assertEqual(msg.goal.orientation.z, 0.0,"orientation.z")
-        assertEqual(msg.goal.orientation.w, 0.0,"orientation.w")
+        assertEqual(msg.goal.pose.x, 0.0,"stop pose.x")
+        assertEqual(msg.goal.pose.y, 0.0,"stop pose.y")
+        assertEqual(msg.goal.pose.z, 0.0,"stop pose.z")
+        assertEqual(msg.goal.orientation.x, 0.0,"stop orientation.x")
+        assertEqual(msg.goal.orientation.y, 0.0,"stop orientation.y")
+        assertEqual(msg.goal.orientation.z, 0.0,"stop orientation.z")
+        assertEqual(msg.goal.orientation.w, 0.0,"stop orientation.w")
         self.result = True
         
 if __name__ == '__main__':
