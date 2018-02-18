@@ -48,13 +48,13 @@ class TestAlexaVoiceControl(unittest.TestCase):
         
     def callback(self, goal):
         rospy.loginfo("In callback")
-        self.assertEqual(goal.pose.x, 100000.0,"move_forward pose.x")
-        self.assertEqual(goal.pose.y, 0.0,"move_forward pose.y")
-        self.assertEqual(goal.pose.z, 0.0,"move_forward pose.z")
-        self.assertEqual(goal.orientation.x, 0.0,"move_forward orientation.x")
-        self.assertEqual(goal.orientation.y, 0.0,"move_forward orientation.y")
-        self.assertEqual(goal.orientation.z, 0.0,"move_forward orientation.z")
-        self.assertEqual(goal.orientation.w, 0.0,"move_forward orientation.w")
+        self.assertEqual(goal.target_pose.pose.position.x, 100000.0,"move_forward pose.x")
+        self.assertEqual(goal.target_pose.pose.position.y, 0.0,"move_forward pose.y")
+        self.assertEqual(goal.target_pose.pose.position.z, 0.0,"move_forward pose.z")
+        self.assertEqual(goal.target_pose.pose.orientation.x, 0.0,"move_forward orientation.x")
+        self.assertEqual(goal.target_pose.pose.orientation.y, 0.0,"move_forward orientation.y")
+        self.assertEqual(goal.target_pose.pose.orientation.z, 0.0,"move_forward orientation.z")
+        self.assertEqual(goal.target_pose.pose.orientation.w, 0.0,"move_forward orientation.w")
         self.done = True
 
 
