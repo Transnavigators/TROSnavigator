@@ -22,6 +22,22 @@ class TestAlexaVoiceControl(unittest.TestCase):
         # set up aws iot
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
 
+        # start client
+        aws_iot_mqtt_client = AWSIoTMQTTClient(clientId)
+        aws_iot_mqtt_client.configureEndpoint(host, 8883)
+        aws_iot_mqtt_client.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
+
+        # AWSIoTMQTTClient connection configuration
+        aws_iot_mqtt_client.configureAutoReconnectBackoffTime(1, 32, 20)
+        aws_iot_mqtt_client.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
+        aws_iot_mqtt_client.configureDrainingFrequency(2)  # Draining: 2 Hz
+        aws_iot_mqtt_client.configureConnectDisconnectTimeout(10)  # 10 sec
+        aws_iot_mqtt_client.configureMQTTOperationTimeout(5)  # 5 sec
+
+        # Connect to AWS IoT
+        aws_iot_mqtt_client.connect()
+        rospy.loginfo("Connecting to AWS")
+
         # test forward
         message = json.dumps({"type": "forward"})
         aws_iot_mqtt_client.publish(topic, message, 1)
@@ -70,22 +86,6 @@ if __name__ == '__main__':
         topic = rospy.get_param("~topic")
     else:
         topic = '/Transnavigators/Pi'
-
-    # start client
-    aws_iot_mqtt_client = AWSIoTMQTTClient(clientId)
-    aws_iot_mqtt_client.configureEndpoint(host, 8883)
-    aws_iot_mqtt_client.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
-
-    # AWSIoTMQTTClient connection configuration
-    aws_iot_mqtt_client.configureAutoReconnectBackoffTime(1, 32, 20)
-    aws_iot_mqtt_client.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
-    aws_iot_mqtt_client.configureDrainingFrequency(2)  # Draining: 2 Hz
-    aws_iot_mqtt_client.configureConnectDisconnectTimeout(10)  # 10 sec
-    aws_iot_mqtt_client.configureMQTTOperationTimeout(5)  # 5 sec
-
-    # Connect to AWS IoT
-    aws_iot_mqtt_client.connect()
-    rospy.loginfo("Connecting to AWS")
     
     # run tests
     rostest.rosrun(package_name, test_name, TestAlexaVoiceControl)
