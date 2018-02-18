@@ -22,6 +22,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_alexa(self):
+        self.done = False
+        
         rospy.init_node('test_alexa', anonymous=True)        
         
         # set up aws iot
