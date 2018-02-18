@@ -21,11 +21,11 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.done = False
         # set up aws iot
         sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
-        
+
         # test forward
         message = json.dumps({"type": "forward"})
         aws_iot_mqtt_client.publish(topic, message, 1)
-        
+
         time.sleep(10)
         self.assertEqual(self.done, "Timeout")
         
