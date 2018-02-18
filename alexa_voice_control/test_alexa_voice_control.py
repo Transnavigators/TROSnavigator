@@ -47,7 +47,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertTrue(self.done)
         
     def callback(self, goal):
-        rospy.log("In callback")
+        rospy.loginfo("In callback")
         self.assertEqual(goal.pose.x, 100000.0,"move_forward pose.x")
         self.assertEqual(goal.pose.y, 0.0,"move_forward pose.y")
         self.assertEqual(goal.pose.z, 0.0,"move_forward pose.z")
