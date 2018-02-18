@@ -42,7 +42,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         rospy.sleep(3)
 
         # test forward
-        message = json.dumps({"type": "stop"})
+        message = json.dumps({"type": "asdf"})
         aws_iot_mqtt_client.publish(topic, message, 1)
 
         rospy.sleep(3)
