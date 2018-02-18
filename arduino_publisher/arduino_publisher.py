@@ -120,7 +120,7 @@ class ArduinoPublisher:
                         x1, x2, d_time, crc = unpack('iiIH', packet_data)
                         packet = pack('2s14s', b'\xEE\x01', packet_data)
                         # Calculate the CRC to verify packet integrity
-                        calc_crc = CRCCCITT().calculate(packet[0:13])
+                        calc_crc = CRCCCITT().calculate(packet[0:14])
                         if calc_crc == crc:
                             # Display the time frame each packet represents vs the node's refresh rate
                             current_time = rospy.Time.now()
@@ -189,7 +189,7 @@ class ArduinoPublisher:
 
                             rospy.logwarn(
                                 "Packet didn't pass checksum. Packet: %s\nPacket Data: %s\nCalcCRC: %d PacketCRC: %d Left %d Right %d Time: %d" % (
-                                binascii.hexlify(packet), binascii.hexlify(packet_data), calc_crc, crc, x1, x2, d_time))
+                                binascii.hexlify(packet), binascii.hexlify(packet[0:13]), calc_crc, crc, x1, x2, d_time))
                     elif data == b'\x02':
                         packet = self.ser.read(4)
                         batt, crc = unpack('HH', packet)
