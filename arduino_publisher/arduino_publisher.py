@@ -109,123 +109,118 @@ class ArduinoPublisher:
         rate = rospy.Rate(self.RATE)  # 500Hz, increase if needed
         # TODO: Adjust rate according to 2x Arduino's sending rate if possible
         while not rospy.is_shutdown():
-            try:
+            data = self.ser.read()
+            if data == b'\xEE':
                 data = self.ser.read()
-                if data == b'\xEE':
-                    data = self.ser.read()
-                    if data == b'\x01':
-                        # Read 3 32bit ints and a 16bit CRC
-                        # 3*4+2=14
-                        packet_data = self.ser.read(14)
-                        x1, x2, d_time, crc = unpack('iiIH', packet_data)
-                        packet = pack('2s14s', b'\xEE\x01', packet_data)
-                        # Calculate the CRC to verify packet integrity
-                        calc_crc = CRCCCITT().calculate(packet[0:14])
-                        if calc_crc == crc:
-                            # Display the time frame each packet represents vs the node's refresh rate
-                            current_time = rospy.Time.now()
-                            delta_time = d_time * 1e-6
-                            delta_ros_time = (current_time - last_time).to_nsec()
-                            rospy.loginfo_throttle(1, "Delta ROS Time: %f ns\tDelta Time: %f ns" % (delta_ros_time,
-                                                   delta_time * 1e9))
+                if data == b'\x01':
+                    # Read 3 32bit ints and a 16bit CRC
+                    # 3*4+2=14
+                    packet_data = self.ser.read(14)
+                    x1, x2, d_time, crc = unpack('iiIH', packet_data)
+                    packet = pack('2s14s', b'\xEE\x01', packet_data)
+                    # Calculate the CRC to verify packet integrity
+                    calc_crc = CRCCCITT().calculate(packet[0:14])
+                    if calc_crc == crc:
+                        # Display the time frame each packet represents vs the node's refresh rate
+                        current_time = rospy.Time.now()
+                        delta_time = d_time * 1e-6
+                        delta_ros_time = (current_time - last_time).to_nsec()
+                        rospy.loginfo_throttle(1, "Delta ROS Time: %f ns\tDelta Time: %f ns" % (delta_ros_time,
+                                               delta_time * 1e9))
 
-                            # Convert number of pulses to a distance
-                            delta_left = x1 * self.M_PER_PULSE
-                            delta_right = x2 * self.M_PER_PULSE
+                        # Convert number of pulses to a distance
+                        delta_left = x1 * self.M_PER_PULSE
+                        delta_right = x2 * self.M_PER_PULSE
 
-                            # TODO adjust straight error according to tests
-                            # Math from https://robotics.stackexchange.com/questions/1653/calculate-position-of-differential-drive-robot
-                            if abs(delta_left - delta_right) < 1e-6:
-                                dx = delta_left * math.cos(th)
-                                dy = delta_right * math.sin(th)
-                                vth = 0
-                            else:
-                                r = self.WIDTH * (delta_right + delta_left) / (2 * (delta_right - delta_left))
-                                wd = (delta_right - delta_left) / self.WIDTH
-                                dx = r * math.sin(wd + th) - r * math.sin(th)
-                                dy = -r * math.cos(wd + th) + r * math.cos(th)
-                                th = (th + wd + (2 * math.pi)) % (2 * math.pi)
-                                vth = wd * delta_time
-                            x = x + dx
-                            y = y + dy
-                            vx = dx * delta_time
-                            vy = dy * delta_time
-
-                            # Convert 1D Euler rotation to quaternion
-                            odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
-
-                            self.odom_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link",
-                                                                "odom")
-
-                            # Construct a message with the position, rotation, and velocity
-                            msg = Odometry()
-                            msg.header.stamp = current_time
-                            msg.header.frame_id = "odom"
-                            msg.pose.pose = Pose(Point(x, y, 0), Quaternion(*odom_quat))
-                            msg.child_frame_id = "base_link"
-                            msg.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
-
-                            # TODO: measure covariance with experiment + statistics
-                            # This says position estimate is accurate
-                            msg.pose.covariance = [99999, 0, 0, 0, 0, 0,  # covariance on gps_x
-                                                   0, 99999, 0, 0, 0, 0,  # covariance on gps_y
-                                                   0, 0, 99999, 0, 0, 0,  # covariance on gps_z
-                                                   0, 0, 0, 99999, 0, 0,  # large covariance on rot x
-                                                   0, 0, 0, 0, 99999, 0,  # large covariance on rot y
-                                                   0, 0, 0, 0, 0, 99999]  # large covariance on rot z
-
-                            # This says velocity estimate is accurate
-                            msg.twist.covariance = [99999, 0, 0, 0, 0, 0,  # covariance on gps_x
-                                                    0, 99999, 0, 0, 0, 0,  # covariance on gps_y
-                                                    0, 0, 99999, 0, 0, 0,  # covariance on gps_z
-                                                    0, 0, 0, 99999, 0, 0,  # large covariance on rot x
-                                                    0, 0, 0, 0, 99999, 0,  # large covariance on rot y
-                                                    0, 0, 0, 0, 0, 99999]  # large covariance on rot z
-
-                            self.pub.publish(msg)
-
-                            last_time = current_time
+                        # TODO adjust straight error according to tests
+                        # Math from https://robotics.stackexchange.com/questions/1653/calculate-position-of-differential-drive-robot
+                        if abs(delta_left - delta_right) < 1e-6:
+                            dx = delta_left * math.cos(th)
+                            dy = delta_right * math.sin(th)
+                            vth = 0
                         else:
+                            r = self.WIDTH * (delta_right + delta_left) / (2 * (delta_right - delta_left))
+                            wd = (delta_right - delta_left) / self.WIDTH
+                            dx = r * math.sin(wd + th) - r * math.sin(th)
+                            dy = -r * math.cos(wd + th) + r * math.cos(th)
+                            th = (th + wd + (2 * math.pi)) % (2 * math.pi)
+                            vth = wd * delta_time
+                        x = x + dx
+                        y = y + dy
+                        vx = dx * delta_time
+                        vy = dy * delta_time
 
-                            rospy.logwarn(
-                                "Packet didn't pass checksum. Packet: %s\nPacket Data: %s\nCalcCRC: %d PacketCRC: %d Left %d Right %d Time: %d" % (
-                                binascii.hexlify(packet), binascii.hexlify(packet[0:13]), calc_crc, crc, x1, x2, d_time))
-                    elif data == b'\x02':
-                        packet = self.ser.read(4)
-                        batt, crc = unpack('HH', packet)
-                        calc_crc = CRCCCITT().calculate(packet[2:3])
-                        if calc_crc == crc:
-                            msg = BatteryState()
-                            msg.voltage = batt * self.ANALOG_TO_VOLTAGE
+                        # Convert 1D Euler rotation to quaternion
+                        odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
 
-                            msg.capacity = self.BATTERY_CAPACITY
-                            msg.design_capacity = self.BATTERY_CAPACITY
+                        self.odom_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link",
+                                                            "odom")
 
-                            # Linear trendline generated by Excel of voltages vs SoC
-                            msg.percentage = 86.558 * msg.voltage - 1015.4
-                            msg.charge = msg.capacity * msg.percentage / 100
-                            msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
-                            msg.power_supply_health = BatteryState.POWER_SUPPLY_HEALTH_GOOD
+                        # Construct a message with the position, rotation, and velocity
+                        msg = Odometry()
+                        msg.header.stamp = current_time
+                        msg.header.frame_id = "odom"
+                        msg.pose.pose = Pose(Point(x, y, 0), Quaternion(*odom_quat))
+                        msg.child_frame_id = "base_link"
+                        msg.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
 
-                            # We are using a lead acid battery, but that type is not available in ROS or Linux's enums
-                            msg.power_supply_technology = BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN
-                            msg.present = True
+                        # TODO: measure covariance with experiment + statistics
+                        # This says position estimate is accurate
+                        msg.pose.covariance = [99999, 0, 0, 0, 0, 0,  # covariance on gps_x
+                                               0, 99999, 0, 0, 0, 0,  # covariance on gps_y
+                                               0, 0, 99999, 0, 0, 0,  # covariance on gps_z
+                                               0, 0, 0, 99999, 0, 0,  # large covariance on rot x
+                                               0, 0, 0, 0, 99999, 0,  # large covariance on rot y
+                                               0, 0, 0, 0, 0, 99999]  # large covariance on rot z
 
-                            # Can't measure current due to ~200A starting current
-                            msg.current = float('NaN')
+                        # This says velocity estimate is accurate
+                        msg.twist.covariance = [99999, 0, 0, 0, 0, 0,  # covariance on gps_x
+                                                0, 99999, 0, 0, 0, 0,  # covariance on gps_y
+                                                0, 0, 99999, 0, 0, 0,  # covariance on gps_z
+                                                0, 0, 0, 99999, 0, 0,  # large covariance on rot x
+                                                0, 0, 0, 0, 99999, 0,  # large covariance on rot y
+                                                0, 0, 0, 0, 0, 99999]  # large covariance on rot z
 
-                            # Cell voltage is impossible to measure in Lead Acid Battery
-                            msg.cell_voltage = [float('NaN')] * 6
+                        self.pub.publish(msg)
 
-                            # TODO: extend battery reading for both batteries individually vs in series
-                            msg.location = ""
-                            msg.serial_number = ""
+                        last_time = current_time
+                    else:
 
-                            self.battery_pub.publish(msg)
-            except serial.serialutil.SerialException as e:
-                rospy.loginfo_throttle(1, e)
-                pass
+                        rospy.logwarn(
+                            "Packet didn't pass checksum. Packet: %s\nPacket Data: %s\nCalcCRC: %d PacketCRC: %d Left %d Right %d Time: %d" % (
+                            binascii.hexlify(packet), binascii.hexlify(packet[0:13]), calc_crc, crc, x1, x2, d_time))
+                elif data == b'\x02':
+                    packet = self.ser.read(4)
+                    batt, crc = unpack('HH', packet)
+                    calc_crc = CRCCCITT().calculate(packet[2:3])
+                    if calc_crc == crc:
+                        msg = BatteryState()
+                        msg.voltage = batt * self.ANALOG_TO_VOLTAGE
 
+                        msg.capacity = self.BATTERY_CAPACITY
+                        msg.design_capacity = self.BATTERY_CAPACITY
+
+                        # Linear trendline generated by Excel of voltages vs SoC
+                        msg.percentage = 86.558 * msg.voltage - 1015.4
+                        msg.charge = msg.capacity * msg.percentage / 100
+                        msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
+                        msg.power_supply_health = BatteryState.POWER_SUPPLY_HEALTH_GOOD
+
+                        # We are using a lead acid battery, but that type is not available in ROS or Linux's enums
+                        msg.power_supply_technology = BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN
+                        msg.present = True
+
+                        # Can't measure current due to ~200A starting current
+                        msg.current = float('NaN')
+
+                        # Cell voltage is impossible to measure in Lead Acid Battery
+                        msg.cell_voltage = [float('NaN')] * 6
+
+                        # TODO: extend battery reading for both batteries individually vs in series
+                        msg.location = ""
+                        msg.serial_number = ""
+
+                        self.battery_pub.publish(msg)
             rate.sleep()
 
 

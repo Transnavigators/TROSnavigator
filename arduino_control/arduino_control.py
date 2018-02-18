@@ -66,15 +66,16 @@ class ArduinoController:
         ang_vel = msg.angular.z * self.radius * 1e6
         vel_l = int(lin_vel - ang_vel)
         vel_r = int(lin_vel + ang_vel)
+
         if msg.linear.x == 0 and msg.linear.y == 0 and msg.linear.z == 0 and msg.angular.x == 0 and msg.angular.y == 0 and msg.angular.z == 0:
             # Stop
             packet = pack('2sH', self.STOP_CMD, self.STOP_CRC)
+            self.ser.write(packet)
         else:
             data_packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
             calc_crc = CRCCCITT().calculate(data_packet)
             packet = pack('2siiH', self.GO_CMD, vel_l, vel_r, calc_crc)
-        # Write packet to Arduino's serial port
-        self.ser.write(packet)
+            self.ser.write(packet)
         rospy.loginfo_throttle(1, "Sending vel1=%d vel2=%d" % (vel_l, vel_r))
 
     # start the node: spin forever
