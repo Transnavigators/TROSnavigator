@@ -39,7 +39,7 @@ class Alexa:
         self.topic = '/Transnavigators/Pi'
 
     # callback for receiving AWS message
-    def callback(client, userdata, message):
+    def callback(self, client, userdata, message):
         # extract data
         data_string = message.payload.decode("utf8").replace("'",'"')
         data_json = json.loads(data_string)
@@ -100,7 +100,9 @@ class Alexa:
 
     # sets up communication with AWS
     def begin(self):
-
+        
+        rospy.loginfo("Connecting to AWS")
+    
         # Configure logging
         logger = logging.getLogger("AWSIoTPythonSDK.core")
         logger.setLevel(logging.WARN)
@@ -126,6 +128,8 @@ class Alexa:
 
         self.action_client.wait_for_server()
 
+        rospy.loginfo("Connected to " + topic)
+        
         # wait
         rospy.spin()
 
