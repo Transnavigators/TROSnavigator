@@ -63,7 +63,7 @@ if __name__ == '__main__':
     rospy.init_node('test_alexa', anonymous=True)
     # set up AWS constants
     if rospy.has_param("~host"):
-        host = rospy.get_param("host")
+        host = rospy.get_param("~host")
     else:
         host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
     if rospy.has_param("~rootCAPath"):
