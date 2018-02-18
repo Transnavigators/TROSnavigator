@@ -3,7 +3,6 @@
 import rospy
 from std_msgs.msg import String
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTShadowClient
 import logging
 import json
 import os
@@ -110,9 +109,9 @@ class Alexa:
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
 
-        aws_iot_mqtt_client = AWSIoTMQTTClient(clientId)
-        aws_iot_mqtt_client.configureEndpoint(host, 8883)
-        aws_iot_mqtt_client.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
+        aws_iot_mqtt_client = AWSIoTMQTTClient(self.clientId)
+        aws_iot_mqtt_client.configureEndpoint(self.host, 8883)
+        aws_iot_mqtt_client.configureCredentials(self.rootCAPath, self.privateKeyPath, self.certificatePath)
 
         # AWSIoTMQTTClient connection configuration
         aws_iot_mqtt_client.configureAutoReconnectBackoffTime(1, 32, 20)
@@ -123,7 +122,7 @@ class Alexa:
 
         # Connect and subscribe to AWS IoT
         aws_iot_mqtt_client.connect()
-        aws_iot_mqtt_client.subscribe(topic, 1, callback)
+        aws_iot_mqtt_client.subscribe(self.topic, 1, self.callback)
 
         self.action_client.wait_for_server()
 
