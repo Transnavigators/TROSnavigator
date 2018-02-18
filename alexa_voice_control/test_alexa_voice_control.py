@@ -74,7 +74,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.aws_iot_mqtt_client.connect()
     
     def callback(self):
-        assertTrue(True,"True"):
+        assertTrue(True,"True")
     ## test 1 == 1
     def test_one_equals_one(self):
         self.assertEquals(1, 1, "1!=1")
