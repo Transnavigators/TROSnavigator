@@ -1,7 +1,13 @@
 <launch>
     <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py">
+        <param name="host" value="a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com"/>
+        <param name="rootCAPath" value="/Certificates/root-CA.crt"/>
+        <param name="certificatePath" value="/Certificates/Pi.cert.pem"/>
+        <param name="privateKeyPath" value="/Certificates/Pi.private.key"/>
+        <param name="clientId" value="Pi"/>
+        <param name="topic" value="/Transnavigators/Pi"/>
         <param name="user_tag_id" value="1001"/>
-    </node>>
+    </node>
     <node name="arduino_control" pkg="arduino_control" type="arduino_control.py">
         <param name="port" value="/dev/ttyACM0"/>
     </node>

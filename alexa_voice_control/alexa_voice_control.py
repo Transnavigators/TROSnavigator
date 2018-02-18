@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import rospy
-from std_msgs.msg import String
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import logging
 import json
@@ -30,13 +29,31 @@ class Alexa:
         self.FEET_TO_M = 0.3048
         self.DEGREES_TO_RAD = math.pi / 180
 
-        # set up constants
-        self.host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
-        self.rootCAPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/root-CA.crt'
-        self.certificatePath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.cert.pem'
-        self.privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.private.key'
-        self.clientId = 'Pi'
-        self.topic = '/Transnavigators/Pi'
+        # set up AWS constants
+        if rospy.has_param("~host"):
+            self.host = rospy.get_param("host")
+        else:
+            self.host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
+        if rospy.has_param("~rootCAPath"):
+            self.rootCAPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~rootCAPath")
+        else:
+            self.rootCAPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/root-CA.crt'
+        if rospy.has_param("~certificatePath"):
+            self.certificatePath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~certificatePath")
+        else:
+            self.certificatePath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.cert.pem'
+        if rospy.has_param("~privateKeyPath"):
+            self.privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~privateKeyPath")
+        else:
+            self.privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.private.key'
+        if rospy.has_param("~clientId"):
+            self.clientId = rospy.get_param("~clientId")
+        else:
+            self.clientId = 'Pi'
+        if rospy.has_param("~topic"):
+            self.topic = rospy.get_param("~topic")
+        else:
+            self.topic = '/Transnavigators/Pi'
 
     # callback for receiving AWS message
     def callback(self, client, userdata, message):
@@ -125,9 +142,12 @@ class Alexa:
         aws_iot_mqtt_client.connect()
         aws_iot_mqtt_client.subscribe(self.topic, 1, self.callback)
 
+        rospy.loginfo("Connected to " + topic)
+        
+        
         self.action_client.wait_for_server()
 
-        rospy.loginfo("Connected to " + topic)
+        rospy.loginfo("Connected to the action server")
         
         # wait
         rospy.spin()
