@@ -6,7 +6,8 @@ from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import json
 import os
 import time
-from move_base_msgs.msg import MoveBaseActionGoal    
+import actionlib
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 package_name = 'alexa_voice_control'
 test_name = 'alexa_voice_control'
@@ -20,8 +21,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def test_alexa(self):
         self.done = False
         # set up aws iot
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.callback)
-
+        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
+        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
         # start client
         aws_iot_mqtt_client = AWSIoTMQTTClient(clientId)
         aws_iot_mqtt_client.configureEndpoint(host, 8883)
@@ -45,15 +46,15 @@ class TestAlexaVoiceControl(unittest.TestCase):
         time.sleep(10)
         self.assertTrue(self.done)
         
-    def callback(self, msg):
+    def callback(self, goal):
         rospy.log("In callback")
-        self.assertEqual(msg.goal.pose.x, 100000.0,"move_forward pose.x")
-        self.assertEqual(msg.goal.pose.y, 0.0,"move_forward pose.y")
-        self.assertEqual(msg.goal.pose.z, 0.0,"move_forward pose.z")
-        self.assertEqual(msg.goal.orientation.x, 0.0,"move_forward orientation.x")
-        self.assertEqual(msg.goal.orientation.y, 0.0,"move_forward orientation.y")
-        self.assertEqual(msg.goal.orientation.z, 0.0,"move_forward orientation.z")
-        self.assertEqual(msg.goal.orientation.w, 0.0,"move_forward orientation.w")
+        self.assertEqual(goal.pose.x, 100000.0,"move_forward pose.x")
+        self.assertEqual(goal.pose.y, 0.0,"move_forward pose.y")
+        self.assertEqual(goal.pose.z, 0.0,"move_forward pose.z")
+        self.assertEqual(goal.orientation.x, 0.0,"move_forward orientation.x")
+        self.assertEqual(goal.orientation.y, 0.0,"move_forward orientation.y")
+        self.assertEqual(goal.orientation.z, 0.0,"move_forward orientation.z")
+        self.assertEqual(goal.orientation.w, 0.0,"move_forward orientation.w")
         self.done = True
 
 
