@@ -20,30 +20,22 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_alexa(self):
+        self.done = False
+        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
+        
         
         # test forward
-        self.result = False
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.move_forward_callback)
         message = json.dumps({"type" : "forward"})
         aws_iot_mqtt_client.publish(topic, message, 1)
-        while self.result == False:
-            rospy.loginfo("Waiting for info 1")
-            time.sleep(1)
-        sub.unregister()
         
         
-        # test stop
-        self.result = False
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseActionGoal, self.stop_callback)
-        message = json.dumps({"type" : "stop"})
-        aws_iot_mqtt_client.publish(topic, message, 1)
-        while self.result == False:
-            rospy.loginfo("Waiting for info 2")
-            time.sleep(1)
-        sub.unregister()
+        # message = json.dumps({"type" : "stop"})
+        # aws_iot_mqtt_client.publish(topic, message, 1)
         
-    def move_forward_callback(self, msg):
+        time.sleep(10)
+        self.assertEqual(self.done,"Timeout")
         
+    def callback(self, msg):
         self.assertEqual(msg.goal.pose.x, 100000.0,"move_forward pose.x")
         self.assertEqual(msg.goal.pose.y, 0.0,"move_forward pose.y")
         self.assertEqual(msg.goal.pose.z, 0.0,"move_forward pose.z")
@@ -51,19 +43,19 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEqual(msg.goal.orientation.y, 0.0,"move_forward orientation.y")
         self.assertEqual(msg.goal.orientation.z, 0.0,"move_forward orientation.z")
         self.assertEqual(msg.goal.orientation.w, 0.0,"move_forward orientation.w")
-        self.result = True
+        self.done = True
 
         
     def stop_callback(self, msg):
         
-        self.assertEqual(msg.goal.pose.x, 0.0,"stop pose.x")
-        self.assertEqual(msg.goal.pose.y, 0.0,"stop pose.y")
-        self.assertEqual(msg.goal.pose.z, 0.0,"stop pose.z")
-        self.assertEqual(msg.goal.orientation.x, 0.0,"stop orientation.x")
-        self.assertEqual(msg.goal.orientation.y, 0.0,"stop orientation.y")
-        self.assertEqual(msg.goal.orientation.z, 0.0,"stop orientation.z")
-        self.assertEqual(msg.goal.orientation.w, 0.0,"stop orientation.w")
-        self.result = True
+        # self.assertEqual(msg.goal.pose.x, 0.0,"stop pose.x")
+        # self.assertEqual(msg.goal.pose.y, 0.0,"stop pose.y")
+        # self.assertEqual(msg.goal.pose.z, 0.0,"stop pose.z")
+        # self.assertEqual(msg.goal.orientation.x, 0.0,"stop orientation.x")
+        # self.assertEqual(msg.goal.orientation.y, 0.0,"stop orientation.y")
+        # self.assertEqual(msg.goal.orientation.z, 0.0,"stop orientation.z")
+        # self.assertEqual(msg.goal.orientation.w, 0.0,"stop orientation.w")
+
         
 if __name__ == '__main__':
     import rostest
