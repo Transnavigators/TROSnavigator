@@ -9,7 +9,6 @@ import pyaudio
 import wave
 import rospkg
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
 
 
@@ -61,6 +60,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             self.threshold = int(rospy.get_param("~joystick_threshold"))
         else:
             self.threshold = 5
+
         self.used_key = False
         self.x_vel = 0
         self.rot_vel = 0
@@ -81,11 +81,19 @@ class SixaxisPublisher(asyncore.file_dispatcher):
     def scale_stick(self, value):
         return self.scale(value, (0, 255), (-1, 1))
 
-    def recv(self, ign=None):
-        return self.gamepad.read()
+    # Never need to write anything
+    def writable(self):
+        return 0
+
+    # Close connection on error
+    def handle_expt(self):
+        self.close()
+
+    def handle_close(self):
+        self.close()
 
     def handle_read(self):
-        for event in self.recv():
+        for event in self.gamepad.read():
             stop = False
 
             # Check for joystick inputs and if we're in joystick mode
@@ -96,9 +104,9 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     if mag > self.threshold:
                         scaled = self.scale_stick(event.value)
                         if scaled < 0:
-                            self.x_vel = -self.scale_stick(event.value) * self.MAX_SPEED
+                            self.x_vel = -scaled * self.MAX_SPEED
                         else:
-                            self.x_vel = -self.scale_stick(event.value) * self.MAX_REVERSE_SPEED
+                            self.x_vel = -scaled * self.MAX_REVERSE_SPEED
                     else:
                         self.x_vel = 0
                     self.used_key = False
@@ -126,7 +134,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                         self.used_key = True
                     elif event.code == 294:
                         # move back
-                        self.x_vel = -self.MAX_SPEED / 2
+                        self.x_vel = -self.MAX_REVERSE_SPEED
                         self.used_key = True
                     elif event.code == 295:
                         # turn left
@@ -160,61 +168,19 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                 twist.linear = Vector3(self.x_vel, 0, 0)
                 twist.angular = Vector3(0, 0, self.rot_vel)
                 self.pub.publish(twist)
-                #
-                # def begin(self):
-                #     if hasattr(self, 'gamepad'):
-                #         while not rospy.is_shutdown():
-                #             event = self.gamepad.read_one()
-                #             if event is not None:
-                #                 new_x = 0
-                #                 new_y = 0
-                #                 new_rot = 0
-                #                 stop = False
-                #                 # Event key mapping can be found here http://www.ev3dev.org/docs/tutorials/using-ps3-sixaxis/
-                #                 # Analog stick moved
-                #                 if event.type == 3:
-                #                     if event.code == 5:
-                #                         # moving forward
-                #                         new_x = 0.1
-                #                     elif event.code == 0:
-                #                         # turning
-                #                         new_rot = self.scale_stick(event.value) * math.pi / 32
-                #                 # Key presses
-                #                 elif event.type == 1:
-                #                     if event.code == 293 and event.value == 0:
-                #                         # turn right
-                #                         new_rot = -math.pi / 32
-                #                     elif event.code == 292 and event.value == 0:
-                #                         # move forward
-                #                         new_x = 0.1
-                #                     elif event.code == 294 and event.value == 0:
-                #                         # turn right
-                #                         new_rot = -math.pi / 32
-                #                     elif event.code == 295 and event.value == 0:
-                #                         # turn left
-                #                         new_rot = math.pi / 32
-                #                     if event.code == 302 and event.value == 1:
-                #                         # stop
-                #                         stop = True
-                #                 # Construct message if valid command was read
-                #                 if new_x != 0 or new_y != 0 or new_rot != 0 or stop:
-                #                     goal = MoveBaseGoal()
-                #                     goal.target_pose.header.frame_id = "base_link"
-                #                     goal.target_pose.header.stamp = rospy.get_time()
-                #                     goal.target_pose.pose.position = Point(new_x, new_y, 0)
-                #                     quat = quaternion_from_euler(0, 0, new_rot)
-                #                     goal.target_pose.pose.orientation = Quaternion(quat[0], quat[1], quat[2], quat[3])
-                #                     self.action_client.send_goal(goal)
-                #             self.rate.sleep()
-                #     else:
-                #         rospy.logfatal("Exiting...")
+#               goal = MoveBaseGoal()
+#               goal.target_pose.header.frame_id = "base_link"
+#               goal.target_pose.header.stamp = rospy.get_time()
+#               goal.target_pose.pose.position = Point(new_x, new_y, 0)
+#               quat = quaternion_from_euler(0, 0, new_rot)
+#               goal.target_pose.pose.orientation = Quaternion(math.cos(new_rot), 0, 0, math.sin(new_rot))
+#               self.action_client.send_goal(goal)
 
 
 if __name__ == "__main__":
     try:
         sp = SixaxisPublisher()
         while not rospy.is_shutdown():
-            asyncore.loop(count=1)
+            asyncore.loop(timeout=1, count=1)
     except rospy.ROSInterruptException:
         pass
-    asyncore.close_all()

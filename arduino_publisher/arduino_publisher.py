@@ -8,7 +8,7 @@ import os
 import binascii
 import asyncore
 from struct import unpack
-from PyCRC.CRC16 import CRC16
+from PyCRC.CRCCCITT import CRCCCITT
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from sensor_msgs.msg import BatteryState
@@ -99,23 +99,21 @@ class ArduinoPublisher:
         rate = rospy.Rate(100)  # 100Hz, increase if needed
         # TODO: Adjust rate according to 2x Arduino's sending rate if possible
         while not rospy.is_shutdown():
-            data = self.ser.read()
-            if data == b'\xEE':
-                data = self.ser.read()
-                if data == b'\x01':
+            if self.ser.read() == b'\xEE':
+                if self.ser.read() == b'\x01':
                     # Read 3 32bit ints and a 16bit CRC
                     # 3*4+2=14
-                    packetData = self.ser.read(14)
-                    x1, x2, d_time, crc = unpack('iiIH', packetData)
-                    packet = bytearray(b'\xEE\x01') + bytearray(packetData)
+                    packet_data = self.ser.read(14)
+                    x1, x2, d_time, crc = unpack('iiIH', packet_data)
+                    packet = bytearray(b'\xEE\x01') + bytearray(packet_data)
                     # Calculate the CRC to verify packet integrity
-                    calc_crc = CRC16().calculate(bytes(packet[0:13]))
+                    calc_crc = CRCCCITT().calculate(bytes(packet[0:13]))
                     if calc_crc == crc:
                         # Display the time frame each packet represents vs the node's refresh rate
                         current_time = rospy.Time.now()
                         delta_time = d_time * 1e-6
                         delta_ros_time = (current_time - last_time).to_nsec()
-                        rospy.loginfo("Delta ROS Time: %f ns\tDelta Time: %f ns", delta_ros_time, delta_time * 1e9)
+                        rospy.loginfo_throttle(1, "Delta ROS Time: %f ns\tDelta Time: %f ns", delta_ros_time, delta_time * 1e9)
 
                         # Convert number of pulses to a distance
                         delta_left = x1 * self.M_PER_PULSE
@@ -174,11 +172,11 @@ class ArduinoPublisher:
                         last_time = current_time
                     else:
                         rospy.logwarn(
-                            "Packet didn't pass checksum. Packet: %s CalcCRC: %d PacketCRC: %d Left %d Right %d Time: %d" % (binascii.hexlify(packet),calc_crc, crc, x1, x2, d_time))
+                            "Packet didn't pass checksum. Packet: %s CalcCRC: %d PacketCRC: %d Left %d Right %d Time: %d" % (binascii.hexlify(packet), calc_crc, crc, x1, x2, d_time))
                 elif data == 0x02:
                     packet = self.ser.read(4)
                     batt, crc = unpack('HH', packet)
-                    calc_crc = CRC16().calculate(packet[2:3])
+                    calc_crc = CRCCCITT().calculate(packet[2:3])
                     if calc_crc == crc:
                         msg = BatteryState()
                         msg.voltage = batt * self.ANALOG_TO_VOLTAGE
@@ -207,7 +205,6 @@ class ArduinoPublisher:
                         msg.serial_number = ""
 
                         self.battery_pub.publish(msg)
-
             rate.sleep()
 
 

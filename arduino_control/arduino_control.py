@@ -5,7 +5,7 @@ import serial
 import math
 import os
 from geometry_msgs.msg import Twist
-from PyCRC.CRC16 import CRC16
+from PyCRC.CRCCCITT import CRCCCITT
 from struct import pack
 
 
@@ -15,6 +15,11 @@ class ArduinoController:
         rospy.init_node('arduino_controller', anonymous=True)
         # Subscribe to the arduino_commands topic
         rospy.Subscriber("cmd_vel", Twist, self.callback)
+
+        if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
+        else:
+            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
 
         # The width between the wheels
         if rospy.has_param("~width"):
@@ -39,7 +44,7 @@ class ArduinoController:
         else:
             self.has_virtual_port = False
         self.STOP_CMD = b'\xEE\x00'
-        self.STOP_CRC = CRC16().calculate(bytes(self.STOP_CMD))
+        self.STOP_CRC = CRCCCITT().calculate(bytes(self.STOP_CMD))
         self.GO_CMD = b'\xEE\x20'
 
     # callback for receiving data from the Arduino
@@ -54,25 +59,14 @@ class ArduinoController:
             packet = pack('2s2s', self.STOP_CMD, self.STOP_CRC)
         else:
             data_packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
-            calc_crc = CRC16().calculate(bytes(data_packet))
+            calc_crc = CRCCCITT().calculate(bytes(data_packet))
             packet = pack('2siiH', self.GO_CMD, vel_l, vel_r, calc_crc)
         # Write packet to Arduino's serial port
         self.ser.write(packet)
-
-    def close_port(self):
-        self.ser.close()
+        rospy.loginfo_throttle(1, "Sending vel1=%d vel2=%d" % (vel_l, vel_r))
 
     # start the node: spin forever
     def begin(self):
-        # Change how ports are configured if in a docker container with virtual ports
-        if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0, rtscts=True, dsrdtr=True)
-        else:
-            self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=0)
-
-        # make sure the port is closed on exit
-        rospy.on_shutdown(self.close_port)
-
         # never exit
         rospy.spin()
 
