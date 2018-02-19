@@ -15,7 +15,6 @@ test_name = 'alexa_voice_control'
 package_name = 'test_alexa_voice_control'
 
 # list of all expected poses
-POSE_LIST = []
 
 
 class TestAlexaVoiceControl(unittest.TestCase):
@@ -23,80 +22,55 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_move_forward(self):
-        global POSE_LIST
-        self.done = False
+        #list of poses and their result
+        self.pose_list = {\
+            (json.dumps({"type": "forward"}), [100000.0,0.0,0.0,0.0,0.0,0.0,0.0]), \
+            (json.dumps({"type": "stop"}), [0.0,0.0,0.0,0.0,0.0,0.0,1.0]), \
+            (json.dumps({"type": "turn"}), [0.0,0.0,0.0,0.0,0.0,0.0,0.0], \
+            (json.dumps({"type": "forward","distance": 10, "distanceUnit", "meters"}), [0.0,0.0,0.0,0.0,0.0,0.0,0.0], \
+            (json.dumps({"type": "turn",  "angle" : 45, "angleUnit" : "degrees"})[0.0,0.0,0.0,0.0,0.0,0.0,0.0] \
+        }
+        self.current_pose = 0
+        
         # set up aws iot
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
         # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
         # start client
         rospy.sleep(3)
-
-        # test forward
-
-        # create and add the expected pose
-        pose = Pose()
-        pose.position.x = 100000
-        pose.position.y = 0
-        pose.position.z = 0
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 0
-        pose.orientation.w = 0
-
-        POSE_LIST.append(pose)
-
-        message = json.dumps({"type": "forward"})
-        aws_iot_mqtt_client.publish(topic, message, 1)
-
-        rospy.sleep(3)
-        self.assertTrue(self.done)
-
-    def test_stop(self):
-        global POSE_LIST
         self.done = False
-        # set up aws iot
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
-        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
-        # start client
-        rospy.sleep(3)
-
-        # test stop
-
-        # create and add the expected pose
-        pose = Pose()
-        pose.position.x = 0
-        pose.position.y = 0
-        pose.position.z = 0
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 0
-        pose.orientation.w = 1
-
-        POSE_LIST.append(pose)
-
-        message = json.dumps({"type": "stop"})
+        # test 
+        message = self.pose_list(self.current_pose)[0]
+        self.current_pose += 1
         aws_iot_mqtt_client.publish(topic, message, 1)
 
         rospy.sleep(3)
         self.assertTrue(self.done)
+
 
     def callback(self, goal):
-        global POSE_LIST
         rospy.loginfo("In callback")
         self.assertEquals(0, 1, "Before: %s" % str(POSE_LIST))
-        for pose in POSE_LIST:
-            if pose.position.x == goal.target_pose.pose.position.x \
-                    and pose.position.y == goal.target_pose.pose.position.y \
-                    and pose.position.z == goal.target_pose.pose.position.z \
-                    and pose.orientation.x == goal.target_pose.pose.orientation.x \
-                    and pose.orientation.y == goal.target_pose.pose.orientation.y \
-                    and pose.orientation.z == goal.target_pose.pose.orientation.z \
-                    and pose.orientation.w == goal.target_pose.pose.orientation.w:
+        for pose in self.post_list:
+            if pose[1][0] == goal.target_pose.pose.position.x \
+                    and pose[1][1] == goal.target_pose.pose.position.y \
+                    and pose[1][2] == goal.target_pose.pose.position.z \
+                    and pose[1][3] == goal.target_pose.pose.orientation.x \
+                    and pose[1][4] == goal.target_pose.pose.orientation.y \
+                    and pose[1][5] == goal.target_pose.pose.orientation.z \
+                    and pose[1][6] == goal.target_pose.pose.orientation.w:
 
-                POSE_LIST.remove(pose)
+                
+                self.action_server.set_succeeded()
+                
                 self.assertEquals(0, 1, "After: %s" % str(POSE_LIST))
-                self.done = True
-                # self.action_server.set_succeeded()
+                
+                message = self.pose_list(self.current_pose)[0]
+                self.current_pose += 1
+                aws_iot_mqtt_client.publish(topic, message, 1)
+
+                if self.current_pose == 2:
+                    self.done = True
+                self.action_server.set_succeeded()
 
 
 if __name__ == '__main__':
