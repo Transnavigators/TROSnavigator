@@ -1,0 +1,13 @@
+*.txt eol=lf
+*.py eol=lf
+*.xml eol=lf
+*.launch eol=lf
+*.test eol=lf
+*.rosinstall eol=lf
+*.crt eol=lf
+*.key eol=lf
+*.pem eol=lf
+*.enc eol=lf
+*.urdf eol=lf
+*.wav binary
+*.stl binary
