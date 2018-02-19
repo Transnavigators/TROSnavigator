@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 import unittest
 
 
@@ -9,7 +8,7 @@ package_name = 'test_berryimu_publisher'
 
 
 class TestBerryimuPublisher(unittest.TestCase):
-    ## test 1 == 1
+    # test 1 == 1
     def test_one_equals_one(self):
         self.assertEquals(1, 1, "1!=1")
 

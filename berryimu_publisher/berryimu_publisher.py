@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Modified From https://github.com/mwilliams03/BerryIMU
 import math
