@@ -29,6 +29,9 @@ class TestArduinoPublisher(unittest.TestCase):
         # serial params
         port_name = '/tmp/ttyTST0'
 
+        # Kill any open instances of socat
+        subprocess.call(['pkill', 'socat'])
+
         # Create virtual port
         proc = subprocess.Popen(['/usr/bin/socat', '-d', '-d', 'pty,link=%s' % port_name, 'pty,link=/tmp/ttyTST1'])
         rospy.sleep(4)

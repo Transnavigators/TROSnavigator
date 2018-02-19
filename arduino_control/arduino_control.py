@@ -41,7 +41,7 @@ class ArduinoController:
         # Wait for port in case it is being setup
 
         if 'INSIDEDOCKER' in os.environ or self.has_virtual_port:
-            rospy.sleep(4)
+            rospy.sleep(3)
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=5, rtscts=True, dsrdtr=True)
         else:
             self.ser = serial.Serial(port=self.port_name, baudrate=self.baud_rate, timeout=5)
