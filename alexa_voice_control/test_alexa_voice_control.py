@@ -64,13 +64,15 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.aws_iot_mqtt_client.connect()
         rospy.loginfo("Connecting to AWS")
 
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
         self.POSE_LIST = []
+
 
     def test_one_equals_one(self):
         self.assertEquals(1, 1, "1!=1")
 
     def test_move_forward(self):
+        action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback, auto_start=False)
+
         # self.done = False
         # set up aws iot
         # self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
@@ -88,6 +90,9 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.POSE_LIST.append(pose)
 
         message = json.dumps({"type": "forward"})
+
+        action_server.start()
+
         self.aws_iot_mqtt_client.publish(self.topic, message, 1)
 
         rospy.sleep(3)
@@ -97,6 +102,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
 
     def test_stop(self):
         # set up aws iot
+        action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback, auto_start=False)
 
         # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
         # start client
@@ -112,31 +118,34 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.POSE_LIST.append(pose)
 
         message = json.dumps({"type": "stop"})
+
+        action_server.start()
+
         self.aws_iot_mqtt_client.publish(self.topic, message, 1)
 
         rospy.sleep(3)
-        for new_pose in self.POSE_LIST:
-            if self.pose_equals(pose, new_pose):
-                self.fail("Message wasn't received")
+        if len(self.POSE_LIST) != 0 and self.pose_equals(pose, self.POSE_LIST[len(self.POSE_LIST)-1]):
+            self.fail("Message wasn't received")
 
     def callback(self, goal):
         rospy.loginfo("In callback")
         recv_pose = goal.target_pose.pose
-        for pose in self.POSE_LIST:
-            if self.pose_equals(pose, recv_pose):
-                self.POSE_LIST.remove(pose)
-                #self.action_server.set_succeeded()
+        last_pose = self.POSE_LIST.index(len(self.POSE_LIST)-1)
+        if self.pose_equals(last_pose, recv_pose):
+            self.POSE_LIST.pop()
+            self.action_server.set_succeeded()
 
     def pose_equals(self, pose1, pose2):
         if abs(pose1.position.x - pose2.position.x) < 0.01 \
-                and abs(pose1.position.y == pose2.position.y) < 0.01 \
-                and abs(pose1.position.z == pose2.position.z) < 0.01 \
-                and abs(pose1.orientation.x == pose2.orientation.x) < 0.01 \
-                and abs(pose1.orientation.y == pose2.orientation.y) < 0.01 \
-                and abs(pose1.orientation.z == pose2.orientation.z) < 0.01 \
-                and abs(pose1.orientation.w == pose2.orientation.w) < 0.01:
+                and abs(pose1.position.y - pose2.position.y) < 0.01 \
+                and abs(pose1.position.z - pose2.position.z) < 0.01 \
+                and abs(pose1.orientation.x - pose2.orientation.x) < 0.01 \
+                and abs(pose1.orientation.y - pose2.orientation.y) < 0.01 \
+                and abs(pose1.orientation.z - pose2.orientation.z) < 0.01 \
+                and abs(pose1.orientation.w - pose2.orientation.w) < 0.01:
             return True
         else:
+            rospy.logerr("%s != %s" % (str(pose1), str(pose2)))
             return False
 
 
