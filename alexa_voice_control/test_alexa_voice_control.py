@@ -21,7 +21,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def test_one_equals_one(self):
         self.assertEquals(1, 1, "1!=1")
 
-    def test_move_forward(self):
+    def test_alexa(self):
         #list of poses and their result
         self.pose_list = {\
             (json.dumps({"type": "forward"}), [100000.0,0.0,0.0,0.0,0.0,0.0,0.0]), \
@@ -51,8 +51,6 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def callback(self, goal):
         rospy.loginfo("In callback")
         
-        #not sure what this is for
-        self.assertEquals(0, 1, "Before: %s" % str(POSE_LIST))
         
         # check result with expected pose
         for pose in self.post_list:
@@ -67,17 +65,17 @@ class TestAlexaVoiceControl(unittest.TestCase):
                 # idk why this is needed
                 self.action_server.set_succeeded()
                 
-                # not sure about this
-                self.assertEquals(0, 1, "After: %s" % str(POSE_LIST))
+                rospy.loginfo("Found pose " + pose[0])
                 
+                # success if the first two tests work
+                if self.current_pose == 2:
+                    self.done = True
+
+                    
                 # get next message and publish it
                 message = self.pose_list(self.current_pose)[0]
                 self.current_pose += 1
                 aws_iot_mqtt_client.publish(topic, message, 1)
-
-                # success if the first two tests work
-                if self.current_pose == 3:
-                    self.done = True
 
 if __name__ == '__main__':
     import rostest
