@@ -35,11 +35,14 @@ class TestAlexaVoiceControl(unittest.TestCase):
         # set up aws iot
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
         # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
+        
         # start client
         rospy.sleep(3)
         self.done = False
+        
         # test 
         message = self.pose_list(self.current_pose)[0]
+        rospy.loginfo("Sending " + message)
         self.current_pose += 1
         aws_iot_mqtt_client.publish(topic, message, 1)
 
@@ -74,6 +77,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
                     
                 # get next message and publish it
                 message = self.pose_list(self.current_pose)[0]
+                rospy.loginfo("Sending " + message)
                 self.current_pose += 1
                 aws_iot_mqtt_client.publish(topic, message, 1)
 
