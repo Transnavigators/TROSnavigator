@@ -43,8 +43,7 @@ script:
     source $CI_DEVEL_PATH/setup.bash &&
     timeout 30s roslaunch TROSnavigator.xml;
     cd .. &&
-    catkin_make run_tests && catkin_test_results;
-    exit $?"
+    catkin_make run_tests && catkin_test_results"
 
 notifications:
     email: false
