@@ -27,7 +27,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
             (json.dumps({"type": "forward"}), [100000.0,0.0,0.0,0.0,0.0,0.0,0.0]), \
             (json.dumps({"type": "stop"}), [0.0,0.0,0.0,0.0,0.0,0.0,1.0]), \
             (json.dumps({"type": "turn"}), [0.0,0.0,0.0,0.0,0.0,0.0,0.0], \
-            (json.dumps({"type": "forward","distance": 10, "distanceUnit", "meters"}), [0.0,0.0,0.0,0.0,0.0,0.0,0.0], \
+            (json.dumps({"type": "forward","distance": 10, "distanceUnit": "meters"}), [0.0,0.0,0.0,0.0,0.0,0.0,0.0], \
             (json.dumps({"type": "turn",  "angle" : 45, "angleUnit" : "degrees"})[0.0,0.0,0.0,0.0,0.0,0.0,0.0] \
         }
         self.current_pose = 0
