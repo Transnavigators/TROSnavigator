@@ -41,7 +41,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.done = False
         
         # test 
-        message = self.pose_list(self.current_pose)[0]
+        message = self.pose_list[self.current_pose][0]
         rospy.loginfo("Sending " + message)
         self.current_pose += 1
         aws_iot_mqtt_client.publish(topic, message, 1)
@@ -76,7 +76,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
 
                     
                 # get next message and publish it
-                message = self.pose_list(self.current_pose)[0]
+                message = self.pose_list[self.current_pose][0]
                 rospy.loginfo("Sending " + message)
                 self.current_pose += 1
                 aws_iot_mqtt_client.publish(topic, message, 1)
