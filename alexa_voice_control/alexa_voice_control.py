@@ -9,7 +9,6 @@ import math
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, Quaternion
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from tf import TransformListener
 
 
@@ -79,11 +78,15 @@ class Alexa:
 
         # Turn the wheelchair
         elif data['type'] == 'turn':
-            angle = float(data['angle'])
-            if data['angleUnit'] == 'degrees':
-                angle *= self.DEGREES_TO_RAD
-            goal_quat = quaternion_from_euler(0, 0, angle)
-            goal.target_pose.pose.orientation = Quaternion(goal_quat[0], goal_quat[1], goal_quat[2], goal_quat[3])
+            if 'angle' in data:
+                angle = float(data['angle'])
+                if data['angleUnit'] == 'degrees':
+                    angle *= self.DEGREES_TO_RAD
+            else:
+                angle = 90
+            if 'direction' in data and data['direction'] == 'left':
+                angle = -angle
+            goal.target_pose.pose.orientation = Quaternion(math.cos(angle/2), 0, 0, math.sin(angle/2))
 
         # Stop the wheelchair
         elif data['type'] == 'stop':

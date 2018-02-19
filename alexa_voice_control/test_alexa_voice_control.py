@@ -14,6 +14,7 @@ package_name = 'alexa_voice_control'
 test_name = 'alexa_voice_control'
 package_name = 'test_alexa_voice_control'
 
+
 # list of all expected poses
 
 
@@ -24,24 +25,26 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def test_alexa(self):
         # list of poses and their result
         # TODO: UPDATE POSES with expected results
-        self.pose_list = [\
-            (json.dumps({"type": "forward"}), [100000.0,0.0,0.0,0.0,0.0,0.0,0.0]), \
-            (json.dumps({"type": "stop"}), [0.0,0.0,0.0,0.0,0.0,0.0,1.0]), \    
-            (json.dumps({"type": "turn"}), [0.0,0.0,0.0,0.0,0.0,0.0,0.0]), \
-            (json.dumps({"type": "forward", "distance": 10, "distanceUnit": "meters"}), [0.0,0.0,0.0,0.0,0.0,0.0,0.0]), \
-            (json.dumps({"type": "turn", "direction": "left",  "angle" : 45, "angleUnit" : "degrees"}),[0.0,0.0,0.0,0.0,0.0,0.0,0.0]) \
+        self.pose_list = [
+            (json.dumps({"type": "forward"}), [100000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            (json.dumps({"type": "stop"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
+            (json.dumps({"type": "turn"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            (json.dumps({"type": "forward", "distance": 10, "distanceUnit": "meters"}),
+             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            (json.dumps({"type": "turn", "direction": "left", "angle": 45, "angleUnit": "degrees"}),
+             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         ]
         self.current_pose = 0
-        
+
         # set up aws iot
 
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
         # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
-        
+
         # start client
         rospy.sleep(3)
         self.done = False
-        
+
         # test 
         message = self.pose_list[self.current_pose][0]
         rospy.loginfo("Sending " + message)
@@ -52,14 +55,12 @@ class TestAlexaVoiceControl(unittest.TestCase):
         rospy.sleep(5)
         self.assertTrue(self.done)
 
-
     def callback(self, goal):
         rospy.loginfo("In callback")
-        
-        
+
         # check result with expected pose
         for pose in self.pose_list:
-            if          pose[1][0] == goal.target_pose.pose.position.x \
+            if pose[1][0] == goal.target_pose.pose.position.x \
                     and pose[1][1] == goal.target_pose.pose.position.y \
                     and pose[1][2] == goal.target_pose.pose.position.z \
                     and pose[1][3] == goal.target_pose.pose.orientation.x \
@@ -69,19 +70,19 @@ class TestAlexaVoiceControl(unittest.TestCase):
 
                 # idk why this is needed
                 # self.action_server.set_succeeded()
-                
+
                 rospy.loginfo("Found pose " + pose[0])
-                
+
                 # success if the first two tests work
                 if self.current_pose == 2:
                     self.done = True
 
-                    
                 # get next message and publish it
                 message = self.pose_list[self.current_pose][0]
                 rospy.loginfo("Sending " + message)
                 self.current_pose += 1
                 aws_iot_mqtt_client.publish(topic, message, 1)
+
 
 if __name__ == '__main__':
     import rostest
