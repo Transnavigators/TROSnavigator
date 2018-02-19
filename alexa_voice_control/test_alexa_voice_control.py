@@ -33,8 +33,8 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.current_pose = 0
         
         # set up aws iot
-        # self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
-        sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
+        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
+        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
         
         # start client
         rospy.sleep(3)
@@ -66,7 +66,7 @@ class TestAlexaVoiceControl(unittest.TestCase):
                     and pose[1][6] == goal.target_pose.pose.orientation.w:
 
                 # idk why this is needed
-                # self.action_server.set_succeeded()
+                self.action_server.set_succeeded()
                 
                 rospy.loginfo("Found pose " + pose[0])
                 
