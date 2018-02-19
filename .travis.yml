@@ -30,9 +30,7 @@ before_script:
   - docker exec -t ubuntu-test bash -c "cd $CI_SOURCE_PATH/..;
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
-    openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a;
-    ln -s /dev/pts/0 /dev/ttyACM0;
-    ln -s /dev/pts/0 /dev/ttyAMA0"
+    openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a"
 
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
@@ -43,7 +41,7 @@ script:
     export INSIDEDOCKER=true &&
     cd $CI_SOURCE_PATH &&
     source $CI_DEVEL_PATH/setup.bash &&
-    timeout 30s roslaunch TROSnavigator.xml ||
+    timeout 30s roslaunch TROSnavigator.xml;
     cd .. &&
     catkin_make run_tests && catkin_test_results"
 

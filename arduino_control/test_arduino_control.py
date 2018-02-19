@@ -36,7 +36,7 @@ class TestArduinoControl(unittest.TestCase):
         # serial params
         baud_rate = 115200
         port_name = '/tmp/ttyTST1'
-        proc = subprocess.Popen(['/usr/bin/socat', 'pty,link=/tmp/ttyTST0', 'pty,link=/tmp/ttyTST1'])
+        proc = subprocess.Popen(['/usr/bin/socat', '-d', '-d', 'pty,link=/tmp/ttyTST0', 'pty,link=/tmp/ttyTST1'])
         # Wait 10s for port to come up
 
         rospy.sleep(4)

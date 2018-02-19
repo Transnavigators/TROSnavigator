@@ -30,7 +30,7 @@ class TestArduinoPublisher(unittest.TestCase):
         port_name = '/tmp/ttyTST0'
 
         # Create virtual port
-        proc = subprocess.Popen(['/usr/bin/socat', 'pty,link=%s' % port_name, 'pty,link=/tmp/ttyTST1'])
+        proc = subprocess.Popen(['/usr/bin/socat', '-d', '-d', 'pty,link=%s' % port_name, 'pty,link=/tmp/ttyTST1'])
         rospy.sleep(4)
 
         ser = serial.Serial(port=port_name, baudrate=115200, timeout=1, rtscts=True, dsrdtr=True)
