@@ -43,13 +43,18 @@ class TestAlexaVoiceControl(unittest.TestCase):
         self.current_pose += 1
         aws_iot_mqtt_client.publish(topic, message, 1)
 
-        rospy.sleep(3)
+        # wait for tests to finish
+        rospy.sleep(5)
         self.assertTrue(self.done)
 
 
     def callback(self, goal):
         rospy.loginfo("In callback")
+        
+        #not sure what this is for
         self.assertEquals(0, 1, "Before: %s" % str(POSE_LIST))
+        
+        # check result with expected pose
         for pose in self.post_list:
             if pose[1][0] == goal.target_pose.pose.position.x \
                     and pose[1][1] == goal.target_pose.pose.position.y \
@@ -59,19 +64,20 @@ class TestAlexaVoiceControl(unittest.TestCase):
                     and pose[1][5] == goal.target_pose.pose.orientation.z \
                     and pose[1][6] == goal.target_pose.pose.orientation.w:
 
-                
+                # idk why this is needed
                 self.action_server.set_succeeded()
                 
+                # not sure about this
                 self.assertEquals(0, 1, "After: %s" % str(POSE_LIST))
                 
+                # get next message and publish it
                 message = self.pose_list(self.current_pose)[0]
                 self.current_pose += 1
                 aws_iot_mqtt_client.publish(topic, message, 1)
 
-                if self.current_pose == 2:
+                # success if the first two tests work
+                if self.current_pose == 3:
                     self.done = True
-                self.action_server.set_succeeded()
-
 
 if __name__ == '__main__':
     import rostest
