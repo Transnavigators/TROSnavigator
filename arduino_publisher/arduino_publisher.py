@@ -114,7 +114,7 @@ class ArduinoPublisher:
                         # 3*4+2=14
                         packet_data = self.ser.read(14)
                         x1, x2, d_time, crc = unpack('iiIH', packet_data)
-                        packet = pack('2s14s', b'\xEE\x01', packet_data)
+                        packet = pack('=2s14s', b'\xEE\x01', packet_data)
                         # Calculate the CRC to verify packet integrity
                         calc_crc = CRCCCITT().calculate(packet[0:14])
                         if calc_crc == crc:

@@ -38,9 +38,9 @@ class TestArduinoPublisher(unittest.TestCase):
 
         ser = serial.Serial(port=port_name, baudrate=115200, timeout=1, rtscts=True, dsrdtr=True)
 
-        cmd = pack('2siiI', b'\xEE\x01', 7500, 7500, 3600)
+        cmd = pack('=2siiI', b'\xEE\x01', 7500, 7500, 3600)
         crc = CRCCCITT().calculate(cmd[0:14])
-        packet = pack('14sH', cmd[0:14], crc)
+        packet = pack('=14sH', cmd[0:14], crc)
 
         # Wait for the publisher
         ser.write(packet)

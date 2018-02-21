@@ -68,11 +68,11 @@ class ArduinoController:
             # Stop
             self.ser.write(self.stop_packet)
         else:
-            data_packet = pack('2sii', self.GO_CMD, vel_l, vel_r)
+            data_packet = pack('=2sii', self.GO_CMD, vel_l, vel_r)
             calc_crc = CRCCCITT().calculate(data_packet[0:10])
-            packet = pack('2siiH', self.GO_CMD, vel_l, vel_r, calc_crc)
+            packet = pack('=2siiH', self.GO_CMD, vel_l, vel_r, calc_crc)
             self.ser.write(packet)
-        rospy.loginfo_throttle(1, "Sending vel1=%d vel2=%d" % (vel_l, vel_r))
+        rospy.loginfo_throttle(1, "Sending vel1=%d vel2=%d with packet " % (vel_l, vel_r))
 
     # start the node: spin forever
     def begin(self):

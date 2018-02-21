@@ -57,7 +57,7 @@ class TestArduinoControl(unittest.TestCase):
 
         # expected values
         stop_cmd = b'\xEE\x00'
-        stop_crc = pack('H', CRCCCITT().calculate(stop_cmd))
+        stop_crc = pack('=H', CRCCCITT().calculate(stop_cmd))
 
         data = self.ser.read()
         if data == b'\xEE':
