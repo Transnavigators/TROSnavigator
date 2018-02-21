@@ -69,7 +69,7 @@ class ArduinoController:
             self.ser.write(self.stop_packet)
         else:
             data_packet = pack('=2sii', self.GO_CMD, vel_l, vel_r)
-            calc_crc = CRCCCITT().calculate(data_packet[0:10])
+            calc_crc = CRCCCITT().calculate(data_packet)
             packet = pack('=2siiH', self.GO_CMD, vel_l, vel_r, calc_crc)
             self.ser.write(packet)
         rospy.loginfo_throttle(1, "Sending vel1=%d vel2=%d with packet " % (vel_l, vel_r))
