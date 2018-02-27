@@ -77,33 +77,49 @@ class ArduinoOdometry:
                 # adapted from Mastering ROS for Robotics Programming page 303-306
                 # https://github.com/qboticslabs/mastering_ros/blob/master/chapter_9_codes/chefbot_navig_cpp/src/diff_tf.cpp
                 ##################################################################
-                elapsed = current_time - previous_time
+                delta_time = current_time - previous_time
                 #if old_left == 0: # reset? we might not need this check 
                 #    d_left = 0
                 #    d_right = 0
                 #else:
-                d_left = (new_left - old_left) * self.meters_per_pulse
-                d_right = (new_right - old_right) * self.meters_per_pulse
+                delta_left = (new_left - old_left) * self.meters_per_pulse
+                delta_right = (new_right - old_right) * self.meters_per_pulse
 
                 old_left = new_left
                 old_right = new_right
                 previous_time = current_time
             
-                d = (d_left + d_right ) / 2.0
-                th = ( d_right - d_left ) / self.width
-                dx = d /elapsed
-                dr = th / elapsed
-                if d != 0:
-                    x = math.cos( th ) * d
-                    y = -math.sin( th ) * d
-                    # calculate the final position of the robot
-                    x_final = x_final + ( math.cos( theta_final ) * x - math.sin(theta_final ) * y )
-                    y_final = y_final + ( math.sin( theta_final ) * x + math.cos(theta_final ) * y )
-                if th != 0:
-                    theta_final = theta_final + th
-                
-                
-                
+                #d = (d_left + d_right ) / 2.0
+                #th = ( d_right - d_left ) / self.width
+                #dx = d /elapsed
+                #dr = th / elapsed
+
+                if abs(delta_left - delta_right) < 1e-6:
+                    dx = delta_left * math.cos(th)
+                    dy = delta_right * math.sin(th)
+                    vth = 0
+                else:
+                    r = self.WIDTH * (delta_right + delta_left) / (2 * (delta_right - delta_left))
+                    wd = (delta_right - delta_left) / self.WIDTH
+                    dx = r * math.sin(wd + th) - r * math.sin(th)
+                    dy = -r * math.cos(wd + th) + r * math.cos(th)
+                    th = (th + wd + (2 * math.pi)) % (2 * math.pi)
+                    vth = wd * delta_time
+                x = x + dx
+                y = y + dy
+                vx = dx * delta_time
+                vy = dy * delta_time
+                theta_final = (theta_final+th) % (2 * math.pi)
+                # if d != 0:
+                #     x = math.cos( th ) * d
+                #     y = -math.sin( th ) * d
+                #
+                #     # calculate the final position of the robot
+                #     x_final = x_final + ( math.cos( theta_final ) * x - math.sin(theta_final ) * y )
+                #     y_final = y_final + ( math.sin( theta_final ) * x + math.cos(theta_final ) * y )
+                # if th != 0:
+                #     theta_final = theta_final + th
+
                 # send messages
                 odom_quat = Quaternion()
                 odom_quat.x = 0.0
@@ -124,11 +140,7 @@ class ArduinoOdometry:
                 # odom_trans.transform.translation.z = 0.0
                 # odom_trans.transform.rotation = odom_quat
                 #send the transform
-                self.odom_broadcaster.sendTransform((x_final,y_final, 0.0),
-                                                tf.transformations.quaternion_from_euler(0,0,theta_final),
-                                                now,
-                                                "base_link",
-                                                "odom")
+                self.odom_broadcaster.sendTransform((x_final,y_final, 0.0), odom_quat, now, "base_link", "odom")
             
                 #next, we'll publish the odometry message over ROS
                 odom = Odometry()
@@ -141,9 +153,9 @@ class ArduinoOdometry:
                 odom.pose.pose.orientation = odom_quat
                 #set the velocity
                 odom.child_frame_id = "base_link"
-                odom.twist.twist.linear.x = dx
-                odom.twist.twist.linear.y = 0
-                odom.twist.twist.angular.z = dr
+                odom.twist.twist.linear.x = vx
+                odom.twist.twist.linear.y = vy
+                odom.twist.twist.angular.z = vth
             
                 self.pub.publish(odom)
             
