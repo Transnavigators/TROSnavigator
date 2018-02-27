@@ -77,4 +77,4 @@ class TestArduino(unittest.TestCase):
 if __name__ == '__main__':
     import rostest
 
-    rostest.rosrun(package_name, test_name, TestArduinoControl)
+    rostest.rosrun(package_name, test_name, TestArduino)
