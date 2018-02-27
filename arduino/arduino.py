@@ -103,6 +103,8 @@ class Arduino:
             receive_data = self.readEncoders()
             new_left,new_right = struct.unpack('ii',bytearray(receive_data[0:8]))
             
+            rospy.loginfo("Left count: ", new_left, " | Right count: ", new_right)
+            
             current_time = rospy.get_time()
             now = rospy.Time.now()
 
