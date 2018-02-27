@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-
+import smbus
+import struct
 import rospy
 import serial
 import math
 import os
 import sys
+import tf
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 from nav_msgs.msg import Odometry
 
@@ -12,12 +14,16 @@ from nav_msgs.msg import Odometry
 class Arduino:
 
     # commands for sending and receiving it
-    move_cmd = ord('m')
-    encoder_cmd = ord('e')
     
     def __init__(self):
         # Initialize the serial port
         rospy.init_node('arduino', anonymous=True)
+
+        self.bus = smbus.SMBus(1)
+
+        self.move_cmd = ord('m')
+        self.encoder_cmd = ord('e')
+        self.address = 0x04
 
         # The width between the wheels
         if rospy.has_param("~width"):
@@ -25,7 +31,7 @@ class Arduino:
             self.radius = float(self.width) / 2
         else:
             self.width = 31.5 * 0.0254
-            self.radius = self.radius / 2
+            self.radius = self.width / 2
             
 
         # Constant distance travelled per pulse of the encoder
@@ -70,11 +76,11 @@ class Arduino:
 
     # send data to arduino
     def sendSpeedToMotor(self,m1,m2):
-        bus.write_i2c_block_data(address, move_cmd, [m1, m2]);
+        self.bus.write_i2c_block_data(self.address, self.move_cmd, [m1, m2]);
         
     # get data from arduino
     def readEncoders(self):
-        data = bus.read_i2c_block_data(address, encoder_cmd)
+        data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
         return data
          
     # start the node: spin forever
@@ -118,11 +124,11 @@ class Arduino:
             dx = d /elapsed
             dr = th / elapsed
             if d != 0:
-                x = cos( th ) * d
-                y = -sin( th ) * d
+                x = math.cos( th ) * d
+                y = -math.sin( th ) * d
                 # calculate the final position of the robot
-                x_final = x_final + ( cos( theta_final ) * x - sin(theta_final ) * y )
-                y_final = y_final + ( sin( theta_final ) * x + cos(theta_final ) * y )
+                x_final = x_final + ( math.cos( theta_final ) * x - math.sin(theta_final ) * y )
+                y_final = y_final + ( math.sin( theta_final ) * x + math.cos(theta_final ) * y )
             if th != 0:
                 theta_final = theta_final + th
                 
@@ -134,8 +140,8 @@ class Arduino:
             odom_quat.y = 0.0
             odom_quat.z = 0.0
             
-            odom_quat.z = sin( theta_final / 2 )
-            odom_quat.w = cos( theta_final / 2 )
+            odom_quat.z = math.sin( theta_final / 2 )
+            odom_quat.w = math.cos( theta_final / 2 )
             
             # first, we'll publish the transform over tf
             odom_trans = TransformStamped()
@@ -148,7 +154,7 @@ class Arduino:
             odom_trans.transform.translation.z = 0.0
             odom_trans.transform.rotation = odom_quat
             #send the transform
-            odom_broadcaster.sendTransform(odom_trans)
+            self.odom_broadcaster.sendTransform(odom_trans)
             
             #next, we'll publish the odometry message over ROS
             odom = Odometry()
