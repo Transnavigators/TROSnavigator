@@ -7,6 +7,7 @@ import math
 import os
 import sys
 import tf
+import time
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 from nav_msgs.msg import Odometry
 
@@ -96,7 +97,8 @@ class Arduino:
         
         
         
-        while True:
+        while not rospy.is_shutdown():
+            time.sleep(1)
             # read encoders
             receive_data = self.readEncoders()
             new_left,new_right = struct.unpack('ii',bytearray(receive_data[0:8]))
@@ -155,7 +157,7 @@ class Arduino:
             # odom_trans.transform.rotation = odom_quat
             #send the transform
             self.odom_broadcaster.sendTransform((x_final,y_final, 0.0),
-                                                odom_quat,
+                                                tf.transformations.quaternion_from_euler(0,0,theta_final),
                                                 now,
                                                 "base_link",
                                                 "odom")
