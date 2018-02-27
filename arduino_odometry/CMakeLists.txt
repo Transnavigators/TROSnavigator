@@ -118,6 +118,11 @@ catkin_package(
 #   src/${PROJECT_NAME}/arduino_odometry.cpp
 # )
 
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test.test)
+endif()
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure

@@ -1,0 +1,5 @@
+<launch>
+    <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
+    </node>
+    <test test-name="test_arduino_odometry" pkg="arduino_odometry" type="test_arduino_odometry.py" />
+</launch>
