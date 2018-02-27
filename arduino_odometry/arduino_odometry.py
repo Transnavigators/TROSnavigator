@@ -99,8 +99,8 @@ class ArduinoOdometry:
                     dy = delta_right * math.sin(th)
                     vth = 0
                 else:
-                    r = self.WIDTH * (delta_right + delta_left) / (2 * (delta_right - delta_left))
-                    wd = (delta_right - delta_left) / self.WIDTH
+                    r = self.width * (delta_right + delta_left) / (2 * (delta_right - delta_left))
+                    wd = (delta_right - delta_left) / self.width
                     dx = r * math.sin(wd + th) - r * math.sin(th)
                     dy = -r * math.cos(wd + th) + r * math.cos(th)
                     th = (th + wd + (2 * math.pi)) % (2 * math.pi)
