@@ -143,18 +143,22 @@ class Arduino:
             odom_quat.z = math.sin( theta_final / 2 )
             odom_quat.w = math.cos( theta_final / 2 )
             
-            # first, we'll publish the transform over tf
-            odom_trans = TransformStamped()
-            odom_trans.header.stamp = now
-            odom_trans.header.frame_id = "odom"
-            odom_trans.child_frame_id = "base_link"
+            # # first, we'll publish the transform over tf
+            # odom_trans = TransformStamped()
+            # odom_trans.header.stamp = now
+            # odom_trans.header.frame_id = "odom"
+            # odom_trans.child_frame_id = "base_link"
             
-            odom_trans.transform.translation.x = x_final
-            odom_trans.transform.translation.y = y_final
-            odom_trans.transform.translation.z = 0.0
-            odom_trans.transform.rotation = odom_quat
+            # odom_trans.transform.translation.x = x_final
+            # odom_trans.transform.translation.y = y_final
+            # odom_trans.transform.translation.z = 0.0
+            # odom_trans.transform.rotation = odom_quat
             #send the transform
-            self.odom_broadcaster.sendTransform(odom_trans)
+            self.odom_broadcaster.sendTransform((x_final,y_final, 0.0),
+                                                odom_quat,
+                                                now,
+                                                "base_link",
+                                                "odom")
             
             #next, we'll publish the odometry message over ROS
             odom = Odometry()
