@@ -35,6 +35,10 @@ class ArduinoMotor:
         self.encoder_cmd = ord('e')
         self.address = 0x04
 
+        self.dx = 0
+        self.dr = 0
+        self.dy = 0
+
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
         self.rate = rospy.get_param("~rate", 50)
@@ -45,7 +49,7 @@ class ArduinoMotor:
 
     def callback(self,msg):
         #rospy.loginfo("twist to motors:: twistCallback raw msg: %s" % str(msg))
-        self.ticks_since_target = 0
+        # self.ticks_since_target = 0
         self.dx = msg.linear.x
         self.dr = msg.angular.z
         self.dy = msg.linear.y  
