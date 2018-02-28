@@ -114,8 +114,8 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     else:
                         self.x_vel = 0
                     self.used_key = False
-                elif event.code in [0, 2]:
-                    # left and right joystick x-axis controls turning
+                elif event.code == 2:
+                    # right joystick x-axis controls turning
                     if mag > self.threshold:
                         self.rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
                     else:
