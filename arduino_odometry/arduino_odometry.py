@@ -67,7 +67,7 @@ class ArduinoOdometry:
             try:
 
                 receive_data = self.readEncoders()
-                new_left,new_right = struct.unpack('ii',bytearray(receive_data[0:8]))
+                new_left,new_right = struct.unpack('=ii',bytearray(receive_data[0:8]))
             
                 rospy.loginfo("Left count: "+str(new_left)+" | Right count: "+str(new_right))
             
@@ -109,7 +109,7 @@ class ArduinoOdometry:
                 y = y + dy
                 vx = dx * delta_time
                 vy = dy * delta_time
-                theta_final = (theta_final+th) % (2 * math.pi)
+                #theta_final = (theta_final+th) % (2 * math.pi)
                 # if d != 0:
                 #     x = math.cos( th ) * d
                 #     y = -math.sin( th ) * d
@@ -126,8 +126,8 @@ class ArduinoOdometry:
                 odom_quat.y = 0.0
                 odom_quat.z = 0.0
             
-                odom_quat.z = math.sin( theta_final / 2 )
-                odom_quat.w = math.cos( theta_final / 2 )
+                odom_quat.z = math.sin(th/2)
+                odom_quat.w = math.cos(th/2)
             
                 # # first, we'll publish the transform over tf
                 # odom_trans = TransformStamped()
@@ -140,15 +140,15 @@ class ArduinoOdometry:
                 # odom_trans.transform.translation.z = 0.0
                 # odom_trans.transform.rotation = odom_quat
                 #send the transform
-                self.odom_broadcaster.sendTransform((x_final,y_final, 0.0), odom_quat, now, "base_link", "odom")
+                self.odom_broadcaster.sendTransform((x_final, y_final, 0.0), odom_quat, now, "base_link", "odom")
             
                 #next, we'll publish the odometry message over ROS
                 odom = Odometry()
                 odom.header.stamp = now
                 odom.header.frame_id = "odom"
                 #set the position
-                odom.pose.pose.position.x = x_final
-                odom.pose.pose.position.y = y_final
+                odom.pose.pose.position.x = x
+                odom.pose.pose.position.y = y
                 odom.pose.pose.position.z = 0.0
                 odom.pose.pose.orientation = odom_quat
                 #set the velocity
