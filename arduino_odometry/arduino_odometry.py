@@ -68,7 +68,7 @@ class ArduinoOdometry:
             try:
 
                 receive_data = self.readEncoders()
-                new_left,new_right = struct.unpack('ii',bytearray(receive_data[0:8]))
+                new_left,new_right = struct.unpack('=ii',bytearray(receive_data[0:8]))
             
                 rospy.loginfo("Left count: "+str(new_left)+" | Right count: "+str(new_right))
             
@@ -141,6 +141,7 @@ class ArduinoOdometry:
                 # odom_trans.transform.translation.z = 0.0
                 # odom_trans.transform.rotation = odom_quat
                 #send the transform
+
                 self.odom_broadcaster.sendTransform((x,y, 0.0), tf.transformations.quaternion_from_euler(0, 0, th), now, "base_link", "odom")
             
                 #next, we'll publish the odometry message over ROS

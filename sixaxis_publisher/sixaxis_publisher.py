@@ -64,6 +64,10 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.used_key = False
         self.x_vel = 0
         self.rot_vel = 0
+        self.stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
+                                      channels=self.wav.getnchannels(),
+                                      rate=self.wav.getframerate(),
+                                      output=True)
 
     # Some helpers
     def scale(self, val, src, dst):
@@ -145,16 +149,12 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                         stop = True
                         self.used_key = True
                     elif event.code == 301:
-                        stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
-                                                 channels=self.wav.getnchannels(),
-                                                 rate=self.wav.getframerate(),
-                                                 output=True)
                         data = self.wav.readframes(self.chunk)
                         while data:
-                            stream.write(data)
+                            self.stream.write(data)
                             data = self.wav.readframes(self.chunk)
-                        stream.stop_stream()
-                        stream.close()
+                        #self.stream.stop_stream()
+                        #self.stream.close()
                 if event.value == 0:
                     # Key up press
                     stop = True
@@ -183,4 +183,6 @@ if __name__ == "__main__":
         while not rospy.is_shutdown():
             asyncore.loop(timeout=1, count=1)
     except rospy.ROSInterruptException:
+        sp.stream.stop_stream()
+        sp.stream.close()
         pass
