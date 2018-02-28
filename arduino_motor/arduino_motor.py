@@ -47,34 +47,6 @@ class ArduinoMotor:
         self.dx = msg.linear.x
         self.dr = msg.angular.z
         self.dy = msg.linear.y  
-    # callback for receiving data from the Arduino
-    def callback(self, msg):
-        # Convert twist to motor commands from https://answers.ros.org/question/209963/cmd_veltwist-transform-twist-message-into-left-and-right-motor-commands/
-
-        # vel_r = (msg.angular.z*self.width)/2 + msg.linear.x;
-        # vel_l = msg.linear.x*2-vel_r;
-        
-        # additional Conversion from https://github.com/vcwu/ros-differential-drive/blob/master/nodes/twist_to_motors.py
-        
-        # from arduino controller
-        linear_vel = math.sqrt(msg.linear.x ** 2 + msg.linear.y ** 2) * 1e6
-        angular_vel = msg.angular.z * self.radius * 1e6
-        vel_l = int(linear_vel - angular_vel)
-        vel_r = int(linear_vel + angular_vel)
-
-        # scale from -127 to 128 (sat currently)
-        if (vel_l < -127):
-            vel_l = -127
-        if (vel_l > 128):
-            vel_l = 128
-        if (vel_r < -127):
-            vel_r = -127
-        if (vel_r > 128):
-            vel_r = 128
-        
-        self.sendSpeedToMotor(vel_1,vel_r)
-        rospy.loginfo_throttle(1, "Sending vel1=%d vel2=%d" % (vel_l, vel_r))
-
     # send data to arduino
     def sendSpeedToMotor(self,m1,m2):
         self.bus.write_i2c_block_data(self.address, self.move_cmd, [m1, m2]);
@@ -101,12 +73,12 @@ class ArduinoMotor:
         # dx = (l + r) / 2
         # dr = (r - l) / w
             
-        self.right = 1.0 * self.dx + self.dr * self.w / 2 
-        self.left = 1.0 * self.dx - self.dr * self.w / 2
+        self.right = 1.0 * self.dx + self.dr * self.width / 2 
+        self.left = 1.0 * self.dx - self.dr * self.width / 2
         #rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr) 
-        rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)", self.left,self.right) 
-        
-        self.sendSpeedToMotor(vel_1,vel_r)
+        rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
+        rospy.loginfo("LEFT: " +str(self.left)+"RIGHT: " +str(self.right))
+        self.sendSpeedToMotor(int(self.left),int(self.right))
             
         self.ticks_since_target += 1
 
@@ -115,7 +87,7 @@ class ArduinoMotor:
 
 if __name__ == "__main__":
     try:
-        controller = Arduino()
+        controller = ArduinoMotor()
         controller.begin()
     except rospy.ROSInterruptException:
         pass

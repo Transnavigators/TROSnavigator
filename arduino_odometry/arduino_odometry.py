@@ -55,11 +55,12 @@ class ArduinoOdometry:
         
         previous_time = rospy.get_time()
         
-        x_final = 0
-        y_final = 0
-        theta_final = 0
-        
-        
+        #x_final = 0
+        #y_final = 0
+        #theta_final = 0
+        th = 0
+        x = 0
+        y = 0
         rate = rospy.Rate(10)
         
         while not rospy.is_shutdown():
@@ -99,8 +100,8 @@ class ArduinoOdometry:
                     dy = delta_right * math.sin(th)
                     vth = 0
                 else:
-                    r = self.WIDTH * (delta_right + delta_left) / (2 * (delta_right - delta_left))
-                    wd = (delta_right - delta_left) / self.WIDTH
+                    r = self.width * (delta_right + delta_left) / (2 * (delta_right - delta_left))
+                    wd = (delta_right - delta_left) / self.width
                     dx = r * math.sin(wd + th) - r * math.sin(th)
                     dy = -r * math.cos(wd + th) + r * math.cos(th)
                     th = (th + wd + (2 * math.pi)) % (2 * math.pi)
@@ -109,7 +110,7 @@ class ArduinoOdometry:
                 y = y + dy
                 vx = dx * delta_time
                 vy = dy * delta_time
-                theta_final = (theta_final+th) % (2 * math.pi)
+                #theta_final = (theta_final+th) % (2 * math.pi)
                 # if d != 0:
                 #     x = math.cos( th ) * d
                 #     y = -math.sin( th ) * d
@@ -126,8 +127,8 @@ class ArduinoOdometry:
                 odom_quat.y = 0.0
                 odom_quat.z = 0.0
             
-                odom_quat.z = math.sin( theta_final / 2 )
-                odom_quat.w = math.cos( theta_final / 2 )
+                odom_quat.z = math.sin(th/2)
+                odom_quat.w = math.cos(th/2)
             
                 # # first, we'll publish the transform over tf
                 # odom_trans = TransformStamped()
@@ -140,15 +141,15 @@ class ArduinoOdometry:
                 # odom_trans.transform.translation.z = 0.0
                 # odom_trans.transform.rotation = odom_quat
                 #send the transform
-                self.odom_broadcaster.sendTransform((x_final,y_final, 0.0), odom_quat, now, "base_link", "odom")
+                self.odom_broadcaster.sendTransform((x,y, 0.0), tf.transformations.quaternion_from_euler(0, 0, th), now, "base_link", "odom")
             
                 #next, we'll publish the odometry message over ROS
                 odom = Odometry()
                 odom.header.stamp = now
                 odom.header.frame_id = "odom"
                 #set the position
-                odom.pose.pose.position.x = x_final
-                odom.pose.pose.position.y = y_final
+                odom.pose.pose.position.x = x
+                odom.pose.pose.position.y = y
                 odom.pose.pose.position.z = 0.0
                 odom.pose.pose.orientation = odom_quat
                 #set the velocity
