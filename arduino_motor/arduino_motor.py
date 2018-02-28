@@ -23,8 +23,12 @@ class ArduinoMotor:
         rospy.init_node('arduino_motor', anonymous=True)
         rospy.loginfo("%s started" % rospy.get_name())
 
-        self.width = rospy.get_param("~width", 31.5 * 0.0254) 
-
+        self.width = rospy.get_param("~width", 31.5 * 0.0254)
+        # if rospy.has_param("~meters_per_pulse"):
+        #     self.meters_per_pulse = rospy.get_param("~meters_per_pulse")
+        # else:
+        #     self.meters_per_pulse = 2 * math.pi * (6 / 2) * 0.0254 / 4096
+        self.constant=52.8
         self.bus = smbus.SMBus(1)
 
         self.move_cmd = ord('m')
@@ -32,8 +36,7 @@ class ArduinoMotor:
         self.address = 0x04
 
         rospy.Subscriber("cmd_vel", Twist, self.callback)
-            
-    
+
         self.rate = rospy.get_param("~rate", 50)
         self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
         self.left = 0
@@ -73,17 +76,16 @@ class ArduinoMotor:
         self.left = 1.0 * self.dx - self.dr * self.width / 2
         # rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr)
         rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
-        rospy.loginfo("LEFT: " +str(self.left)+"RIGHT: " +str(self.right))
+        rospy.loginfo("LEFT: " +str(int(self.left*self.left*self.constant))+"RIGHT: " +str(int(self.right*self.right*self.constant)))
         while True:
             try:
-                self.sendSpeedToMotor(int(self.left),int(self.right))
+                self.sendSpeedToMotor(int(self.left*self.left*self.constant),int(self.right*self.right*self.constant))
                 break
             except IOError as e:
                 rospy.logwarn(e)
                 pass
             
         self.ticks_since_target += 1
-
 
 if __name__ == "__main__":
     try:
