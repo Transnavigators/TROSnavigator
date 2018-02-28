@@ -28,7 +28,7 @@ class ArduinoMotor:
         #     self.meters_per_pulse = rospy.get_param("~meters_per_pulse")
         # else:
         #     self.meters_per_pulse = 2 * math.pi * (6 / 2) * 0.0254 / 4096
-        self.constant=52.8
+        self.constant=26.2396694215
         self.bus = smbus.SMBus(1)
 
         self.move_cmd = ord('m')
