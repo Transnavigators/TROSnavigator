@@ -28,7 +28,7 @@ class ArduinoMotor:
         #     self.meters_per_pulse = rospy.get_param("~meters_per_pulse")
         # else:
         #     self.meters_per_pulse = 2 * math.pi * (6 / 2) * 0.0254 / 4096
-        self.constant=26.2396694215
+        self.constant=57.727272727
         self.bus = smbus.SMBus(1)
 
         self.move_cmd = ord('m')
@@ -38,10 +38,10 @@ class ArduinoMotor:
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
         self.rate = rospy.get_param("~rate", 50)
-        self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
+        # self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
         self.left = 0
         self.right = 0
-        self.ticks_since_target = 0
+        # self.ticks_since_target = 0
 
     def callback(self,msg):
         #rospy.loginfo("twist to motors:: twistCallback raw msg: %s" % str(msg))
@@ -62,7 +62,7 @@ class ArduinoMotor:
     
         ###### main loop  ######
         while not rospy.is_shutdown():
-            while not rospy.is_shutdown() and self.ticks_since_target < self.timeout_ticks:
+            while not rospy.is_shutdown():# and self.ticks_since_target < self.timeout_ticks:
                 self.spinOnce()
                 r.sleep()
             idle.sleep()
@@ -76,16 +76,16 @@ class ArduinoMotor:
         self.left = 1.0 * self.dx - self.dr * self.width / 2
         # rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr)
         rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
-        rospy.loginfo("LEFT: " +str(int(self.left*self.left*self.constant))+"RIGHT: " +str(int(self.right*self.right*self.constant)))
+        rospy.loginfo("LEFT: " +str(int(self.left*self.constant))+"RIGHT: " +str(int(self.right*self.constant)))
         while True:
             try:
-                self.sendSpeedToMotor(int(self.left*self.left*self.constant),int(self.right*self.right*self.constant))
+                self.sendSpeedToMotor(int(self.left*self.constant),int(self.right*self.constant))
                 break
             except IOError as e:
                 rospy.logwarn(e)
                 pass
             
-        self.ticks_since_target += 1
+        # self.ticks_since_target += 1
 
 if __name__ == "__main__":
     try:
