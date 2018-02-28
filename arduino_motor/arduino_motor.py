@@ -62,7 +62,7 @@ class ArduinoMotor:
     
         r = rospy.Rate(self.rate)
         idle = rospy.Rate(10)
-        self.ticks_since_target = self.timeout_ticks
+        # self.ticks_since_target = self.timeout_ticks
     
         ###### main loop  ######
         while not rospy.is_shutdown():
