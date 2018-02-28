@@ -24,8 +24,7 @@ class ArduinoMotor:
         rospy.loginfo("%s started" % rospy.get_name())
 
         self.width = rospy.get_param("~width", 31.5 * 0.0254) 
-        
-        
+
         self.bus = smbus.SMBus(1)
 
         self.move_cmd = ord('m')
@@ -39,8 +38,8 @@ class ArduinoMotor:
         self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
         self.left = 0
         self.right = 0
+        self.ticks_since_target = 0
 
-        
     def callback(self,msg):
         #rospy.loginfo("twist to motors:: twistCallback raw msg: %s" % str(msg))
         self.ticks_since_target = 0
@@ -51,18 +50,15 @@ class ArduinoMotor:
     def sendSpeedToMotor(self,m1,m2):
         self.bus.write_i2c_block_data(self.address, self.move_cmd, [m1, m2]);
 
-    
     # start the node: spin forever
     def begin(self):
     
         r = rospy.Rate(self.rate)
         idle = rospy.Rate(10)
-        then = rospy.Time.now()
         self.ticks_since_target = self.timeout_ticks
     
         ###### main loop  ######
         while not rospy.is_shutdown():
-        
             while not rospy.is_shutdown() and self.ticks_since_target < self.timeout_ticks:
                 self.spinOnce()
                 r.sleep()
@@ -75,14 +71,18 @@ class ArduinoMotor:
             
         self.right = 1.0 * self.dx + self.dr * self.width / 2 
         self.left = 1.0 * self.dx - self.dr * self.width / 2
-        #rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr) 
+        # rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr)
         rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
         rospy.loginfo("LEFT: " +str(self.left)+"RIGHT: " +str(self.right))
-        self.sendSpeedToMotor(int(self.left),int(self.right))
+        while True:
+            try:
+                self.sendSpeedToMotor(int(self.left),int(self.right))
+                break
+            except IOError as e:
+                rospy.logwarn(e)
+                pass
             
         self.ticks_since_target += 1
-
-      
 
 
 if __name__ == "__main__":
