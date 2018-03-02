@@ -32,44 +32,33 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             asyncore.file_dispatcher.__init__(self, self.gamepad)
             rospy.loginfo("Found the PS3 controller.")
 
+        # Setup audio
         rospack = rospkg.RosPack()
-        self.wav = wave.open(rospack.get_path('sixaxis_publisher') + '/dixie-horn_daniel-simion.wav')
+        self.wav = wave.open(rospack.get_path('sixaxis_publisher') + '/dixie-horn_daniel-simion.wav','r')
         self.audio = pyaudio.PyAudio()
         self.chunk = 1024
+        # Open an audio stream for the horn
+        self.stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
+                                      channels=self.wav.getnchannels(),
+                                      rate=self.wav.getframerate(),
+                                      output=True)
 
         # Either publish velocities to motor or send actions to move_base for assisted driving
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
 
-        if rospy.has_param("~max_speed"):
-            self.MAX_SPEED = float(rospy.get_param("~max_speed"))
-        else:
-            self.MAX_SPEED = 2.2
+        # Default params
+        self.MAX_SPEED = float(rospy.get_param("~max_speed", 2.2))
+        self.MAX_REVERSE_SPEED = float(rospy.get_param("~max_reverse_speed", 0.5))
+        self.MAX_ROT_SPEED = float(rospy.get_param("~max_rot_speed", 1.75))
+        self.threshold = int(rospy.get_param("~joystick_threshold", 5))
 
-        if rospy.has_param("~max_reverse_speed"):
-            self.MAX_REVERSE_SPEED = float(rospy.get_param("~max_reverse_speed"))
-        else:
-            self.MAX_REVERSE_SPEED = 0.5
-
-        if rospy.has_param("~max_rot_speed"):
-            self.MAX_ROT_SPEED = float(rospy.get_param("~max_rot_speed"))
-        else:
-            self.MAX_ROT_SPEED = 1.75
-
-        if rospy.has_param("~joystick_threshold"):
-            self.threshold = int(rospy.get_param("~joystick_threshold"))
-        else:
-            self.threshold = 5
-
+        # Instance variables for helping the callback remember its state
         self.used_key = False
-
-        self.stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
-                                      channels=self.wav.getnchannels(),
-                                      rate=self.wav.getframerate(),
-                                      output=True)
         self.stopped = False
         self.rot_vel = 0
         self.x_vel = 0
+
     # Some helpers
     def scale(self, val, src, dst):
         """
@@ -150,27 +139,32 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                         stop = True
                         self.used_key = True
                     elif event.code == 301:
-                        data = self.wav.readframes(self.chunk)
-                        while data:
-                            self.stream.write(data)
-                            data = self.wav.readframes(self.chunk)
-                        #self.stream.stop_stream()
-                        #self.stream.close()
+                        # Only play horn if not already playing
+                        if self.wav.tell() == 0:
+                            wav_data = self.wav.readframes(self.chunk)
+                            while wav_data:
+                                self.stream.write(wav_data)
+                                wav_data = self.wav.readframes(self.chunk)
+                            # Reset wav file pointer
+                            self.wav.rewind()
                 if event.value == 0:
                     # Key up press
                     stop = True
                     self.used_key = False
             # Construct message if valid command was read
 
-            # If it used to be stopped and is not moving at full speed, ignore the input
-            if self.stopped and (abs(self.x_vel) == self.MAX_SPEED or abs(self.x_vel) == self.MAX_REVERSE_SPEED or abs(self.rot_vel) == self.MAX_ROT_SPEED):
+            # If it used to be stopped and is suddenly moving at full speed, ignore the input
+            if self.stopped and (abs(self.x_vel) in [self.MAX_SPEED, self.MAX_REVERSE_SPEED] or abs(self.rot_vel) == self.MAX_ROT_SPEED):
                 rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
                 continue
+            # Send a new twist if we have a nonzero command or an explicit stop command
             if (self.x_vel != 0 or self.rot_vel != 0) or stop:
                 twist = Twist()
                 twist.linear = Vector3(self.x_vel, 0, 0)
                 twist.angular = Vector3(0, 0, self.rot_vel)
                 self.pub.publish(twist)
+
+            # Update stopped variable
             if stop:
                 self.stopped = True
             elif self.x_vel != 0 or self.rot_vel != 0:
