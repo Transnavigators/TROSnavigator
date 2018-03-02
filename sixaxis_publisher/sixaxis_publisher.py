@@ -163,7 +163,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             # Construct message if valid command was read
 
             # If it used to be stopped and is not moving at full speed, ignore the input
-            if self.stopped and (abs(self.x_vel) == self.MAX_SPEED or abs(self.x_vel) == self.MAX_REVERSE_SPEED or self.rot_vel == self.MAX_ROT_SPEED):
+            if self.stopped and (abs(self.x_vel) == self.MAX_SPEED or abs(self.x_vel) == self.MAX_REVERSE_SPEED or abs(self.rot_vel) == self.MAX_ROT_SPEED):
                 rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
                 continue
             if (self.x_vel != 0 or self.rot_vel != 0) or stop:
