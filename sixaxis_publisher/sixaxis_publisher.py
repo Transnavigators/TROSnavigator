@@ -174,6 +174,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                 self.stopped = True
             elif x_vel != 0 or rot_vel != 0:
                 self.stopped = False
+                rospy.loginfo_throttle(1, "Sending vx=%f vth=%f" % (x_vel, rot_vel))
 #               goal = MoveBaseGoal()
 #               goal.target_pose.header.frame_id = "base_link"
 #               goal.target_pose.header.stamp = rospy.get_time()
