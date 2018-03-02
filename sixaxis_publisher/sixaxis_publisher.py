@@ -62,8 +62,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             self.threshold = 5
 
         self.used_key = False
-        self.x_vel = 0
-        self.rot_vel = 0
+
         self.stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
                                       channels=self.wav.getnchannels(),
                                       rate=self.wav.getframerate(),
@@ -100,7 +99,8 @@ class SixaxisPublisher(asyncore.file_dispatcher):
     def handle_read(self):
         for event in self.gamepad.read():
             stop = False
-
+            rot_vel = 0
+            x_vel = 0
             # Check for joystick inputs and if we're in joystick mode
             mag = abs(event.value - 128)
             if event.type == 3 and not self.used_key:
@@ -109,49 +109,42 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     if mag > self.threshold:
                         scaled = self.scale_stick(event.value)
                         if scaled < 0:
-                            self.x_vel = -scaled * self.MAX_SPEED
+                            x_vel = -scaled * self.MAX_SPEED
                         else:
-                            self.x_vel = -scaled * self.MAX_REVERSE_SPEED
-                        self.stopped = False
+                            x_vel = -scaled * self.MAX_REVERSE_SPEED
                     else:
-                        self.x_vel = 0
+                        x_vel = 0
                     self.used_key = False
                 elif event.code == 2:
                     # right joystick x-axis controls turning
                     if mag > self.threshold:
-                        self.rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
+                        rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
                     else:
-                        self.rot_vel = 0
-                    self.stopped = False
+                        rot_vel = 0
                     self.used_key = False
-                if self.rot_vel == 0 and self.x_vel == 0:
+                if rot_vel == 0 and x_vel == 0:
                     # When both joysticks are centered, stop
-                    if not self.stopped:
-                        stop = True
+                    stop = True
             # Key presses
             elif event.type == 1:
                 if event.value == 1:
                     # Key down press
                     if event.code == 293:
                         # turn right
-                        self.rot_vel = -self.MAX_ROT_SPEED / 2
+                        rot_vel = -self.MAX_ROT_SPEED / 2
                         self.used_key = True
-                        self.stopped = False
                     elif event.code == 292:
                         # move forward
-                        self.x_vel = self.MAX_SPEED / 2
+                        x_vel = self.MAX_SPEED / 2
                         self.used_key = True
-                        self.stopped = False
                     elif event.code == 294:
                         # move back
-                        self.x_vel = -self.MAX_REVERSE_SPEED
+                        x_vel = -self.MAX_REVERSE_SPEED
                         self.used_key = True
-                        self.stopped = False
                     elif event.code == 295:
                         # turn left
-                        self.rot_vel = self.MAX_ROT_SPEED / 2
+                        rot_vel = self.MAX_ROT_SPEED / 2
                         self.used_key = True
-                        self.stopped = False
                     elif event.code in [302, 303]:
                         # x key, stop
                         stop = True
@@ -168,15 +161,19 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     stop = True
                     self.used_key = False
             # Construct message if valid command was read
-            if stop:
-                self.x_vel = 0
-                self.rot_vel = 0
-                self.stopped = True
-            if (self.x_vel != 0 or self.rot_vel != 0 and not self.stopped) or stop:
+
+            # If it used to be stopped and is not moving at full speed, ignore the input
+            #if self.stopped and (abs(x_vel) == self.MAX_SPEED or abs(x_vel) == self.MAX_REVERSE_SPEED or rot_vel == self.MAX_ROT_SPEED):
+            #    continue
+            if (x_vel != 0 or rot_vel != 0 and not self.stopped) or stop:
                 twist = Twist()
-                twist.linear = Vector3(self.x_vel, 0, 0)
-                twist.angular = Vector3(0, 0, self.rot_vel)
+                twist.linear = Vector3(x_vel, 0, 0)
+                twist.angular = Vector3(0, 0, rot_vel)
                 self.pub.publish(twist)
+            if stop:
+                self.stopped = True
+            elif x_vel != 0 or rot_vel != 0:
+                self.stopped = False
 #               goal = MoveBaseGoal()
 #               goal.target_pose.header.frame_id = "base_link"
 #               goal.target_pose.header.stamp = rospy.get_time()
