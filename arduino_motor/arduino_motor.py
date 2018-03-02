@@ -52,7 +52,9 @@ class ArduinoMotor:
         # self.ticks_since_target = 0
         self.dx = msg.linear.x
         self.dr = msg.angular.z
-        self.dy = msg.linear.y  
+        self.dy = msg.linear.y 
+        if self.dx != 0 or self.dr != 0 or self.dy != 0:
+            rospy.loginfo("linear.x = " + str(self.dx) + " angular.z: " + str(self.dr) + " linear.y: " +str(self.dy));
     # send data to arduino
     def sendSpeedToMotor(self,m1,m2):
         self.bus.write_i2c_block_data(self.address, self.move_cmd, [m1, m2]);
@@ -79,17 +81,14 @@ class ArduinoMotor:
         self.right = 1.0 * self.dx + self.dr * self.width / 2 
         self.left = 1.0 * self.dx - self.dr * self.width / 2
         # rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr)
-        rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
-        rospy.loginfo("LEFT: " +str(int(self.left*self.constant))+"RIGHT: " +str(int(self.right*self.constant)))
-
-        try_again = rospy.Rate(1000)
+#        rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
+        #rospy.loginfo("LEFT: " +str(int(self.left*self.constant))+"RIGHT: " +str(int(self.right*self.constant)))
         while True:
             try:
                 self.sendSpeedToMotor(int(self.left*self.constant),int(self.right*self.constant))
                 break
             except IOError as e:
                 rospy.logwarn(e)
-                try_again.sleep()
                 pass
             
         # self.ticks_since_target += 1
