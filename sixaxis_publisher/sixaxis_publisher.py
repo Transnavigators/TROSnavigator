@@ -68,7 +68,8 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                                       rate=self.wav.getframerate(),
                                       output=True)
         self.stopped = False
-
+        self.rot_vel = 0
+        self.x_vel = 0
     # Some helpers
     def scale(self, val, src, dst):
         """
@@ -99,8 +100,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
     def handle_read(self):
         for event in self.gamepad.read():
             stop = False
-            rot_vel = 0
-            x_vel = 0
+
             # Check for joystick inputs and if we're in joystick mode
             mag = abs(event.value - 128)
             if event.type == 3 and not self.used_key:
@@ -109,20 +109,20 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     if mag > self.threshold:
                         scaled = self.scale_stick(event.value)
                         if scaled < 0:
-                            x_vel = -scaled * self.MAX_SPEED
+                            self.x_vel = -scaled * self.MAX_SPEED
                         else:
-                            x_vel = -scaled * self.MAX_REVERSE_SPEED
+                            self.x_vel = -scaled * self.MAX_REVERSE_SPEED
                     else:
-                        x_vel = 0
+                        self.x_vel = 0
                     self.used_key = False
                 elif event.code == 2:
                     # right joystick x-axis controls turning
                     if mag > self.threshold:
-                        rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
+                        self.rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
                     else:
-                        rot_vel = 0
+                        self.rot_vel = 0
                     self.used_key = False
-                if rot_vel == 0 and x_vel == 0:
+                if self.rot_vel == 0 and self.x_vel == 0:
                     # When both joysticks are centered, stop
                     stop = True
             # Key presses
@@ -131,19 +131,19 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     # Key down press
                     if event.code == 293:
                         # turn right
-                        rot_vel = -self.MAX_ROT_SPEED / 2
+                        self.rot_vel = -self.MAX_ROT_SPEED / 2
                         self.used_key = True
                     elif event.code == 292:
                         # move forward
-                        x_vel = self.MAX_SPEED / 2
+                        self.x_vel = self.MAX_SPEED / 2
                         self.used_key = True
                     elif event.code == 294:
                         # move back
-                        x_vel = -self.MAX_REVERSE_SPEED
+                        self.x_vel = -self.MAX_REVERSE_SPEED
                         self.used_key = True
                     elif event.code == 295:
                         # turn left
-                        rot_vel = self.MAX_ROT_SPEED / 2
+                        self.rot_vel = self.MAX_ROT_SPEED / 2
                         self.used_key = True
                     elif event.code in [302, 303]:
                         # x key, stop
@@ -163,18 +163,19 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             # Construct message if valid command was read
 
             # If it used to be stopped and is not moving at full speed, ignore the input
-            if self.stopped and (abs(x_vel) == self.MAX_SPEED or abs(x_vel) == self.MAX_REVERSE_SPEED or rot_vel == self.MAX_ROT_SPEED):
+            if self.stopped and (abs(self.x_vel) == self.MAX_SPEED or abs(self.x_vel) == self.MAX_REVERSE_SPEED or self.rot_vel == self.MAX_ROT_SPEED):
+                rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
                 continue
-            if (x_vel != 0 or rot_vel != 0) or stop:
+            if (self.x_vel != 0 or self.rot_vel != 0) or stop:
                 twist = Twist()
-                twist.linear = Vector3(x_vel, 0, 0)
-                twist.angular = Vector3(0, 0, rot_vel)
+                twist.linear = Vector3(self.x_vel, 0, 0)
+                twist.angular = Vector3(0, 0, self.rot_vel)
                 self.pub.publish(twist)
             if stop:
                 self.stopped = True
-            elif x_vel != 0 or rot_vel != 0:
+            elif self.x_vel != 0 or self.rot_vel != 0:
                 self.stopped = False
-                rospy.loginfo_throttle(1, "Sending vx=%f vth=%f" % (x_vel, rot_vel))
+                rospy.loginfo_throttle(1, "Sending vx=%f vth=%f" % (self.x_vel, self.rot_vel))
 #               goal = MoveBaseGoal()
 #               goal.target_pose.header.frame_id = "base_link"
 #               goal.target_pose.header.stamp = rospy.get_time()
