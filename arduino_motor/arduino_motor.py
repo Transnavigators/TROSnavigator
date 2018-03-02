@@ -81,12 +81,15 @@ class ArduinoMotor:
         # rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr)
         rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
         rospy.loginfo("LEFT: " +str(int(self.left*self.constant))+"RIGHT: " +str(int(self.right*self.constant)))
+
+        try_again = rospy.Rate(1000)
         while True:
             try:
                 self.sendSpeedToMotor(int(self.left*self.constant),int(self.right*self.constant))
                 break
             except IOError as e:
                 rospy.logwarn(e)
+                try_again.sleep()
                 pass
             
         # self.ticks_since_target += 1

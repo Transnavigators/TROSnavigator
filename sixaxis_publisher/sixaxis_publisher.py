@@ -68,6 +68,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                                       channels=self.wav.getnchannels(),
                                       rate=self.wav.getframerate(),
                                       output=True)
+        self.stopped = False
 
     # Some helpers
     def scale(self, val, src, dst):
@@ -111,6 +112,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                             self.x_vel = -scaled * self.MAX_SPEED
                         else:
                             self.x_vel = -scaled * self.MAX_REVERSE_SPEED
+                        self.stopped = False
                     else:
                         self.x_vel = 0
                     self.used_key = False
@@ -120,10 +122,12 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                         self.rot_vel = self.scale_stick(event.value) * self.MAX_ROT_SPEED
                     else:
                         self.rot_vel = 0
+                    self.stopped = False
                     self.used_key = False
                 if self.rot_vel == 0 and self.x_vel == 0:
                     # When both joysticks are centered, stop
-                    stop = True
+                    if not self.stopped:
+                        stop = True
             # Key presses
             elif event.type == 1:
                 if event.value == 1:
@@ -132,18 +136,22 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                         # turn right
                         self.rot_vel = -self.MAX_ROT_SPEED / 2
                         self.used_key = True
+                        self.stopped = False
                     elif event.code == 292:
                         # move forward
                         self.x_vel = self.MAX_SPEED / 2
                         self.used_key = True
+                        self.stopped = False
                     elif event.code == 294:
                         # move back
                         self.x_vel = -self.MAX_REVERSE_SPEED
                         self.used_key = True
+                        self.stopped = False
                     elif event.code == 295:
                         # turn left
                         self.rot_vel = self.MAX_ROT_SPEED / 2
                         self.used_key = True
+                        self.stopped = False
                     elif event.code in [302, 303]:
                         # x key, stop
                         stop = True
@@ -163,7 +171,8 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             if stop:
                 self.x_vel = 0
                 self.rot_vel = 0
-            if self.x_vel != 0 or self.rot_vel != 0 or stop:
+                self.stopped = True
+            if (self.x_vel != 0 or self.rot_vel != 0 and not self.stopped) or stop:
                 twist = Twist()
                 twist.linear = Vector3(self.x_vel, 0, 0)
                 twist.angular = Vector3(0, 0, self.rot_vel)
