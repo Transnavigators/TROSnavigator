@@ -93,34 +93,19 @@ class LocalinoPublisher(asyncore.dispatcher):
             self.timeout = 15e7
 
         # The rate at which each localino sends packets
-        if rospy.has_param("~poll_rate"):
-            self.rate = rospy.Rate(int(rospy.get_param("~poll_rate")))
-        else:
-            self.rate = rospy.Rate(4000)
+        self.rate = rospy.Rate(int(rospy.get_param("~poll_rate", 4000)))
 
         # The UDP port to listen on for localino packets
-        if rospy.has_param("~port"):
-            self.port = int(rospy.get_param("~port"))
-        else:
-            self.port = 10000
+        self.port = int(rospy.get_param("~port", 10000))
 
         # The IP to bind on, either all interfaces (0.0.0.0) or the localino subnet (192.168.4.255)
-        if rospy.has_param("~ip"):
-            self.ip = rospy.get_param("~ip")
-        else:
-            self.ip = ''
+        self.ip = rospy.get_param("~ip",'')
 
         # Keep a list of the anchor names
-        if rospy.has_param("~anchor_names"):
-            self.anchor_names = str(rospy.get_param("~anchor_names")).split(',')
-        else:
-            self.anchor_names = ["9002", "9003", "9005"]
+        self.anchor_names = str(rospy.get_param("~anchor_names"), "9002,9003,9005").split(',')
 
         # Keep a list of the tag names
-        if rospy.has_param("~tag_names"):
-            self.tag_ids = str(rospy.get_param("~tag_names")).split(',')
-        else:
-            self.tag_ids = ["1002", "1001"]
+        self.tag_ids = str(rospy.get_param("~tag_names", "1002,1001")).split(',')
 
         self.anchor_coords = defaultdict(Point)
 

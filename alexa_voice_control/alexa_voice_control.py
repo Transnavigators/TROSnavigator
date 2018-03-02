@@ -28,31 +28,15 @@ class Alexa:
         self.FEET_TO_M = 0.3048
         self.DEGREES_TO_RAD = math.pi / 180
 
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+
         # set up AWS constants
-        if rospy.has_param("~host"):
-            self.host = rospy.get_param("~host")
-        else:
-            self.host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
-        if rospy.has_param("~rootCAPath"):
-            self.rootCAPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~rootCAPath")
-        else:
-            self.rootCAPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/root-CA.crt'
-        if rospy.has_param("~certificatePath"):
-            self.certificatePath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~certificatePath")
-        else:
-            self.certificatePath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.cert.pem'
-        if rospy.has_param("~privateKeyPath"):
-            self.privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~privateKeyPath")
-        else:
-            self.privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.private.key'
-        if rospy.has_param("~clientId"):
-            self.clientId = rospy.get_param("~clientId")
-        else:
-            self.clientId = 'Pi'
-        if rospy.has_param("~topic"):
-            self.topic = rospy.get_param("~topic")
-        else:
-            self.topic = '/Transnavigators/Pi'
+        self.host = rospy.get_param("~host", 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com')
+        self.rootCAPath = root_dir + rospy.get_param("~rootCAPath", '/Certificates/root-CA.crt')
+        self.certificatePath = root_dir + rospy.get_param("~certificatePath", '/Certificates/Pi.cert.pem')
+        self.privateKeyPath = root_dir + rospy.get_param("~privateKeyPath", '/Certificates/Pi.private.key')
+        self.clientId = rospy.get_param("~clientId", "Pi")
+        self.topic = rospy.get_param("~topic", '/Transnavigators/Pi')
 
     # callback for receiving AWS message
     def callback(self, client, userdata, message):

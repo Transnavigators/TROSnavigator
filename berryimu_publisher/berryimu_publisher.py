@@ -19,10 +19,7 @@ class BerryIMUPublisher:
         self.GYRO_TO_RADS = 1 / self.RAD_TO_DEG
         self.pub = rospy.Publisher("imu_data", Imu, queue_size=1000)
 
-        if rospy.has_param("~poll_rate"):
-            self.rate = rospy.Rate(int(rospy.get_param("~poll_rate")))
-        else:
-            self.rate = rospy.Rate(20)
+        self.rate = rospy.Rate(int(rospy.get_param("~poll_rate",20)))
 
         IMU.detectIMU()  # Detect if BerryIMUv1 or BerryIMUv2 is connected.
         IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
