@@ -163,9 +163,9 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             # Construct message if valid command was read
 
             # If it used to be stopped and is not moving at full speed, ignore the input
-            #if self.stopped and (abs(x_vel) == self.MAX_SPEED or abs(x_vel) == self.MAX_REVERSE_SPEED or rot_vel == self.MAX_ROT_SPEED):
-            #    continue
-            if (x_vel != 0 or rot_vel != 0 and not self.stopped) or stop:
+            if self.stopped and (abs(x_vel) == self.MAX_SPEED or abs(x_vel) == self.MAX_REVERSE_SPEED or rot_vel == self.MAX_ROT_SPEED):
+                continue
+            if (x_vel != 0 or rot_vel != 0) or stop:
                 twist = Twist()
                 twist.linear = Vector3(x_vel, 0, 0)
                 twist.angular = Vector3(0, 0, rot_vel)
