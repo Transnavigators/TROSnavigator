@@ -25,19 +25,12 @@ class ArduinoOdometry:
         self.address = 0x04
 
         # The width between the wheels
-        if rospy.has_param("~width"):
-            self.width = rospy.get_param("~width")
-            self.radius = float(self.width) / 2
-        else:
-            self.width = 31.5 * 0.0254
-            self.radius = self.width / 2
+        self.width = rospy.get_param("~width",31.5 * 0.0254)
+        self.radius = float(self.width) / 2
 
         # Constant distance travelled per pulse of the encoder
         # 6" diameter wheel, 4096 pulses per revolution
-        if rospy.has_param("~meters_per_pulse"):
-            self.meters_per_pulse = rospy.get_param("~meters_per_pulse")
-        else:
-            self.meters_per_pulse = 2 * math.pi * (6 / 2) * 0.0254 / 4096
+        self.meters_per_pulse = rospy.get_param("~meters_per_pulse",2 * math.pi * (6 / 2) * 0.0254 / 4096)
             
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
         self.odom_broadcaster = tf.TransformBroadcaster()

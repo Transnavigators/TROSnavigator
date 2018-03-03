@@ -20,10 +20,8 @@ class Alexa:
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.tf = TransformListener()
 
-        if rospy.has_param("~user_tag_id"):
-            self.tag_id = rospy.get_param("~user_tag_id")
-        else:
-            self.tag_id = '1001'
+        
+        self.tag_id = rospy.get_param("~user_tag_id",'1001')
 
         self.FEET_TO_M = 0.3048
         self.DEGREES_TO_RAD = math.pi / 180

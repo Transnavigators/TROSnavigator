@@ -90,30 +90,12 @@ if __name__ == '__main__':
     rospy.init_node('test_alexa', anonymous=True)
 
     # set up AWS constants
-    if rospy.has_param("~host"):
-        host = rospy.get_param("~host")
-    else:
-        host = 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com'
-    if rospy.has_param("~rootCAPath"):
-        rootCAPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~rootCAPath")
-    else:
-        rootCAPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/root-CA.crt'
-    if rospy.has_param("~certificatePath"):
-        certificatePath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~certificatePath")
-    else:
-        certificatePath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.cert.pem'
-    if rospy.has_param("~privateKeyPath"):
-        privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~privateKeyPath")
-    else:
-        privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + '/Certificates/Pi.private.key'
-    if rospy.has_param("~clientId"):
-        clientId = rospy.get_param("~clientId")
-    else:
-        clientId = 'test_pi'
-    if rospy.has_param("~topic"):
-        topic = rospy.get_param("~topic")
-    else:
-        topic = '/Transnavigators/Pi'
+    host = rospy.get_param("~host", 'a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com')
+    rootCAPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~rootCAPath", '/Certificates/root-CA.crt')
+    certificatePath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~certificatePath", '/Certificates/Pi.cert.pem')
+    privateKeyPath = os.path.dirname(os.path.abspath(__file__)) + rospy.get_param("~privateKeyPath", '/Certificates/Pi.private.key')
+    clientId = rospy.get_param("~clientId", 'test_pi')
+    topic = rospy.get_param("~topic", '/Transnavigators/Pi')
 
     aws_iot_mqtt_client = AWSIoTMQTTClient(clientId)
     aws_iot_mqtt_client.configureEndpoint(host, 8883)
