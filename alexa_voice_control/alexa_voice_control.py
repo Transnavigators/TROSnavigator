@@ -19,9 +19,7 @@ class Alexa:
         rospy.init_node('alexa', anonymous=True)
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.tf = TransformListener()
-
-        
-        self.tag_id = rospy.get_param("~user_tag_id",'1001')
+        self.tag_id = rospy.get_param("~user_tag_id", '1001')
 
         self.FEET_TO_M = 0.3048
         self.DEGREES_TO_RAD = math.pi / 180
