@@ -69,7 +69,7 @@ class ArduinoOdometry:
                 ##################################################################
                 delta_time = current_time - previous_time
                 delta_left = (new_left - old_left) * self.meters_per_pulse
-                delta_right = (new_right - old_right) * self.meters_per_pulse
+                delta_right = -(new_right - old_right) * self.meters_per_pulse
 
                 old_left = new_left
                 old_right = new_right

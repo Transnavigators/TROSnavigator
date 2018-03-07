@@ -32,7 +32,7 @@ class ArduinoMotor:
         self.bus = smbus.SMBus(1)
 
         self.move_cmd = ord('m')
-        self.encoder_cmd = ord('e')
+        # self.encoder_cmd = ord('e')
         self.address = 0x04
 
         self.dx = 0
