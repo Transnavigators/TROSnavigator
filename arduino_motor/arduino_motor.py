@@ -47,9 +47,8 @@ class ArduinoMotor:
 
     # send data to arduino
     def send_speed_to_motor(self, m1, m2):
-        val1 = struct.unpack("=i", struct.pack("=f", m1))
-        val2 = struct.unpack("=i", struct.pack("=f", m2))
-        self.bus.write_i2c_block_data(self.address, self.move_cmd, [val1, val2])
+        val1 = struct.unpack("=l", struct.pack("=ff", m1, m2))
+        self.bus.write_i2c_block_data(self.address, self.move_cmd, [val1])
 
     # start the node: spin forever
     def begin(self):
