@@ -41,7 +41,7 @@ class ArduinoMotor:
 
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
-        self.rate = rospy.get_param("~rate", 50)
+        self.rate = rospy.get_param("~rate", 100)
         # self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
         self.left = 0
         self.right = 0
@@ -63,15 +63,12 @@ class ArduinoMotor:
     def begin(self):
     
         r = rospy.Rate(self.rate)
-        idle = rospy.Rate(10)
         # self.ticks_since_target = self.timeout_ticks
     
-        ###### main loop  ######
-        while not rospy.is_shutdown():
-            while not rospy.is_shutdown():# and self.ticks_since_target < self.timeout_ticks:
-                self.spinOnce()
-                r.sleep()
-            idle.sleep()
+        ###### main loop  #####
+        while not rospy.is_shutdown():# and self.ticks_since_target < self.timeout_ticks:
+            self.spinOnce()
+            r.sleep()
                 
     def spinOnce(self):
     

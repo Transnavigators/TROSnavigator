@@ -45,7 +45,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
 
         # Either publish velocities to motor or send actions to move_base for assisted driving
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
+        self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
 
         # Default params
         self.MAX_SPEED = float(rospy.get_param("~max_speed", 2.2))
