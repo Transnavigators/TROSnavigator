@@ -65,7 +65,7 @@ class ArduinoMotor:
         # rospy.loginfo("twist to motors:: spinOnce (dx:%f, dr: %f)", self.dx,self.dr)
         # rospy.loginfo("twist to motors:: spinOnce (self.left:%f,self.right %f)" % (self.left,self.right) )
         # rospy.loginfo("LEFT: " +str(int(self.left*self.constant))+"RIGHT: " +str(int(self.right*self.constant)))
-        while True:
+        while not rospy.is_shutdown():
             try:
                 self.send_speed_to_motor(int(self.left * self.constant), int(self.right * self.constant))
                 break
