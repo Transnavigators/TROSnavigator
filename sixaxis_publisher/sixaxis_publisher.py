@@ -158,11 +158,11 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                 rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
                 continue
             # Send a new twist if we have a nonzero command or an explicit stop command
-            if (self.x_vel != 0 or self.rot_vel != 0) or stop:
-                twist = Twist()
-                twist.linear = Vector3(self.x_vel, 0, 0)
-                twist.angular = Vector3(0, 0, self.rot_vel)
-                self.pub.publish(twist)
+            
+            twist = Twist()
+            twist.linear = Vector3(self.x_vel, 0, 0)
+            twist.angular = Vector3(0, 0, self.rot_vel)
+            self.pub.publish(twist)
 
             # Update stopped variable
             if stop:

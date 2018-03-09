@@ -29,7 +29,7 @@ class ArduinoMotor:
 
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
-        self.rate = int(rospy.get_param("~rate", 100))
+        self.rate = int(rospy.get_param("~rate", 20))
         # self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
         self.left = 0
         self.right = 0
@@ -68,6 +68,7 @@ class ArduinoMotor:
         while not rospy.is_shutdown():
             try:
                 self.send_speed_to_motor(int(self.left * self.constant), int(self.right * self.constant))
+                rospy.loginfo_throttle(1, "Sent speed successfully")
                 break
             except IOError as e:
                 rospy.logwarn(e)
