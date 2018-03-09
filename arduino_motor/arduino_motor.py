@@ -29,7 +29,7 @@ class ArduinoMotor:
 
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
-        self.rate = rospy.get_param("~rate", 100)
+        self.rate = int(rospy.get_param("~rate", 100))
         # self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
         self.left = 0
         self.right = 0
