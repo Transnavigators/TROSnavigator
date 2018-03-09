@@ -67,7 +67,7 @@ class ArduinoMotor:
         # rospy.loginfo("LEFT: " +str(int(self.left*self.constant))+"RIGHT: " +str(int(self.right*self.constant)))
         while not rospy.is_shutdown():
             try:
-                self.send_speed_to_motor(int(self.left * self.constant), int(self.right * self.constant))
+                self.send_speed_to_motor(float(self.left), float(self.right))
                 rospy.loginfo_throttle(1, "Sent speed successfully")
                 break
             except IOError as e:
