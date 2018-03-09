@@ -26,8 +26,8 @@ class ArduinoOdometry:
 
         # Constant distance travelled per pulse of the encoder
         # 6" diameter wheel, 4096 pulses per revolution
-        self.meters_per_pulse = rospy.get_param("~meters_per_pulse", 2 * math.pi * (6 / 2) * 0.0254 / 4096)
-            
+        self.meters_per_pulse = float(rospy.get_param("~meters_per_pulse", 2 * math.pi * (6 / 2) * 0.0254 / 4096))
+        self.rate = float(rospy.get_param("~poll_rate", 10))
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
         self.odom_broadcaster = tf.TransformBroadcaster()
 
@@ -41,12 +41,13 @@ class ArduinoOdometry:
         old_left = 0
         old_right = 0
         
-        previous_time = rospy.get_time()
+        previous_time = 0
 
         th = 0
         x = 0
         y = 0
-        rate = rospy.Rate(10)
+
+        rate = rospy.Rate(self.rate)
         
         while not rospy.is_shutdown():
             # read encoders
@@ -63,8 +64,8 @@ class ArduinoOdometry:
                 # https://github.com/qboticslabs/mastering_ros/blob/master/chapter_9_codes/chefbot_navig_cpp/src/diff_tf.cpp
                 ##################################################################
                 delta_time = current_time - previous_time
-                delta_left = (new_left - old_left) * self.meters_per_pulse
-                delta_right = -(new_right - old_right) * self.meters_per_pulse
+                delta_left = (new_left - old_left) * self.meters_per_pulse # m
+                delta_right = (new_right - old_right) * self.meters_per_pulse # m
 
                 old_left = new_left
                 old_right = new_right
@@ -75,29 +76,26 @@ class ArduinoOdometry:
                     dy = delta_right * math.sin(th)
                     vth = 0
                 else:
-                    r = self.width * (delta_right + delta_left) / (2 * (delta_right - delta_left))
-                    wd = (delta_right - delta_left) / self.width
-                    dx = r * math.sin(wd - th) - r * math.sin(th)
-                    dy = r * math.cos(wd - th) + r * math.cos(th)
-                    th = (th + wd + (2 * math.pi)) % (2 * math.pi)
-                    vth = wd * delta_time
-                x = x + dx
-                y = y + dy
-                vx = dx * delta_time
-                vy = dy * delta_time
+                    r = self.width * (delta_right + delta_left) / (2 * (delta_right - delta_left)) # m
+                    wd = (delta_right - delta_left) / self.width  # radians
+                    dx = r * math.sin(wd + th) - r * math.sin(th)  # delta x position
+                    dy = r * math.cos(wd + th) + r * math.cos(th)  # delta y position
+                    th = (th + wd + (2 * math.pi)) % (2 * math.pi)  # delta theta
+                    vth = wd / delta_time  # radians/sec
+                x = x + dx  # absolute x position starting at 0,0
+                y = y + dy  # absolute y position starting at 0,0
+                vx = dx / delta_time  # m/s
+                vy = dy / delta_time  # m/s
 
                 # send messages
                 odom_quat = Quaternion()
+                odom_quat.w = math.cos(th / 2)
                 odom_quat.x = 0.0
                 odom_quat.y = 0.0
-                odom_quat.z = 0.0
-            
                 odom_quat.z = math.sin(th/2)
-                odom_quat.w = math.cos(th/2)
 
                 # send the transform
-                tf_quat = tf.transformations.quaternion_from_euler(0, 0, th)
-                self.odom_broadcaster.sendTransform((x, y, 0.0), tf_quat, now, "base_link", "odom")
+                self.odom_broadcaster.sendTransform((x, y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now, "base_link", "odom")
             
                 # next, we'll publish the odometry message over ROS
                 odom = Odometry()
