@@ -47,8 +47,10 @@ class ArduinoMotor:
 
     # send data to arduino
     def send_speed_to_motor(self, m1, m2):
-        val1 = struct.unpack("=l", struct.pack("=ff", m1, m2))
-        self.bus.write_i2c_block_data(self.address, self.move_cmd, [val1])
+        val = list(bytearray(struct.pack("=ff", m1, m2)))
+        # rospy.logwarn("Sending %d bytes" % len(val))
+        # rospy.logwarn("[%s]" % ", ".join(map(str, val)))
+        self.bus.write_i2c_block_data(self.address, self.move_cmd, list(val))
 
     # start the node: spin forever
     def begin(self):
@@ -73,7 +75,7 @@ class ArduinoMotor:
                 rospy.loginfo_throttle(1, "Sent speed successfully")
                 break
             except IOError as e:
-                rospy.logwarn(e)
+                # rospy.logwarn(e)
                 pass
                 # self.ticks_since_target += 1
 

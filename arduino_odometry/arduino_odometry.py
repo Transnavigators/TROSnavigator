@@ -119,7 +119,7 @@ class ArduinoOdometry:
                 ###########################################################
                 rate.sleep()
             except IOError as e:
-                rospy.logwarn(e)
+                # rospy.logwarn(e)
                 pass
 
 if __name__ == "__main__":

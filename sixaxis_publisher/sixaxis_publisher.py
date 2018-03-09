@@ -51,7 +51,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.MAX_SPEED = float(rospy.get_param("~max_speed", 2.2))
         self.MAX_REVERSE_SPEED = float(rospy.get_param("~max_reverse_speed", 0.5))
         self.MAX_ROT_SPEED = float(rospy.get_param("~max_rot_speed", 1.75))
-        self.threshold = int(rospy.get_param("~joystick_threshold", 5))
+        self.threshold = int(rospy.get_param("~joystick_threshold", 40))
 
         # Instance variables for helping the callback remember its state
         self.used_key = False
@@ -96,6 +96,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                 if event.code == 5:
                     # right joystick y axis controls moving forward
                     if mag > self.threshold:
+                        rospy.loginfo("Top joystick = %d" % event.value)
                         scaled = self.scale_stick(event.value)
                         if scaled < 0:
                             self.x_vel = -scaled * self.MAX_SPEED
@@ -106,6 +107,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     self.used_key = False
                 elif event.code == 2:
                     # right joystick x-axis controls turning
+                    rospy.loginfo("Right joystick = %d" % event.value)
                     if mag > self.threshold:
                         self.rot_vel = -self.scale_stick(event.value) * self.MAX_ROT_SPEED
                     else:
