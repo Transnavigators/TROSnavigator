@@ -158,7 +158,9 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                 rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
                 continue
             # Send a new twist if we have a nonzero command or an explicit stop command
-            
+            if stop:
+                self.x_vel = 0
+                self.rot_vel = 0
             twist = Twist()
             twist.linear = Vector3(self.x_vel, 0, 0)
             twist.angular = Vector3(0, 0, self.rot_vel)
@@ -183,7 +185,7 @@ if __name__ == "__main__":
     try:
         sp = SixaxisPublisher()
         while not rospy.is_shutdown():
-            asyncore.loop(timeout=1, count=1)
+            asyncore.loop(timeout=1, count=100)
     except rospy.ROSInterruptException:
         sp.stream.stop_stream()
         sp.stream.close()
