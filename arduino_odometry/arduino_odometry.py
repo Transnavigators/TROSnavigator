@@ -2,12 +2,8 @@
 import smbus
 import struct
 import rospy
-import serial
 import math
-import os
-import sys
 import tf
-import time
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 from nav_msgs.msg import Odometry
 
@@ -25,12 +21,12 @@ class ArduinoOdometry:
         self.address = 0x04
 
         # The width between the wheels
-        self.width = rospy.get_param("~width",31.5 * 0.0254)
+        self.width = rospy.get_param("~width", 31.5 * 0.0254)
         self.radius = float(self.width) / 2
 
         # Constant distance travelled per pulse of the encoder
         # 6" diameter wheel, 4096 pulses per revolution
-        self.meters_per_pulse = rospy.get_param("~meters_per_pulse",2 * math.pi * (6 / 2) * 0.0254 / 4096)
+        self.meters_per_pulse = rospy.get_param("~meters_per_pulse", 2 * math.pi * (6 / 2) * 0.0254 / 4096)
             
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
         self.odom_broadcaster = tf.TransformBroadcaster()
@@ -55,11 +51,10 @@ class ArduinoOdometry:
         while not rospy.is_shutdown():
             # read encoders
             try:
-
                 receive_data = self.read_encoders()
-                new_left, new_right = struct.unpack('=ii',bytearray(receive_data[0:8]))
+                new_left, new_right = struct.unpack('=ii', bytearray(receive_data[0:8]))
             
-                rospy.loginfo("Left count: "+str(new_left)+" | Right count: "+str(new_right))
+                rospy.loginfo_throttle(1, "Left count: "+str(new_left)+" | Right count: "+str(new_right))
             
                 current_time = rospy.get_time()
                 now = rospy.Time.now()
@@ -69,7 +64,7 @@ class ArduinoOdometry:
                 ##################################################################
                 delta_time = current_time - previous_time
                 delta_left = (new_left - old_left) * self.meters_per_pulse
-                delta_right = (new_right - old_right) * self.meters_per_pulse
+                delta_right = -(new_right - old_right) * self.meters_per_pulse
 
                 old_left = new_left
                 old_right = new_right
