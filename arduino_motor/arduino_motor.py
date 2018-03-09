@@ -3,6 +3,7 @@
 # modified from https://answers.ros.org/question/209963/cmd_veltwist-transform-twist-message-into-left-and-right-motor-commands/
 import smbus
 import rospy
+import struct
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 
 
@@ -46,7 +47,8 @@ class ArduinoMotor:
 
     # send data to arduino
     def send_speed_to_motor(self, m1, m2):
-        self.bus.write_i2c_block_data(self.address, self.move_cmd, [m1, m2])
+        vals = struct.pack("ff", m1, m2)
+        self.bus.write_i2c_block_data(self.address, self.move_cmd, bytearray(vals))
 
     # start the node: spin forever
     def begin(self):
