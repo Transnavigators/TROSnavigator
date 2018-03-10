@@ -11,7 +11,7 @@ from nav_msgs.msg import Odometry
 class ArduinoOdometry:
 
     # Commands for sending and receiving I2C packets
-    
+
     def __init__(self):
         # Initialize the serial port
         rospy.init_node('arduino_odometry', anonymous=True)
@@ -40,12 +40,12 @@ class ArduinoOdometry:
     def read_encoders(self):
         data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
         return data
-         
+
     # start the node: spin forever
     def begin(self):
         old_left = 0
         old_right = 0
-        
+
         previous_time = 0
 
         th = 0
@@ -53,15 +53,15 @@ class ArduinoOdometry:
         y = 0
 
         rate = rospy.Rate(self.rate)
-        
+
         while not rospy.is_shutdown():
             # read encoders
             try:
                 receive_data = self.read_encoders()
                 new_left, new_right = struct.unpack('=ii', bytearray(receive_data[0:8]))
-            
-                rospy.loginfo_throttle(1, "Left count: "+str(new_left)+" | Right count: "+str(new_right))
-            
+
+                rospy.loginfo_throttle(1, "Left count: " + str(new_left) + " | Right count: " + str(new_right))
+
                 current_time = rospy.get_time()
                 now = rospy.Time.now()
 
@@ -69,12 +69,13 @@ class ArduinoOdometry:
                 # https://github.com/qboticslabs/mastering_ros/blob/master/chapter_9_codes/chefbot_navig_cpp/src/diff_tf.cpp
                 ##################################################################
                 delta_time = current_time - previous_time
-                delta_left = (new_left - old_left) * self.meters_per_pulse # m
-                delta_right = -(new_right - old_right) * self.meters_per_pulse # m
-                d = (delta_left + delta_right)/self.width
-                th = (delta_right - delta_left)/self.width
-                self.dx = d/delta_time
-                self.dr = th/delta_time
+                delta_left = (new_left - old_left) * self.meters_per_pulse  # m
+                delta_right = -(new_right - old_right) * self.meters_per_pulse  # m
+
+                d = (delta_left + delta_right) / self.width
+                th = (delta_right - delta_left) / self.width
+                self.dx = d / delta_time
+                self.dr = th / delta_time
                 old_left = new_left
                 old_right = new_right
                 previous_time = current_time
@@ -85,17 +86,19 @@ class ArduinoOdometry:
                     self.y = self.y + (math.sin(self.th) * x + math.cos(self.th) * y)
                 if th != 0:
                     self.th = self.th + th
-
+                rospy.loginfo_throttle(1, "dLeft=%f dRight=%f th=%f x=%f y=%f dx=%f dr=%f" % (delta_left, delta_right,
+                                       th, self.x, self.y, self.dx, self.dr))
                 # send messages
                 odom_quat = Quaternion()
-                odom_quat.w = math.cos(th/2)
+                odom_quat.w = math.cos(th / 2)
                 odom_quat.x = 0.0
                 odom_quat.y = 0.0
-                odom_quat.z = math.sin(th/2)
+                odom_quat.z = math.sin(th / 2)
 
                 # send the transform
-                self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now, "base_link", "odom")
-            
+                self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now,
+                                                    "base_link", "odom")
+
                 # next, we'll publish the odometry message over ROS
                 odom = Odometry()
                 odom.header.stamp = now
@@ -110,14 +113,15 @@ class ArduinoOdometry:
                 odom.twist.twist.linear.x = self.dx
                 odom.twist.twist.linear.y = 0.0
                 odom.twist.twist.angular.z = self.dr
-            
+
                 self.pub.publish(odom)
-            
+
                 ###########################################################
                 rate.sleep()
             except IOError as e:
                 # rospy.logwarn(e)
                 pass
+
 
 if __name__ == "__main__":
     try:
