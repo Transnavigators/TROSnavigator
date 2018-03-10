@@ -30,6 +30,11 @@ class ArduinoOdometry:
         self.rate = float(rospy.get_param("~poll_rate", 10))
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
         self.odom_broadcaster = tf.TransformBroadcaster()
+        self.x = 0
+        self.y = 0
+        self.th = 0
+        self.dx = 0
+        self.dr = 0
 
     # get data from Arduino
     def read_encoders(self):
@@ -65,37 +70,31 @@ class ArduinoOdometry:
                 ##################################################################
                 delta_time = current_time - previous_time
                 delta_left = (new_left - old_left) * self.meters_per_pulse # m
-                delta_right = (new_right - old_right) * self.meters_per_pulse # m
-
+                delta_right = -(new_right - old_right) * self.meters_per_pulse # m
+                d = (delta_left + delta_right)/self.width
+                th = (delta_right - delta_left)/self.width
+                self.dx = d/delta_time
+                self.dr = th/delta_time
                 old_left = new_left
                 old_right = new_right
                 previous_time = current_time
-
-                if abs(delta_left - delta_right) < 1e-6:
-                    dx = delta_left * math.cos(th)
-                    dy = delta_right * math.sin(th)
-                    vth = 0
-                else:
-                    r = self.width * (delta_right + delta_left) / (2 * (delta_right - delta_left)) # m
-                    wd = (delta_right - delta_left) / self.width  # radians
-                    dx = r * math.sin(wd + th) - r * math.sin(th)  # delta x position
-                    dy = r * math.cos(wd + th) + r * math.cos(th)  # delta y position
-                    th = (th + wd + (2 * math.pi)) % (2 * math.pi)  # delta theta
-                    vth = wd / delta_time  # radians/sec
-                x = x + dx  # absolute x position starting at 0,0
-                y = y + dy  # absolute y position starting at 0,0
-                vx = dx / delta_time  # m/s
-                vy = dy / delta_time  # m/s
+                if d != 0:
+                    x = math.cos(th) * d
+                    y = -math.sin(th) * d
+                    self.x = self.x + (math.cos(self.th) * x - math.sin(self.th) * y)
+                    self.y = self.y + (math.sin(self.th) * x + math.cos(self.th) * y)
+                if th != 0:
+                    self.th = self.th + th
 
                 # send messages
                 odom_quat = Quaternion()
-                odom_quat.w = math.cos(th / 2)
+                odom_quat.w = math.cos(th/2)
                 odom_quat.x = 0.0
                 odom_quat.y = 0.0
                 odom_quat.z = math.sin(th/2)
 
                 # send the transform
-                self.odom_broadcaster.sendTransform((x, y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now, "base_link", "odom")
+                self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now, "base_link", "odom")
             
                 # next, we'll publish the odometry message over ROS
                 odom = Odometry()
@@ -108,9 +107,9 @@ class ArduinoOdometry:
                 odom.pose.pose.orientation = odom_quat
                 # set the velocity
                 odom.child_frame_id = "base_link"
-                odom.twist.twist.linear.x = vx
-                odom.twist.twist.linear.y = vy
-                odom.twist.twist.angular.z = vth
+                odom.twist.twist.linear.x = self.dx
+                odom.twist.twist.linear.y = 0.0
+                odom.twist.twist.angular.z = self.dr
             
                 self.pub.publish(odom)
             
