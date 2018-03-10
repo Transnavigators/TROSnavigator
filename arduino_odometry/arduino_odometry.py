@@ -59,7 +59,8 @@ class ArduinoOdometry:
             try:
                 receive_data = self.read_encoders()
                 new_left, new_right = struct.unpack('=ii', bytearray(receive_data[0:8]))
-
+                new_left = -new_left
+                new_right = -new_right
                 rospy.loginfo_throttle(1, "Left count: " + str(new_left) + " | Right count: " + str(new_right))
 
                 current_time = rospy.get_time()
@@ -70,7 +71,7 @@ class ArduinoOdometry:
                 ##################################################################
                 delta_time = current_time - previous_time
                 delta_left = (new_left - old_left) * self.meters_per_pulse  # m
-                delta_right = -(new_right - old_right) * self.meters_per_pulse  # m
+                delta_right = (new_right - old_right) * self.meters_per_pulse  # m
 
                 d = (delta_left + delta_right) / self.width
                 th = (delta_right - delta_left) / self.width
@@ -104,13 +105,13 @@ class ArduinoOdometry:
                 odom.header.stamp = now
                 odom.header.frame_id = "odom"
                 # set the position
-                odom.pose.pose.position.x = x
-                odom.pose.pose.position.y = y
+                odom.pose.pose.position.x = self.x
+                odom.pose.pose.position.y = self.y
                 odom.pose.pose.position.z = 0.0
                 odom.pose.pose.orientation = odom_quat
                 # set the velocity
                 odom.child_frame_id = "base_link"
-                odom.twist.twist.linear.x = self.dx
+                odom.twist.twist.linear.x = -self.dx/2
                 odom.twist.twist.linear.y = 0.0
                 odom.twist.twist.angular.z = self.dr
 
