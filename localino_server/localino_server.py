@@ -102,7 +102,7 @@ class LocalinoPublisher(asyncore.dispatcher):
         self.ip = rospy.get_param("~ip",'')
 
         # Keep a list of the anchor names
-        self.anchor_names = str(rospy.get_param("~anchor_names"), "9002,9003,9005").split(',')
+        self.anchor_names = str(rospy.get_param("~anchor_names", "9002,9003,9005")).split(',')
 
         # Keep a list of the tag names
         self.tag_ids = str(rospy.get_param("~tag_names", "1002,1001")).split(',')
