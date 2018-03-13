@@ -115,9 +115,9 @@ class LocalinoPublisher(asyncore.dispatcher):
                 coords = rospy.get_param("~anchor_%s" % anchor_name).split(',')
                 self.anchor_coords[anchor_name] = Point(float(coords[0]), float(coords[1]), 0)
         else:
-            self.anchor_coords = {'anchor_9002': Point(0, 0, 0),
-                                  'anchor_9003': Point(3.78, 0.28, 0),
-                                  'anchor_9005': Point(1.12, 2.03, 0)
+            self.anchor_coords = {'9002': Point(0, 0, 0),
+                                  '9003': Point(3.78, 0.28, 0),
+                                  '9005': Point(1.12, 2.03, 0)
                                   }
         # Create 2D dictionaries to store distances reported from each anchor\tag pair
         self.dists = {tagID: {anchorID: None for anchorID in self.anchor_names} for tagID in self.tag_ids}
@@ -129,8 +129,6 @@ class LocalinoPublisher(asyncore.dispatcher):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bind(('', self.port))
-
-
 
     # Never need to write, only read
     def writeable(self):
