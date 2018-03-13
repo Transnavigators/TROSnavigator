@@ -98,7 +98,7 @@ class LocalinoPublisher(asyncore.dispatcher):
         self.port = int(rospy.get_param("~port", 10000))
 
         # The IP to bind on, either all interfaces (0.0.0.0) or the localino subnet (192.168.4.255)
-        self.ip = rospy.get_param("~ip",'')
+        self.ip = rospy.get_param("~ip", '')
 
         # Keep a list of the anchor names
         self.anchor_names = str(rospy.get_param("~anchor_names", "9002,9003,9005")).split(',')
@@ -179,20 +179,20 @@ class LocalinoPublisher(asyncore.dispatcher):
 
                         # TODO: measure covariance with experiment + statistics
                         # This should be less accurate than the Arduino encoder odometry
-                        odom.pose.covariance = [1000, 0, 0, 0, 0, 0,  # covariance on gps_x
-                                                0, 1000, 0, 0, 0, 0,  # covariance on gps_y
-                                                0, 0, 0, 0, 0, 0,  # covariance on gps_z
-                                                0, 0, 0, 0, 0, 0,  # large covariance on rot x
-                                                0, 0, 0, 0, 0, 0,  # large covariance on rot y
-                                                0, 0, 0, 0, 0, 0]  # large covariance on rot z
+                        odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                                0, 1e-3, 1e-9, 0, 0, 0,
+                                                0, 0, 1e6, 0, 0, 0,
+                                                0, 0, 0, 1e6, 0, 0,
+                                                0, 0, 0, 0, 1e6, 0,
+                                                0, 0, 0, 0, 0, 1e-9]
                         odom.child_frame_id = "map"
                         odom.twist.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
-                        odom.twist.covariance = [0, 0, 0, 0, 0, 0,  # Ignore twist
-                                                 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0]
+                        odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                                 0, 1e-3, 1e-9, 0, 0, 0,
+                                                 0, 0, 1e6, 0, 0, 0,
+                                                 0, 0, 0, 1e6, 0, 0,
+                                                 0, 0, 0, 0, 1e6, 0,
+                                                 0, 0, 0, 0, 0, 1e-9]
 
                         self.pub.publish(odom)
 
