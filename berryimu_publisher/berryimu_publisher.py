@@ -23,8 +23,12 @@ class BerryIMUPublisher:
         # wait for other i2c devices
         rospy.sleep(2.)
         # IMU.detectIMU()  # Detect if BerryIMUv1 or BerryIMUv2 is connected.
-
-        IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
+        while True:
+            try:
+                IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
+                break
+            except rospy.ROSInterruptException:
+                break
 
     def begin(self):
 
