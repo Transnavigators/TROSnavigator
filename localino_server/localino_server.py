@@ -125,11 +125,12 @@ class LocalinoPublisher(asyncore.dispatcher):
         # Create dictionaries to hold the last timestamp and
         self.last_timestamp = {tagID: {anchorID: 0 for anchorID in self.anchor_names} for tagID in self.tag_ids}
 
-        # Bind to IP 0.0.0.0 UDP port 10000 to capture the tag's traffic
+        # Bind to IP 0.0.0.0 UDP port 10000 using asyncore to capture the tag's traffic
+        asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bind(('', self.port))
 
-        asyncore.dispatcher.__init__(self)
+
 
     # Never need to write, only read
     def writeable(self):
