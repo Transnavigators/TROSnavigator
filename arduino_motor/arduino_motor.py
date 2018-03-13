@@ -16,15 +16,17 @@ class ArduinoMotor:
         rospy.init_node('arduino_motor', anonymous=True)
         rospy.loginfo("%s started" % rospy.get_name())
 
+        reset_pin = int(rospy.get_param("reset_pin", 4))
+
         # Setup pin 4 as an output pin for resetting the Arduino
         GPIO.setmode(GPIO.BOARD)
         GPIO.setwarnings(False)
         GPIO.setup(4, GPIO.OUT, pull_up_down=GPIO.PUD_UP)
 
         # Reset the Arduino
-        GPIO.output(4, GPIO.LOW)
+        GPIO.output(reset_pin, GPIO.LOW)
         rospy.sleep(1.0)
-        GPIO.output(4, GPIO.HIGH)
+        GPIO.output(reset_pin, GPIO.HIGH)
 
         self.width = rospy.get_param("~width", 31.5 * 0.0254)
 
@@ -42,14 +44,11 @@ class ArduinoMotor:
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
         self.rate = int(rospy.get_param("~rate", 20))
-        # self.timeout_ticks = rospy.get_param("~timeout_ticks", 2)
         self.left = 0
         self.right = 0
-        # self.ticks_since_target = 0
 
     def callback(self, msg):
         # rospy.loginfo("twist to motors:: twistCallback raw msg: %s" % str(msg))
-        # self.ticks_since_target = 0
         self.dx = msg.linear.x
         self.dr = msg.angular.z
         self.dy = msg.linear.y
@@ -83,7 +82,7 @@ class ArduinoMotor:
                 self.send_speed_to_motor(float(self.left), float(self.right))
                 rospy.loginfo_throttle(1, "Sent speed successfully")
                 break
-            except IOError as e:
+            except IOError:
                 pass
 
 
