@@ -170,7 +170,7 @@ class LocalinoPublisher(asyncore.dispatcher):
                     self.dists = {tagID: {anchorID: None for anchorID in self.anchor_names} for tagID in self.tag_ids}
                     # An Odometry message generated at time=stamp and published on topic /vo
                     odom = Odometry()
-                    odom.header.stamp = rospy.get_time()
+                    odom.header.stamp = rospy.Time.now()
                     if tag_id == self.base_id:
                         odom.header.frame_id = "vo"
 
