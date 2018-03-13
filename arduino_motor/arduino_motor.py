@@ -21,7 +21,7 @@ class ArduinoMotor:
         # Setup pin 4 as an output pin for resetting the Arduino
         GPIO.setmode(GPIO.BOARD)
         GPIO.setwarnings(False)
-        GPIO.setup(4, GPIO.OUT, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(4, GPIO.OUT)
 
         # Reset the Arduino
         GPIO.output(reset_pin, GPIO.LOW)
