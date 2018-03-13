@@ -179,20 +179,20 @@ class LocalinoPublisher(asyncore.dispatcher):
 
                         # TODO: measure covariance with experiment + statistics
                         # This should be less accurate than the Arduino encoder odometry
-                        odom.pose.covariance = {1000, 0, 0, 0, 0, 0,  # covariance on gps_x
+                        odom.pose.covariance = [1000, 0, 0, 0, 0, 0,  # covariance on gps_x
                                                 0, 1000, 0, 0, 0, 0,  # covariance on gps_y
                                                 0, 0, 0, 0, 0, 0,  # covariance on gps_z
                                                 0, 0, 0, 0, 0, 0,  # large covariance on rot x
                                                 0, 0, 0, 0, 0, 0,  # large covariance on rot y
-                                                0, 0, 0, 0, 0, 0}  # large covariance on rot z
+                                                0, 0, 0, 0, 0, 0]  # large covariance on rot z
                         odom.child_frame_id = "map"
                         odom.twist.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
-                        odom.twist.covariance = {0, 0, 0, 0, 0, 0,  # Ignore twist
+                        odom.twist.covariance = [0, 0, 0, 0, 0, 0,  # Ignore twist
                                                  0, 0, 0, 0, 0, 0,
                                                  0, 0, 0, 0, 0, 0,
                                                  0, 0, 0, 0, 0, 0,
                                                  0, 0, 0, 0, 0, 0,
-                                                 0, 0, 0, 0, 0, 0}
+                                                 0, 0, 0, 0, 0, 0]
 
                         self.pub.publish(odom)
 
