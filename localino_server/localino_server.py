@@ -53,20 +53,19 @@ def get_two_points_distance(p1, p2):
 
 
 def is_contained_in_circles(point, circles):
-    for i in range(len(circles)):
-        if get_two_points_distance(point, circles[i].center) > circles[i].radius:
+    for circle in circles:
+        if get_two_points_distance(point, circle.center) > circle.radius:
             return False
     return True
 
 
 def get_polygon_center(points):
     center = Point(0, 0, 0)
-    num = len(points)
-    for i in range(num):
-        center.x += points[i].x
-        center.y += points[i].y
-    center.x = center.x / num
-    center.y = center.y / num
+    for point in points:
+        center.x += point.x
+        center.y += point.y
+    center.x = center.x / len(points)
+    center.y = center.y / len(points)
     return center
 
 
