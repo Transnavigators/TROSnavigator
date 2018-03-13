@@ -20,8 +20,10 @@ class BerryIMUPublisher:
         self.pub = rospy.Publisher("imu_data", Imu, queue_size=1000)
 
         self.rate = rospy.Rate(int(rospy.get_param("~poll_rate",20)))
+        # wait for other i2c devices
+        rospy.sleep(2.)
+        # IMU.detectIMU()  # Detect if BerryIMUv1 or BerryIMUv2 is connected.
 
-        IMU.detectIMU()  # Detect if BerryIMUv1 or BerryIMUv2 is connected.
         IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
 
     def begin(self):
