@@ -164,7 +164,7 @@ class LocalinoPublisher(asyncore.dispatcher):
                     inner_points = []
 
                     for p in get_all_intersecting_points(self.dists[tag_id].values()):
-                        if is_contained_in_circles(p, self.dists[tag_id]):
+                        if is_contained_in_circles(p, self.dists[tag_id].values()):
                             inner_points.append(p)
                     center = get_polygon_center(inner_points)
                     self.dists = {tagID: {anchorID: None for anchorID in self.anchor_names} for tagID in self.tag_ids}
