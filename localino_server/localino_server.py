@@ -125,10 +125,11 @@ class LocalinoPublisher(asyncore.dispatcher):
         # Create dictionaries to hold the last timestamp and
         self.last_timestamp = {tagID: {anchorID: 0 for anchorID in self.anchor_names} for tagID in self.tag_ids}
 
-        asyncore.dispatcher.__init__(self)
         # Bind to IP 0.0.0.0 UDP port 10000 to capture the tag's traffic
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bind(('', self.port))
+
+        asyncore.dispatcher.__init__(self)
 
     # Never need to write, only read
     def writeable(self):
@@ -218,7 +219,7 @@ if __name__ == "__main__":
     lp = LocalinoPublisher()
     try:
         while not rospy.is_shutdown():
-            asyncore.loop(count=1)
+            asyncore.loop(timeout=1, count=100)
     except rospy.ROSInterruptException:
         pass
     asyncore.close_all()
