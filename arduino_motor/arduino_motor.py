@@ -4,6 +4,7 @@
 import smbus
 import rospy
 import struct
+import RPi.GPIO as GPIO
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 
 
@@ -14,6 +15,16 @@ class ArduinoMotor:
         # Initialize the serial port
         rospy.init_node('arduino_motor', anonymous=True)
         rospy.loginfo("%s started" % rospy.get_name())
+
+        # Setup pin 4 as an output pin for resetting the Arduino
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
+        GPIO.setup(4, GPIO.OUT, pull_up_down=GPIO.PUD_UP)
+
+        # Reset the Arduino
+        GPIO.output(4, GPIO.LOW)
+        rospy.sleep(1.0)
+        GPIO.output(4, GPIO.HIGH)
 
         self.width = rospy.get_param("~width", 31.5 * 0.0254)
 
@@ -56,8 +67,6 @@ class ArduinoMotor:
     def begin(self):
 
         r = rospy.Rate(self.rate)
-        # self.ticks_since_target = self.timeout_ticks
-
         # main loop
         while not rospy.is_shutdown():  # and self.ticks_since_target < self.timeout_ticks:
             self.spin_once()
@@ -75,9 +84,7 @@ class ArduinoMotor:
                 rospy.loginfo_throttle(1, "Sent speed successfully")
                 break
             except IOError as e:
-                # rospy.logwarn(e)
                 pass
-                # self.ticks_since_target += 1
 
 
 if __name__ == "__main__":
