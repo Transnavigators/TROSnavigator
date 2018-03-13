@@ -23,6 +23,10 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         for device in devices:
             if 'PLAYSTATION(R)3 Controller' in device.name:
                 ps3dev = device.fn
+                if device.name == 'PLAYSTATION(R)3 Controller':
+                    self.isSixaxis = True
+                else:
+                    self.isSixaxis = False
 
         if ps3dev is None:
             rospy.logfatal("Could not find the PS3 controller.")
@@ -93,7 +97,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             # Check for joystick inputs and if we're in joystick mode
             mag = abs(event.value - 128)
             if event.type == 3 and not self.used_key:
-                if event.code == 5:
+                if (event.code == 5 and self.isSixaxis) or (event.code == 4 and not self.isSixaxis):
                     # right joystick y axis controls moving forward
                     if mag > self.threshold:
                         rospy.loginfo("Top joystick = %d" % event.value)
@@ -105,7 +109,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     else:
                         self.x_vel = 0
                     self.used_key = False
-                elif event.code == 2:
+                elif (event.code == 2 and self.isSixaxis) or (event.code == 3 and not self.isSixaxis):
                     # right joystick x-axis controls turning
                     rospy.loginfo("Right joystick = %d" % event.value)
                     if mag > self.threshold:
@@ -120,29 +124,29 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             elif event.type == 1:
                 if event.value == 1:
                     # Key down press
-                    if event.code == 293:
+                    if event.code in [293, 547]:
                         # turn right
                         self.rot_vel = -self.MAX_ROT_SPEED / 2
                         self.used_key = True
-                    elif event.code == 292:
+                    elif event.code in [292, 544]:
                         # move forward
                         self.x_vel = self.MAX_SPEED / 2
                         self.rot_vel = 0
                         self.used_key = True
-                    elif event.code == 294:
+                    elif event.code in [294, 545]:
                         # move back
                         self.x_vel = -self.MAX_REVERSE_SPEED
                         self.rot_vel = 0
                         self.used_key = True
-                    elif event.code == 295:
+                    elif event.code in [295, 546]:
                         # turn left
                         self.rot_vel = self.MAX_ROT_SPEED / 2
                         self.used_key = True
-                    elif event.code in [302, 303]:
+                    elif event.code in [302, 303, 304]:
                         # x key, stop
                         stop = True
                         self.used_key = True
-                    elif event.code == 301:
+                    elif event.code in [301, 308]:
                         # Only play horn if not already playing
                         if self.wav.tell() == 0:
                             wav_data = self.wav.readframes(self.chunk)
