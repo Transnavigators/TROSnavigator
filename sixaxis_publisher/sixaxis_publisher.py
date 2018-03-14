@@ -21,7 +21,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         ps3dev = None
         devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
         for device in devices:
-            if 'PLAYSTATION(R)3 Controller' in device.name:
+            if 'PLAYSTATION(R)3 Controller' == device.name:
                 ps3dev = device.fn
 
         if ps3dev is None:
