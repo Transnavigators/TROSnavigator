@@ -87,9 +87,8 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.close()
 
     def handle_read(self):
+        stop = False
         for event in self.gamepad.read():
-            stop = False
-
             # Check for joystick inputs and if we're in joystick mode
             mag = abs(event.value - 128)
             if event.type == 3 and not self.used_key:
@@ -113,9 +112,6 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     else:
                         self.rot_vel = 0
                     self.used_key = False
-                if self.rot_vel == 0 and self.x_vel == 0:
-                    # When both joysticks are centered, stop
-                    stop = True
             # Key presses
             elif event.type == 1:
                 if event.value == 1:
@@ -156,26 +152,25 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     stop = True
                     self.used_key = False
             # Construct message if valid command was read
+        if self.rot_vel == 0 and self.x_vel == 0:
+            # When both joysticks are centered, stop
+            stop = True
+        # If it used to be stopped and is suddenly moving at full speed, ignore the input
+        if self.stopped and (abs(self.x_vel) in [self.MAX_SPEED, self.MAX_REVERSE_SPEED] or abs(self.rot_vel) == self.MAX_ROT_SPEED):
+            rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
+            return
+        # Send a new twist if we have a nonzero command or an explicit stop command
+        twist = Twist()
+        twist.linear = Vector3(self.x_vel, 0, 0)
+        twist.angular = Vector3(0, 0, self.rot_vel)
+        self.pub.publish(twist)
 
-            # If it used to be stopped and is suddenly moving at full speed, ignore the input
-            if self.stopped and (abs(self.x_vel) in [self.MAX_SPEED, self.MAX_REVERSE_SPEED] or abs(self.rot_vel) == self.MAX_ROT_SPEED):
-                rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
-                continue
-            # Send a new twist if we have a nonzero command or an explicit stop command
-            if stop:
-                self.x_vel = 0
-                self.rot_vel = 0
-            twist = Twist()
-            twist.linear = Vector3(self.x_vel, 0, 0)
-            twist.angular = Vector3(0, 0, self.rot_vel)
-            self.pub.publish(twist)
-
-            # Update stopped variable
-            if stop:
-                self.stopped = True
-            elif self.x_vel != 0 or self.rot_vel != 0:
-                self.stopped = False
-                rospy.loginfo_throttle(1, "Sending vx=%f vth=%f" % (self.x_vel, self.rot_vel))
+        # Update stopped variable
+        if stop:
+            self.stopped = True
+        elif self.x_vel != 0 or self.rot_vel != 0:
+            self.stopped = False
+            rospy.loginfo_throttle(1, "Sending vx=%f vth=%f" % (self.x_vel, self.rot_vel))
 #               goal = MoveBaseGoal()
 #               goal.target_pose.header.frame_id = "base_link"
 #               goal.target_pose.header.stamp = rospy.get_time()
