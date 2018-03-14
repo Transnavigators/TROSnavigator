@@ -11,7 +11,11 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, Quaternion
 from tf import TransformListener
 
+"""
+Alexa Voice Control Interface
+@author Anthony Donaldson and Matthew Yuen
 
+"""
 class Alexa:
     # set up constants
     def __init__(self):

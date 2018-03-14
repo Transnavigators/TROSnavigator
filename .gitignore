@@ -1,3 +1,5 @@
 /alexa_voice_control/Certificates/Pi.private.key
 /CMakeLists.txt
 /.idea/
+/docs/build
+__pycache__

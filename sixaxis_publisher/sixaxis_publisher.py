@@ -11,7 +11,9 @@ import rospkg
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
 
+"""
 
+"""
 class SixaxisPublisher(asyncore.file_dispatcher):
     def __init__(self):
         # set up node
