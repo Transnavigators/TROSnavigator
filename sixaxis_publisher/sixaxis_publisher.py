@@ -23,10 +23,6 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         for device in devices:
             if 'PLAYSTATION(R)3 Controller' in device.name:
                 ps3dev = device.fn
-                if device.name == 'PLAYSTATION(R)3 Controller':
-                    self.isSixaxis = True
-                else:
-                    self.isSixaxis = False
 
         if ps3dev is None:
             rospy.logfatal("Could not find the PS3 controller.")
@@ -97,7 +93,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             # Check for joystick inputs and if we're in joystick mode
             mag = abs(event.value - 128)
             if event.type == 3 and not self.used_key:
-                if (event.code == 5 and self.isSixaxis) or (event.code == 4 and not self.isSixaxis):
+                if event.code == 4:
                     # right joystick y axis controls moving forward
                     if mag > self.threshold:
                         rospy.loginfo("Top joystick = %d" % event.value)
@@ -109,7 +105,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     else:
                         self.x_vel = 0
                     self.used_key = False
-                elif (event.code == 2 and self.isSixaxis) or (event.code == 3 and not self.isSixaxis):
+                elif event.code == 3:
                     # right joystick x-axis controls turning
                     rospy.loginfo("Right joystick = %d" % event.value)
                     if mag > self.threshold:
