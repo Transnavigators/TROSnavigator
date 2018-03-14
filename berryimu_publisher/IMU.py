@@ -17,7 +17,7 @@ def detectIMU():
 
     try:
         # Check for LSM9DS0
-        # If no LSM9DS0 is conencted, there will be an I2C bus error and the program will exit.
+        # If no LSM9DS0 is connected, there will be an I2C bus error and the program will exit.
         # This section of code stops this from happening.
         LSM9DS0_WHO_G_response = (bus.read_byte_data(LSM9DS0_GYR_ADDRESS, LSM9DS0_WHO_AM_I_G))
         LSM9DS0_WHO_XM_response = (bus.read_byte_data(LSM9DS0_ACC_ADDRESS, LSM9DS0_WHO_AM_I_XM))
@@ -30,7 +30,7 @@ def detectIMU():
 
     try:
         # Check for LSM9DS1
-        # If no LSM9DS1 is conencted, there will be an I2C bus error and the program will exit.
+        # If no LSM9DS1 is connected, there will be an I2C bus error and the program will exit.
         # This section of code stops this from happening.
         LSM9DS1_WHO_XG_response = (bus.read_byte_data(LSM9DS1_GYR_ADDRESS, LSM9DS1_WHO_AM_I_XG))
         LSM9DS1_WHO_M_response = (bus.read_byte_data(LSM9DS1_MAG_ADDRESS, LSM9DS1_WHO_AM_I_M))

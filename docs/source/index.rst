@@ -2,11 +2,13 @@ TROSnavigator Documentation
 ===========================
 
 .. toctree::
+   :caption: Table of Contents
    :maxdepth: 2
 
-   alexa_voice_control.rst
-   arduino_motor.rst
-   arduino_odometry.rst
-   berryimu_publisher.rst
-   localino_server.rst
-   sixaxis_publisher.rst
+   alexa_voice_control
+   arduino_motor
+   arduino_odometry
+   berryimu_publisher
+   localino_server
+   sixaxis_publisher
+

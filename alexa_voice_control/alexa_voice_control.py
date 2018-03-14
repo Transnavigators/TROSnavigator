@@ -11,12 +11,13 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, Quaternion
 from tf import TransformListener
 
-"""
-Alexa Voice Control Interface
-@author Anthony Donaldson and Matthew Yuen
 
-"""
 class Alexa:
+    """Alexa Voice Control Module
+    
+    This ROS node connects to AWS IoT and sends commands to ROS.
+
+    """
     # set up constants
     def __init__(self):
         # create a new node
@@ -39,7 +40,10 @@ class Alexa:
         self.topic = rospy.get_param("~topic", '/Transnavigators/Pi')
 
     # callback for receiving AWS message
-    def callback(self, client, userdata, message):
+    def _callback(self, client, userdata, message):
+        """This callback receives a JSON message and outputs a ROS move_base command
+        
+        """
         # extract data
         data_string = message.payload.decode("utf8").replace("'", '"')
         rospy.loginfo(data_string)
@@ -101,9 +105,10 @@ class Alexa:
 
         self.action_client.send_goal(goal)
 
-    # sets up communication with AWS
     def begin(self):
-
+        """This function sets up the AWS IoT MQTT client, connects, and waits until ROS closes
+        
+        """
         rospy.loginfo("Connecting to AWS")
 
         # Configure logging
@@ -114,6 +119,7 @@ class Alexa:
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
 
+        # MQTT Client documaentation: https://s3.amazonaws.com/aws-iot-device-sdk-python-docs/sphinx/html/index.html
         aws_iot_mqtt_client = AWSIoTMQTTClient(self.clientId)
         aws_iot_mqtt_client.configureEndpoint(self.host, 8883)
         aws_iot_mqtt_client.configureCredentials(self.rootCAPath, self.privateKeyPath, self.certificatePath)

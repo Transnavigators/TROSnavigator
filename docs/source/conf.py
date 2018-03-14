@@ -14,13 +14,15 @@
 #
 import os
 import sys
-
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../../sixaxis_publisher'))
 sys.path.insert(0, os.path.abspath('../../alexa_voice_control'))
 sys.path.insert(0, os.path.abspath('../../arduino_motor'))
 sys.path.insert(0, os.path.abspath('../../arduino_odometry'))
 sys.path.insert(0, os.path.abspath('../../berryimu_publisher'))
 sys.path.insert(0, os.path.abspath('../../localino_server'))
-sys.path.insert(0, os.path.abspath('../../sixaxis_publisher'))
+
 
 # -- Project information -----------------------------------------------------
 
@@ -50,7 +52,10 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
 ]
+
+napoleon_numpy_docstring = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['ntemplates']
@@ -169,4 +174,4 @@ texinfo_documents = [
 todo_include_todos = True
 
 autodoc_mock_imports = ["rospy", "smbus", "tf", "AWSIoTPythonSDK", "RPi", "sensor_msgs", "evdev", "actionlib",
-                        "nav_msgs", "geometry_msgs", "rospkg", "move_base_msgs", "asyncore"]
+                        "nav_msgs", "geometry_msgs", "rospkg", "move_base_msgs", "asyncore", "wave", "pyaudio"]

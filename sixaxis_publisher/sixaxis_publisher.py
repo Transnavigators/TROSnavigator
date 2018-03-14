@@ -11,10 +11,14 @@ import rospkg
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
 
-"""
 
-"""
 class SixaxisPublisher(asyncore.file_dispatcher):
+    """Sixaxis Publisher is a ROS joystick driver for PS3 controllers
+    
+    This module looks for connected PlayStation 3 controllers and registers a callback to translate joystick inputs to
+    velocity commands
+    
+    """
     def __init__(self):
         # set up node
         rospy.init_node('sixaxis_pub', anonymous=True)
@@ -36,7 +40,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
 
         # Setup audio
         rospack = rospkg.RosPack()
-        self.wav = wave.open(rospack.get_path('sixaxis_publisher') + '/dixie-horn_daniel-simion.wav','r')
+        self.wav = wave.open(rospack.get_path('sixaxis_publisher') + '/dixie-horn_daniel-simion.wav', 'r')
         self.audio = pyaudio.PyAudio()
         self.chunk = 1024
         # Open an audio stream for the horn
@@ -61,21 +65,37 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.rot_vel = 0
         self.x_vel = 0
 
-    # Some helpers
-    def scale(self, val, src, dst):
-        """
-        Scale the given value from the scale of src to the scale of dst.
+    @staticmethod
+    def scale(val, src, dst):
+        """Scale the given value from the scale of src to the scale of dst.
     
-        val: float or int
-        src: tuple
-        dst: tuple
-    
-        example: print(scale(99, (0.0, 99.0), (-1.0, +1.0)))
+        Args:
+            val (float or int): the value to scale
+            src (tuple): the original range
+            dst (tuple): the destination range
+        
+        Returns:
+            float: the value normalized with the new range
+        
+        Examples:
+            >>> print(scale(99, (0.0, 99.0), (-1.0, +1.0)))
+            1.0
+        
         """
         return (float(val - src[0]) / (src[1] - src[0])) * (dst[1] - dst[0]) + dst[0]
 
-    def scale_stick(self, value):
-        return self.scale(value, (0, 255), (-1, 1))
+    @staticmethod
+    def scale_stick(value):
+        """Normalizes a joystick output byte (0-255) to the range -1 to 1
+        
+        Args:
+            value (float or int): the value to scale from (0,255) to (-1,1)
+        
+        Returns:
+            float: the normalized value
+        
+        """
+        return SixaxisPublisher.scale(value, (0, 255), (-1, 1))
 
     # Never need to write anything
     def writable(self):
@@ -98,7 +118,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     # right joystick y axis controls moving forward
                     if mag > self.threshold:
                         rospy.loginfo("Top joystick = %d" % event.value)
-                        scaled = self.scale_stick(event.value)
+                        scaled = SixaxisPublisher.scale_stick(event.value)
                         if scaled < 0:
                             self.x_vel = -scaled * self.MAX_SPEED
                         else:
@@ -110,7 +130,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     # right joystick x-axis controls turning
                     rospy.loginfo("Right joystick = %d" % event.value)
                     if mag > self.threshold:
-                        self.rot_vel = -self.scale_stick(event.value) * self.MAX_ROT_SPEED
+                        self.rot_vel = -SixaxisPublisher.scale_stick(event.value) * self.MAX_ROT_SPEED
                     else:
                         self.rot_vel = 0
                     self.used_key = False
@@ -153,12 +173,13 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                     # Key up press
                     stop = True
                     self.used_key = False
-            # Construct message if valid command was read
+                    # Construct message if valid command was read
         if self.rot_vel == 0 and self.x_vel == 0:
             # When both joysticks are centered, stop
             stop = True
         # If it used to be stopped and is suddenly moving at full speed, ignore the input
-        if self.stopped and (abs(self.x_vel) in [self.MAX_SPEED, self.MAX_REVERSE_SPEED] or abs(self.rot_vel) == self.MAX_ROT_SPEED):
+        if self.stopped and (abs(self.x_vel) in [self.MAX_SPEED, self.MAX_REVERSE_SPEED]
+                             or abs(self.rot_vel) == self.MAX_ROT_SPEED):
             rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
             return
         # Send a new twist if we have a nonzero command or an explicit stop command
@@ -173,7 +194,9 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         elif self.x_vel != 0 or self.rot_vel != 0:
             self.stopped = False
             rospy.loginfo_throttle(1, "Sending vx=%f vth=%f" % (self.x_vel, self.rot_vel))
-#               goal = MoveBaseGoal()
+
+
+# goal = MoveBaseGoal()
 #               goal.target_pose.header.frame_id = "base_link"
 #               goal.target_pose.header.stamp = rospy.get_time()
 #               goal.target_pose.pose.position = Point(new_x, new_y, 0)
@@ -183,6 +206,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
 
 
 if __name__ == "__main__":
+    sp = None
     try:
         sp = SixaxisPublisher()
         while not rospy.is_shutdown():
