@@ -4,7 +4,12 @@
         <param name="port" value="/dev/ttyAMA0"/>
     </node>
     <node name="sixaxis_publisher" pkg="sixaxis_publisher" type="sixaxis_publisher.py"/>
-    <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py"/>
-    <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py"/>
+    <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
+        <param name="reset_pin" value="4"/>
+        <param name="rate" value="20"/>
+    </node>
+    <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
+        <param name="poll_rate" value="10"/>
+    </node>
     <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 base_link neato_scan 100"/>
 </launch>

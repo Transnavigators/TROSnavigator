@@ -28,7 +28,7 @@ class ArduinoMotor:
         rospy.sleep(1.0)
         GPIO.output(reset_pin, GPIO.HIGH)
 
-        self.width = rospy.get_param("~width", 31.5 * 0.0254)
+        self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
 
         self.constant = 45.0
         self.bus = smbus.SMBus(1)
