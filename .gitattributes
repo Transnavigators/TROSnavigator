@@ -9,5 +9,7 @@
 *.pem eol=lf
 *.enc eol=lf
 *.urdf eol=lf
+*.rst eol=lf
+*.bat eol=crlf
 *.wav binary
 *.stl binary
