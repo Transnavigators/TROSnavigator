@@ -1,5 +1,6 @@
 <launch>
     <include file="$(find alexa_voice_control)/test.test"/>
-    <include file="$(find arduino_control)/test.test"/>
-    <include file="$(find arduino_publisher)/test.test"/>
+    <include file="$(find arduino_motor)/test.test"/>
+    <include file="$(find arduino_odometry)/test.test"/>
+    <include file="$(find localino_server)/test.test"/>
 </launch>
