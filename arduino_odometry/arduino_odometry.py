@@ -18,7 +18,7 @@ class ArduinoOdometry:
 
         # Setup I2C variables
         self.encoder_cmd = ord('e')
-        self.address = 0x04
+        self.address = int(rospy.get_param("~address", 0x04))
 
         # The width between the wheels
         self.width = float(rospy.get_param("~width", 31.5 * 0.0254))

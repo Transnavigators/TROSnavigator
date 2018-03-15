@@ -9,7 +9,7 @@ import pyaudio
 import wave
 import rospkg
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
+from geometry_msgs.msg import Twist, Vector3
 
 
 class SixaxisPublisher(asyncore.file_dispatcher):
@@ -79,7 +79,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             float: the value normalized with the new range
         
         Examples:
-            >>> print(scale(99, (0.0, 99.0), (-1.0, +1.0)))
+            >>> print(SixaxisPublisher.scale(99, (0.0, 99.0), (-1.0, +1.0)))
             1.0
         
         """
