@@ -14,15 +14,35 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../../sixaxis_publisher'))
+import tempfile
+
 sys.path.insert(0, os.path.abspath('../../alexa_voice_control'))
 sys.path.insert(0, os.path.abspath('../../arduino_motor'))
 sys.path.insert(0, os.path.abspath('../../arduino_odometry'))
 sys.path.insert(0, os.path.abspath('../../berryimu_publisher'))
-sys.path.insert(0, os.path.abspath('../../localino_server'))
+# sys.path.insert(0, os.path.abspath('../../sixaxis_publisher'))
+# sys.path.insert(0, os.path.abspath('../../localino_server'))
 
+# Workaround due to this bug: https://github.com/sphinx-doc/sphinx/issues/912
+# Get a temporary directory and add to path
+temp_path = tempfile.mkdtemp()
+sys.path.insert(0, temp_path)
+
+# A list of tuples containing the input file, the output file, the string to find, and the string to replace it with
+files = [(os.path.abspath('../../sixaxis_publisher/sixaxis_publisher.py'),
+          os.path.abspath(temp_path + '/sixaxis_publisher.py'),
+          'SixaxisPublisher(asyncore.file_dispatcher):',
+          'SixaxisPublisher:'),
+         (os.path.abspath('../../localino_server/localino_server.py'),
+          os.path.abspath(temp_path + '/localino_server.py'),
+         'LocalinoPublisher(asyncore.dispatcher):',
+          'LocalinoPublisher:')]
+
+# Remove the super class from the python scripts to allow Sphinx to generate docs correctly
+for in_file, out_file, src, target in files:
+    with open(in_file) as infile, open(out_file, 'w') as outfile:
+        for line in infile:
+            outfile.write(line.replace(src, target))
 
 # -- Project information -----------------------------------------------------
 

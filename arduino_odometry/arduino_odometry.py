@@ -9,25 +9,25 @@ from nav_msgs.msg import Odometry
 
 
 class ArduinoOdometry:
-
-    # Commands for sending and receiving I2C packets
-
+    """Reads encoder data from the Arduino and publishes it as a transform and on the odom topic
+    
+    """
     def __init__(self):
         # Initialize the serial port
         rospy.init_node('arduino_odometry', anonymous=True)
 
-        self.bus = smbus.SMBus(1)
+        # Setup I2C variables
         self.encoder_cmd = ord('e')
         self.address = 0x04
 
         # The width between the wheels
-        self.width = rospy.get_param("~width", 31.5 * 0.0254)
-        self.radius = float(self.width) / 2
+        self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
+        self.radius = self.width / 2.0
 
         # Constant distance travelled per pulse of the encoder
         # 6" diameter wheel, 4096 pulses per revolution
         self.meters_per_pulse = float(rospy.get_param("~meters_per_pulse", 2 * math.pi * (6 / 2) * 0.0254 / 4096))
-        self.rate = float(rospy.get_param("~poll_rate", 10))
+        self.rate = rospy.Rate(float(rospy.get_param("~poll_rate", 10)))
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
         self.odom_broadcaster = tf.TransformBroadcaster()
         self.x = 0
@@ -36,31 +36,38 @@ class ArduinoOdometry:
         self.dx = 0
         self.dr = 0
 
+        # Setup the i2c bus
+        while not rospy.is_shutdown():
+            try:
+                self.bus = smbus.SMBus(1)
+            except IOError:
+                self.rate.sleep()
+
     # get data from Arduino
     def read_encoders(self):
+        """Reads the encoder count from the Arduino using I2C
+        
+        Returns: 
+            tuple: The left and right encoder counts as ints
+        """
         data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
-        return data
+        left, right = struct.unpack('=ii', bytearray(data[0:8]))
+
+        return -left, -right
 
     # start the node: spin forever
     def begin(self):
+        """Keeps reading the encoder, determines the new position and velocity, and publishes it to the odom topic
+
+        """
         old_left = 0
         old_right = 0
-
         previous_time = 0
-
-        th = 0
-        x = 0
-        y = 0
-
-        rate = rospy.Rate(self.rate)
 
         while not rospy.is_shutdown():
             # read encoders
             try:
-                receive_data = self.read_encoders()
-                new_left, new_right = struct.unpack('=ii', bytearray(receive_data[0:8]))
-                new_left = -new_left
-                new_right = -new_right
+                new_left, new_right = self.read_encoders()
                 rospy.loginfo_throttle(1, "Left count: " + str(new_left) + " | Right count: " + str(new_right))
 
                 current_time = rospy.get_time()
@@ -118,15 +125,16 @@ class ArduinoOdometry:
                 self.pub.publish(odom)
 
                 ###########################################################
-                rate.sleep()
-            except IOError as e:
-                # rospy.logwarn(e)
+                self.rate.sleep()
+            except IOError:
                 pass
 
 
 if __name__ == "__main__":
+    controller = None
     try:
         controller = ArduinoOdometry()
         controller.begin()
     except rospy.ROSInterruptException:
+        controller.bus.close()
         pass

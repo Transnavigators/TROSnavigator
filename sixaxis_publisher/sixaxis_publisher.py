@@ -14,10 +14,10 @@ from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
 
 class SixaxisPublisher(asyncore.file_dispatcher):
     """Sixaxis Publisher is a ROS joystick driver for PS3 controllers
-    
+
     This module looks for connected PlayStation 3 controllers and registers a callback to translate joystick inputs to
-    velocity commands
-    
+    velocity commands.
+
     """
     def __init__(self):
         # set up node
@@ -64,6 +64,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.stopped = False
         self.rot_vel = 0
         self.x_vel = 0
+        self.writable.__doc__ = asyncore.file_dispatcher.writable.__doc__
 
     @staticmethod
     def scale(val, src, dst):

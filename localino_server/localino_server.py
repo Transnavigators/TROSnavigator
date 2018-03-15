@@ -11,65 +11,18 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 
 
 class Circle(object):
+    """An object that holds a point and a radius
+    
+    """
     def __init__(self, point, radius):
         self.center = point
         self.radius = radius
 
 
-def get_two_circles_intersecting_points(c1, c2):
-    p1 = c1.center
-    p2 = c2.center
-    r1 = c1.radius
-    r2 = c2.radius
-
-    d = get_two_points_distance(p1, p2)
-    # if to far away, or self contained - can't be done
-    if d >= (r1 + r2) or d <= math.fabs(r1 - r2):
-        return None
-
-    a = (pow(r1, 2) - pow(r2, 2) + pow(d, 2)) / (2 * d)
-    h = math.sqrt(pow(r1, 2) - pow(a, 2))
-    x0 = p1.x + a * (p2.x - p1.x) / d
-    y0 = p1.y + a * (p2.y - p1.y) / d
-    rx = -(p2.y - p1.y) * (h / d)
-    ry = -(p2.x - p1.x) * (h / d)
-    return [Point(x0 + rx, y0 - ry, 0), Point(x0 - rx, y0 + ry, 0)]
-
-
-def get_all_intersecting_points(circles):
-    points = []
-    num = len(circles)
-    for i in range(num):
-        j = i + 1
-        for k in range(j, num):
-            res = get_two_circles_intersecting_points(circles[i], circles[k])
-            if res:
-                points.extend(res)
-    return points
-
-
-def get_two_points_distance(p1, p2):
-    return math.sqrt(pow((p1.x - p2.x), 2) + pow((p1.y - p2.y), 2))
-
-
-def is_contained_in_circles(point, circles):
-    for circle in circles:
-        if get_two_points_distance(point, circle.center) > circle.radius:
-            return False
-    return True
-
-
-def get_polygon_center(points):
-    center = Point(0, 0, 0)
-    for point in points:
-        center.x += point.x
-        center.y += point.y
-    center.x = center.x / len(points)
-    center.y = center.y / len(points)
-    return center
-
-
 class LocalinoPublisher(asyncore.dispatcher):
+    """Listens for Localino packets, triangulates the tags, and publishers their location to ROS
+    
+    """
     def __init__(self):
 
         # initialize the node
@@ -131,10 +84,20 @@ class LocalinoPublisher(asyncore.dispatcher):
 
     # Never need to write, only read
     def writeable(self):
+        """Never need to write
+        
+        Returns:
+            bool: False
+        """
         return False
 
     # start the triangulation
     def handle_read(self):
+        """On a read, save the distance info and try to triangulate the tag
+        
+        Overrides asyncore.dispatcher's handler
+
+        """
         data, addr = self.recvfrom(100)
         rospy.loginfo("Received message:" + data.decode("ascii"))
 
@@ -163,10 +126,10 @@ class LocalinoPublisher(asyncore.dispatcher):
 
                     inner_points = []
 
-                    for p in get_all_intersecting_points(self.dists[tag_id].values()):
-                        if is_contained_in_circles(p, self.dists[tag_id].values()):
+                    for p in LocalinoPublisher.get_all_intersecting_points(self.dists[tag_id].values()):
+                        if LocalinoPublisher.is_contained_in_circles(p, self.dists[tag_id].values()):
                             inner_points.append(p)
-                    center = get_polygon_center(inner_points)
+                    center = LocalinoPublisher.get_polygon_center(inner_points)
                     self.dists = {tagID: {anchorID: None for anchorID in self.anchor_names} for tagID in self.tag_ids}
                     # An Odometry message generated at time=stamp and published on topic /vo
                     odom = Odometry()
@@ -211,6 +174,102 @@ class LocalinoPublisher(asyncore.dispatcher):
                 for anchor, dist in self.dists[tag_id].items():
                     if dist is None:
                         rospy.loginfo("Waiting for packet from anchor %s" % anchor)
+
+    @staticmethod
+    def get_two_circles_intersecting_points(c1, c2):
+        """Finds the intersecting points between two circles
+        
+        Args:
+            c1 (Circle): The first circle
+            c2 (Circle): The second circle
+
+        Returns:
+            list: two points where the circles intersect or None
+        """
+        p1 = c1.center
+        p2 = c2.center
+        r1 = c1.radius
+        r2 = c2.radius
+
+        d = LocalinoPublisher.get_two_points_distance(p1, p2)
+        # if to far away, or self contained - can't be done
+        if d >= (r1 + r2) or d <= math.fabs(r1 - r2):
+            return None
+
+        a = (pow(r1, 2) - pow(r2, 2) + pow(d, 2)) / (2 * d)
+        h = math.sqrt(pow(r1, 2) - pow(a, 2))
+        x0 = p1.x + a * (p2.x - p1.x) / d
+        y0 = p1.y + a * (p2.y - p1.y) / d
+        rx = -(p2.y - p1.y) * (h / d)
+        ry = -(p2.x - p1.x) * (h / d)
+        return [Point(x0 + rx, y0 - ry, 0), Point(x0 - rx, y0 + ry, 0)]
+
+    @staticmethod
+    def get_all_intersecting_points(circles):
+        """Finds the intersecting points among a list of circles
+        
+        Args:
+            circles (list): A list of Circle objects
+
+        Returns:
+            List: A list of points where at least two circles intersect
+        """
+        points = []
+        num = len(circles)
+        for i in range(num):
+            j = i + 1
+            for k in range(j, num):
+                res = LocalinoPublisher.get_two_circles_intersecting_points(circles[i], circles[k])
+                if res:
+                    points.extend(res)
+        return points
+
+    @staticmethod
+    def get_two_points_distance(p1, p2):
+        """Returns the distance between two points
+        
+        Args:
+            p1 (geometry_msgs.msg.Point): The first point
+            p2 (geometry_msgs.msg.Point): The second point
+
+        Returns:
+            float: The distance between the two points
+        """
+        return math.sqrt(pow((p1.x - p2.x), 2) + pow((p1.y - p2.y), 2))
+
+    @staticmethod
+    def is_contained_in_circles(point, circles):
+        """Checks if a point is inside every circle
+        
+        Args:
+            point (geometry_msgs.msg.Point): a point
+            circles (List): A list of Circles
+
+        Returns:
+            bool: True if the point is in the circles, false otherwise
+        """
+        for circle in circles:
+            if LocalinoPublisher.get_two_points_distance(point, circle.center) > circle.radius:
+                return False
+        return True
+
+    @staticmethod
+    def get_polygon_center(points):
+        """Returns a point in the middle of the other points
+        
+        Args:
+            points (list): A list of Points
+
+        Returns:
+            geometry_msgs.msg.Point: The point at the center
+        """
+        center = Point(0, 0, 0)
+        for point in points:
+            center.x += point.x
+            center.y += point.y
+        center.x = center.x / len(points)
+        center.y = center.y / len(points)
+        return center
 
 
 if __name__ == "__main__":

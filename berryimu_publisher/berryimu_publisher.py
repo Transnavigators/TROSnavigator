@@ -3,6 +3,7 @@
 # Modified From https://github.com/mwilliams03/BerryIMU
 import math
 import IMU
+import subprocess
 import rospy
 from sensor_msgs.msg import Imu
 from tf.transformations import quaternion_from_euler
@@ -10,6 +11,9 @@ from geometry_msgs.msg import Vector3, Quaternion
 
 
 class BerryIMUPublisher:
+    """Reads IMU data from BerryIMU using I2C bus and publishes data to ROS
+    
+    """
     def __init__(self):
         rospy.init_node('berryimu', anonymous=True)
         self.RAD_TO_DEG = 180 / math.pi
@@ -19,19 +23,22 @@ class BerryIMUPublisher:
         self.GYRO_TO_RADS = 1 / self.RAD_TO_DEG
         self.pub = rospy.Publisher("imu_data", Imu, queue_size=1000)
 
-        self.rate = rospy.Rate(int(rospy.get_param("~poll_rate",20)))
-        # wait for other i2c devices
-        rospy.sleep(2.)
-        # IMU.detectIMU()  # Detect if BerryIMUv1 or BerryIMUv2 is connected.
-        while True:
+        self.rate = rospy.Rate(int(rospy.get_param("~poll_rate", 20)))
+
+        while not rospy.is_shutdown():
             try:
                 IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
                 break
             except rospy.ROSInterruptException:
                 break
+            except IOError:
+                subprocess.call(['i2cdetect', '-y', '1'])
+                self.rate.sleep()
 
     def begin(self):
-
+        """Keeps reading IMU data and publishing it to the topic imu_data
+        
+        """
         gyro_x_angle = 0.0
         gyro_y_angle = 0.0
         gyro_z_angle = 0.0
@@ -122,19 +129,13 @@ class BerryIMUPublisher:
 
                 rospy.loginfo_throttle(1, "Heading: %s" % tilt_compensated_heading)
 
-                # self.imu_broadcaster.sendTransform((x, y, 0.), odom_quat, current_time, "base_link", "odom")
-                # rospy.logdebug("BerryIMU orientation,%5.2f,%5.2f,%5.2f" % gyro_x_angle, gyro_y_angle, gyro_z_angle)
-                # rospy.logdebug("BerryIMU velocity,%5.2f,%5.2f,5.2f" % msg.angular_velocity.x, msg.angular_velocity.y,
-                #               msg.angular_velocity.z)
-                # rospy.logdebug("BerryIMU acceleration,%5.2f,%5.2f,%5.2f" % msg.linear_acceleration.x,
-                #               msg.linear_acceleration.y, msg.linear_acceleration.z)
                 self.pub.publish(msg)
             self.rate.sleep()
 
 
 if __name__ == "__main__":
     try:
-        bimu = BerryIMUPublisher()
-        bimu.begin()
+        berry = BerryIMUPublisher()
+        berry.begin()
     except rospy.ROSInterruptException:
         pass

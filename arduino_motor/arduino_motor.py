@@ -19,7 +19,7 @@ class ArduinoMotor:
 
         # Get params
         self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
-        self.rate = int(rospy.get_param("~rate", 20))
+        self.rate = rospy.Rate(int(rospy.get_param("~rate", 20)))
         self.retry_limit = int(rospy.get_param("~retry_limit", 10))
         reset_pin = int(rospy.get_param("reset_pin", 4))
 
@@ -35,7 +35,11 @@ class ArduinoMotor:
         rospy.sleep(1.0)
 
         # Setup the i2c bus
-        self.bus = smbus.SMBus(1)
+        while not rospy.is_shutdown():
+            try:
+                self.bus = smbus.SMBus(1)
+            except IOError:
+                self.rate.sleep()
 
         # The address and command byte to use for i2c communication
         self.address = 0x04
@@ -78,11 +82,11 @@ class ArduinoMotor:
         """Start the node and spin forever
 
         """
-        r = rospy.Rate(self.rate)
+
         # main loop
         while not rospy.is_shutdown():  # and self.ticks_since_target < self.timeout_ticks:
             self.spin_once()
-            r.sleep()
+            self.rate.sleep()
 
     def spin_once(self):
         """Sends the speeds to the motor once and retries if it fails
