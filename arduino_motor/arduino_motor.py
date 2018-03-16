@@ -35,7 +35,7 @@ class ArduinoMotor:
             rospy.sleep(1.0)
             GPIO.output(reset_pin, GPIO.HIGH)
             rospy.sleep(1.0)
-        except RuntimeError:
+        except (ImportError, RuntimeError):
             rospy.logwarn("Not running on Raspberry Pi, so cannot reset Arduino")
             pass
 
