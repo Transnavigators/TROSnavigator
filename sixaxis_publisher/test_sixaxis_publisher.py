@@ -36,7 +36,7 @@ class TestSixaxisPublisher(unittest.TestCase):
         #        21: [80, 81, 88, 89, 90, 96]}
         #self.ui = UInput(cap, name='PLAYSTATION(R)3 Controller', version=0x1)
 
-        self.ui = UInput()
+        self.ui = UInput(name='PLAYSTATION(R)3 Controller')
 
         # stationary
         self.sendJoystick(False, 128, 128, 0, 0)
