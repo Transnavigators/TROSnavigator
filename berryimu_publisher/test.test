@@ -1,5 +1,5 @@
 <launch>
-    <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
+    <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py" output="screen">
         <param name="is_virtual" value="1"/>
     </node>
     <test test-name="test_berryimu_publisher" pkg="berryimu_publisher" type="test_berryimu_publisher.py"/>

@@ -3,6 +3,7 @@ import unittest
 import struct
 import random
 import smbus
+import os
 import subprocess
 import rospy
 from geometry_msgs.msg import Twist, Vector3
@@ -26,13 +27,15 @@ class TestArduinoOdometry(unittest.TestCase):
         self.assertEquals(1, 1, "1!=1")
 
     def test_odom(self):
-        subprocess.call('i2c-stub-from-dump 0x04 arduino.dump', shell=True)
-        rospy.sleep(1.0)
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        rospy.sleep(0.5)
+        subprocess.call('i2c-stub-from-dump 0x04 %s/arduino.dump' % root_dir, shell=True)
+        rospy.sleep(0.5)
         self.assertTrue(self.hasMsg)
 
     def callback(self, msg):
         self.hasMsg = True
-        print(msg)
+
 
 if __name__ == '__main__':
     import rostest

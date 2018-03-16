@@ -1,5 +1,5 @@
 <launch>
-    <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py">
+    <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py" output="screen">
         <param name="host" value="a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com"/>
         <param name="rootCAPath" value="/Certificates/root-CA.crt"/>
         <param name="certificatePath" value="/Certificates/Pi.cert.pem"/>

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import subprocess
+import os
 import rospy
 from sensor_msgs.msg import Imu
 
@@ -17,8 +18,9 @@ class TestBerryimuPublisher(unittest.TestCase):
     def test_berryimu(self):
         self.hasMsg = False
         self.sub = rospy.Subscriber("imu_data", Imu, self.callback)
-        subprocess.call('i2c-stub-from-dump 0x33 berry_iu.dump', shell=True)
-        subprocess.call('i2c-stub-from-dump 0x55 berry_mag.dump', shell=True)
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        subprocess.call('i2c-stub-from-dump 0x33 %s/berry_iu.dump' % root_dir, shell=True)
+        subprocess.call('i2c-stub-from-dump 0x55 %s/berry_mag.dump' % root_dir, shell=True)
         rospy.sleep(1.0)
         self.assertTrue(self.hasMsg)
 
