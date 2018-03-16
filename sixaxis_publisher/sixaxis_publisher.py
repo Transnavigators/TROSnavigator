@@ -64,7 +64,6 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.stopped = False
         self.rot_vel = 0
         self.x_vel = 0
-        self.writable.__doc__ = asyncore.file_dispatcher.writable.__doc__
 
     @staticmethod
     def scale(val, src, dst):
