@@ -25,18 +25,26 @@ class SixaxisPublisher(asyncore.file_dispatcher):
 
         rospy.loginfo("Finding PS3 controller.")
         ps3dev = None
-        devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
-        for device in devices:
-            if 'PLAYSTATION(R)3 Controller' == device.name:
-                ps3dev = device.fn
+        err_count = 0
+        max_err = 10
+        while not rospy.is_shutdown() and err_count < max_err:
+            devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
+            for device in devices:
+                if 'PLAYSTATION(R)3 Controller' == device.name:
+                    ps3dev = device.fn
+
+            if ps3dev is None:
+                rospy.sleep(1.0)
+                err_count += 1
+            else:
+                self.gamepad = evdev.InputDevice(ps3dev)
+                asyncore.file_dispatcher.__init__(self, self.gamepad)
+                rospy.loginfo("Found the PS3 controller.")
+                break
 
         if ps3dev is None:
             rospy.logfatal("Could not find the PS3 controller.")
             sys.exit(1)
-        else:
-            self.gamepad = evdev.InputDevice(ps3dev)
-            asyncore.file_dispatcher.__init__(self, self.gamepad)
-            rospy.loginfo("Found the PS3 controller.")
 
         # Setup audio
         rospack = rospkg.RosPack()
