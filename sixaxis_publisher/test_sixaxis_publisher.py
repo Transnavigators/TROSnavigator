@@ -23,50 +23,20 @@ class TestSixaxisPublisher(unittest.TestCase):
 
         # Generated from device.capabilities()
         # See http://python-evdev.readthedocs.io/en/latest/tutorial.html#injecting-input
-        # cap = {0L: [0L, 1L, 3L, 4L, 21L],
-        #        1L: [304L, 305L, 307L, 308L, 310L, 311L, 312L, 313L, 314L, 315L, 316L, 317L, 318L, 544L, 545L, 546L,
-        #             547L],
-        #        3L: [
-        #            (0L, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (1L, AbsInfo(value=126, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (2L, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (3L, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (4L, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (5L, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0))
-        #        ],
-        #        4L: [4L], 21L: [80L, 81L, 88L, 89L, 90L, 96L]
-        #        }
-        cap = {0: [0, 1, 3, 4, 21],
-               1: [304, 305, 307, 308, 310, 311, 312, 313, 314, 315, 316, 317, 318, 544, 545, 546, 547],
-               3: [(0, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                   (1, AbsInfo(value=126, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                   (2, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                   (3, AbsInfo(value=129, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                   (4, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                   (5, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0))],
-               4: [4],
-               21: [80, 81, 88, 89, 90, 96]}
 
-        # cap = {(e.EV_MSC, 4L): [(e.MSC_SCAN, 4L)],
-        #        (e.EV_KEY, 1L): [([e.BTN_A, e.BTN_GAMEPAD, e.BTN_SOUTH], 304L), ([e.BTN_B, e.BTN_EAST], 305L),
-        #                         ([e.BTN_NORTH, e.BTN_X], 307L), ([e.BTN_WEST, e.BTN_Y], 308L), (e.BTN_TL, 310L),
-        #                         (e.BTN_TR, 311L), (e.BTN_TL2, 312L), (e.BTN_TR2, 313L), (e.BTN_SELECT, 314L),
-        #                         (e.BTN_START, 315L), (e.BTN_MODE, 316L), (e.BTN_THUMBL, 317L), (e.BTN_THUMBR, 318L),
-        #                         (e.BTN_DPAD_UP, 544L), (e.BTN_DPAD_DOWN, 545L), (e.BTN_DPAD_LEFT, 546L),
-        #                         (e.BTN_DPAD_RIGHT, 547L)],
-        #        (e.EV_ABS, 3L): [((e.ABS_X, 0L), AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #                         ((e.ABS_Y, 1L), AbsInfo(value=126, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #                         ((e.ABS_Z, 2L), AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #                         ((e.ABS_RX, 3L), AbsInfo(value=129, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #                         ((e.ABS_RY, 4L), AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #                         ((e.ABS_RZ, 5L), AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0))],
-        #        (e.EV_FF, 21L): [([e.FF_EFFECT_MIN, e.FF_RUMBLE], 80L), (e.FF_PERIODIC, 81L),
-        #                         ([e.FF_SQUARE, e.FF_WAVEFORM_MIN], 88L), (e.FF_TRIANGLE, 89L), (e.FF_SINE, 90L),
-        #                         ([e.FF_GAIN, e.FF_MAX_EFFECTS], 96L)],
-        #        (e.EV_SYN, 0L): [(e.SYN_REPORT, 0L), (e.SYN_CONFIG, 1L), (e.SYN_DROPPED, 3L), (e['?'], 4L), (e['?'], 21L)]}
+        # cap = {0: [0, 1, 3, 4, 21],
+        #        1: [304, 305, 307, 308, 310, 311, 312, 313, 314, 315, 316, 317, 318, 544, 545, 546, 547],
+        #        3: [(0, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+        #            (1, AbsInfo(value=126, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+        #            (2, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+        #            (3, AbsInfo(value=129, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+        #            (4, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+        #            (5, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0))],
+        #        4: [4],
+        #        21: [80, 81, 88, 89, 90, 96]}
+        #self.ui = UInput(cap, name='PLAYSTATION(R)3 Controller', version=0x1)
 
-        self.ui = UInput(cap, name="PLAYSTATION(R)3 Controller", version=0x1)
-
+        self.ui = UInput()
         # stationary
         self.sendJoystick(128, 128, 0, 0)
 
