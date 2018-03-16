@@ -1,5 +1,5 @@
 <launch>
-    <node name="localino_server" pkg="localino_server" type="localino_server.py">
+    <node name="localino_server" pkg="localino_server" type="localino_server.py" output="screen">
         <param name="base_tag_id" value="1002"/>
         <param name="poll_rate" value="4000"/>
         <param name="port" value="10000"/>

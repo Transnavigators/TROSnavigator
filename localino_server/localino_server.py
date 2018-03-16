@@ -26,23 +26,17 @@ class LocalinoPublisher(asyncore.dispatcher):
     def __init__(self):
 
         # initialize the node
-        self.pub = rospy.Publisher('vo', Odometry, queue_size=10)
+        self.pub = rospy.Publisher('vo', Odometry, queue_size=100)
         rospy.init_node('localino', anonymous=True)
         self.vo_broadcaster = tf.TransformBroadcaster()
 
         # TODO: parse settings from yaml file instead
         # The tag ID of the localino tag mounted to the wheelchair
-        if rospy.has_param("~base_tag_id"):
-            self.base_id = str(rospy.get_param("~base_tag_id"))
-        else:
-            self.base_id = "1002"
+        self.base_id = str(rospy.get_param("~base_tag_id", "1002"))
 
         # The number of nanoseconds between samples before the data is ignored
         # 50 us is approx 2x the time between responses from all 3 anchors
-        if rospy.has_param("~timeout"):
-            self.timeout = float(rospy.get_param("~timeout"))
-        else:
-            self.timeout = 15e7
+        self.timeout = float(rospy.get_param("~timeout", 0.15))
 
         # The rate at which each localino sends packets
         self.rate = rospy.Rate(int(rospy.get_param("~poll_rate", 4000)))
@@ -114,16 +108,18 @@ class LocalinoPublisher(asyncore.dispatcher):
             # TODO: scale distances to make sure we get a correct coordinate
             # TODO: test if expiring data via timeout or seq_num is better
             self.dists[tag_id][anchor_id] = Circle(self.anchor_coords[anchor_id], float(dist))
-            self.last_timestamp[tag_id][anchor_id] = rospy.get_rostime().nsecs
+            self.last_timestamp[tag_id][anchor_id] = rospy.get_time()
 
             # Each anchor responded with a distance to this tag
             if None not in self.dists[tag_id].values():
+
                 # Check that the data isn't stale
                 delta_time = self.last_timestamp[tag_id][anchor_id] - min(self.last_timestamp[tag_id].values())
+                #rospy.loginfo("Have enough to do some calcs delta_time=%f s" % delta_time)
                 if delta_time < self.timeout:
                     # Use trilateration to locate the tag
                     # Algorithm from https://github.com/noomrevlis/trilateration
-
+                    #rospy.loginfo("Didn't timeout")
                     inner_points = []
 
                     for p in LocalinoPublisher.get_all_intersecting_points(self.dists[tag_id].values()):
@@ -135,8 +131,9 @@ class LocalinoPublisher(asyncore.dispatcher):
                     odom = Odometry()
                     odom.header.stamp = rospy.Time.now()
                     if tag_id == self.base_id:
+                        #rospy.loginfo("Sending tf and publishing")
                         odom.header.frame_id = "vo"
-
+                        odom.header.stamp = rospy.Time.now()
                         # Give the XY coordinates and set the covariance high on the rest so they aren't used
                         odom.pose.pose = Pose(center, Quaternion(1, 0, 0, 0))
 
@@ -165,15 +162,16 @@ class LocalinoPublisher(asyncore.dispatcher):
                         # Publish a the tag's location to let Alexa know where to send the wheelchair
                         self.vo_broadcaster.sendTransform((center.x, center.y, 0.), (1, 0, 0, 0),
                                                           odom.header.stamp, "map", 'tag_' + str(tag_id))
+                        #rospy.loginfo("Sending tf only, %s != %s" % (tag_id, self.base_id))
                     # Immediately after receiving all of a frame, the localinos will take 0.2-0.3ms before sending
                     # a new packet, so wait until then
                     self.rate.sleep()
                 else:
                     rospy.logwarn("Localino packet timed out at " + str(delta_time) + " ns")
-            else:
-                for anchor, dist in self.dists[tag_id].items():
-                    if dist is None:
-                        rospy.loginfo("Waiting for packet from anchor %s" % anchor)
+            #else:
+            #    for anchor, dist in self.dists[tag_id].items():
+            #        if dist is None:
+            #            rospy.loginfo("Waiting for packet from anchor %s" % anchor)
 
     @staticmethod
     def get_two_circles_intersecting_points(c1, c2):
@@ -264,11 +262,12 @@ class LocalinoPublisher(asyncore.dispatcher):
             geometry_msgs.msg.Point: The point at the center
         """
         center = Point(0, 0, 0)
-        for point in points:
-            center.x += point.x
-            center.y += point.y
-        center.x = center.x / len(points)
-        center.y = center.y / len(points)
+        if len(points) != 0:
+            for point in points:
+                center.x += point.x
+                center.y += point.y
+            center.x = center.x / len(points)
+            center.y = center.y / len(points)
         return center
 
 
