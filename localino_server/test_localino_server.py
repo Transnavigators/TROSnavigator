@@ -19,6 +19,7 @@ class TestLocalinoServer(unittest.TestCase):
         soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         anchor_names = [9002, 9003, 9005]
         tag_names = [1001, 1002]
+        rospy.sleep(2.0)
         for i in range(1, 20):
             self.hasMsg = False
             for anchor in anchor_names:
@@ -26,9 +27,10 @@ class TestLocalinoServer(unittest.TestCase):
                     dist = random.random()*20
                     packet_data = '%d,%d,%f,%d,3.43V' % (anchor, tag, dist, i)
                     soc.sendto(packet_data, ('127.0.0.1', 10000))
-            self.assertTrue(self.hasMsg)
+                    rospy.sleep(0.1)
+            self.assertTrue(self.hasMsg, "Failed to receive ROS message")
 
-    def callback(self):
+    def callback(self, msg):
         self.hasMsg = True
 
 if __name__ == '__main__':
