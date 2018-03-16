@@ -1,13 +1,7 @@
 #!/usr/bin/env python
 import unittest
-import subprocess
 import rospy
-import serial
-import binascii
-import os
-from struct import pack,unpack
 from geometry_msgs.msg import Twist, Vector3
-from PyCRC.CRCCCITT import CRCCCITT
 
 package_name = 'arduino_motor'
 test_name = 'arduino_motor'

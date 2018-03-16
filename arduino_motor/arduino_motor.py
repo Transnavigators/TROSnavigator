@@ -4,7 +4,7 @@
 import smbus
 import rospy
 import struct
-import RPi.GPIO as GPIO
+
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 
 
@@ -23,16 +23,21 @@ class ArduinoMotor:
         self.retry_limit = int(rospy.get_param("~retry_limit", 10))
         reset_pin = int(rospy.get_param("reset_pin", 4))
 
-        # Setup pin 4 as an output pin for resetting the Arduino
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        GPIO.setup(4, GPIO.OUT)
+        try:
+            import RPi.GPIO as GPIO
+            # Setup pin 4 as an output pin for resetting the Arduino
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setwarnings(False)
+            GPIO.setup(4, GPIO.OUT)
 
-        # Reset the Arduino
-        GPIO.output(reset_pin, GPIO.LOW)
-        rospy.sleep(1.0)
-        GPIO.output(reset_pin, GPIO.HIGH)
-        rospy.sleep(1.0)
+            # Reset the Arduino
+            GPIO.output(reset_pin, GPIO.LOW)
+            rospy.sleep(1.0)
+            GPIO.output(reset_pin, GPIO.HIGH)
+            rospy.sleep(1.0)
+        except RuntimeError:
+            rospy.logwarn("Not running on Raspberry Pi, so cannot reset Arduino")
+            pass
 
         # Setup the i2c bus
         while not rospy.is_shutdown():

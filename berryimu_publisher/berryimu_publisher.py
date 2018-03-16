@@ -4,6 +4,7 @@
 import math
 import IMU
 import subprocess
+import sys
 import rospy
 from sensor_msgs.msg import Imu
 from tf.transformations import quaternion_from_euler
@@ -25,15 +26,30 @@ class BerryIMUPublisher:
 
         self.rate = rospy.Rate(int(rospy.get_param("~poll_rate", 20)))
 
-        while not rospy.is_shutdown():
+        # Special setup for virtual I2C device so doesn't conflict with actual device
+        is_virtual = int(rospy.get_param("~is_virtual", 0))
+        gyr_addr = int(rospy.get_param("~gyr_addr", 0x33))
+        mag_addr = int(rospy.get_param("~mag_addr", 0x44))
+        acc_addr = int(rospy.get_param("~acc_addr", 0x55))
+
+        err_count = 0
+        rate = rospy.Rate(1)
+        while not rospy.is_shutdown() and err_count < 5:
             try:
-                IMU.initIMU()  # Initialise the accelerometer, gyroscope and compass
+                if is_virtual:
+                    self.IMU = IMU.BerryIMU(True, gyr_addr, mag_addr, acc_addr)
+                else:
+                    self.IMU = IMU.BerryIMU()  # Initialise the accelerometer, gyroscope and compass
                 break
             except rospy.ROSInterruptException:
                 break
             except IOError:
-                subprocess.call(['i2cdetect', '-y', '1'])
-                self.rate.sleep()
+                subprocess.call('i2cdetect -y 1', shell=True)
+                rate.sleep()
+                err_count += 1
+        if err_count >= 5:
+            rospy.logfatal("Couldn't connect to BerryIMU")
+            sys.exit(1)
 
     def begin(self):
         """Keeps reading IMU data and publishing it to the topic imu_data
@@ -48,15 +64,15 @@ class BerryIMUPublisher:
         while not rospy.is_shutdown():
 
             # Read the accelerometer,gyroscope and magnetometer values
-            acc_x = IMU.readACCx()
-            acc_y = IMU.readACCy()
-            acc_z = IMU.readACCz()
-            gyr_x = IMU.readGYRx()
-            gyr_y = IMU.readGYRy()
-            gyr_z = IMU.readGYRz()
-            mag_x = IMU.readMAGx()
-            mag_y = IMU.readMAGy()
-            mag_z = IMU.readMAGz()
+            acc_x = self.IMU.readACCx()
+            acc_y = self.IMU.readACCy()
+            acc_z = self.IMU.readACCz()
+            gyr_x = self.IMU.readGYRx()
+            gyr_y = self.IMU.readGYRy()
+            gyr_z = self.IMU.readGYRz()
+            mag_x = self.IMU.readMAGx()
+            mag_y = self.IMU.readMAGy()
+            mag_z = self.IMU.readMAGz()
 
             # Calculate loop Period(LP). How long between Gyro Reads
             period = (rospy.get_time() - last_timestamp)
