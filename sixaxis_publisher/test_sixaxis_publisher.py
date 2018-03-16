@@ -79,9 +79,9 @@ class TestSixaxisPublisher(unittest.TestCase):
 
         # Make sure we received the message and it is moving at correct speed
         self.assertEqual(self.hasMsg, recv_msg)
-
-        self.assertEqual(self.lastMsg.linear.x, linspeed)
-        self.assertEqual(self.lastMsg.angular.z, angspeed)
+        if recv_msg:
+            self.assertEqual(self.lastMsg.linear.x, linspeed)
+            self.assertEqual(self.lastMsg.angular.z, angspeed)
 
     def callback(self, msg):
         self.hasMsg = True
