@@ -36,17 +36,16 @@ class TestSixaxisPublisher(unittest.TestCase):
         #        ],
         #        4L: [4L], 21L: [80L, 81L, 88L, 89L, 90L, 96L]
         #        }
-        cap = {0L: [0L, 1L, 3L, 4L, 21L],
-               1L: [304L, 305L, 307L, 308L, 310L, 311L, 312L, 313L, 314L, 315L, 316L, 317L, 318L, 544L, 545L, 546L,
-                    547L],
-               3L: [(0L, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                    (1L, AbsInfo(value=126, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                    (2L, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                    (3L, AbsInfo(value=129, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                    (4L, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-                    (5L, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0))],
-               4L: [4L],
-               21L: [80L, 81L, 88L, 89L, 90L, 96L]}
+        cap = {0: [0, 1, 3, 4, 21],
+               1: [304, 305, 307, 308, 310, 311, 312, 313, 314, 315, 316, 317, 318, 544, 545, 546, 547],
+               3: [(0, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+                   (1, AbsInfo(value=126, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+                   (2, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+                   (3, AbsInfo(value=129, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+                   (4, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
+                   (5, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0))],
+               4: [4],
+               21: [80, 81, 88, 89, 90, 96]}
 
         # cap = {(e.EV_MSC, 4L): [(e.MSC_SCAN, 4L)],
         #        (e.EV_KEY, 1L): [([e.BTN_A, e.BTN_GAMEPAD, e.BTN_SOUTH], 304L), ([e.BTN_B, e.BTN_EAST], 305L),
