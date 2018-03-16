@@ -17,8 +17,8 @@ class TestBerryimuPublisher(unittest.TestCase):
     def test_berryimu(self):
         self.hasMsg = False
         self.sub = rospy.Subscriber("imu_data", Imu, self.callback)
-        subprocess.call('i2c-stub-from-dump 0x33 berry_iu.dump')
-        subprocess.call('i2c-stub-from-dump 0x55 berry_mag.dump')
+        subprocess.call('i2c-stub-from-dump 0x33 berry_iu.dump', shell=True)
+        subprocess.call('i2c-stub-from-dump 0x55 berry_mag.dump', shell=True)
         rospy.sleep(1.0)
         self.assertTrue(self.hasMsg)
 

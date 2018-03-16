@@ -4,6 +4,7 @@ import struct
 import rospy
 import math
 import tf
+import sys
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 from nav_msgs.msg import Odometry
 
@@ -37,11 +38,16 @@ class ArduinoOdometry:
         self.dr = 0
 
         # Setup the i2c bus
-        while not rospy.is_shutdown():
+        err_count = 0
+        max_err = 10
+        while not rospy.is_shutdown() and err_count < max_err:
             try:
                 self.bus = smbus.SMBus(1)
             except IOError:
                 self.rate.sleep()
+        if err_count >= max_err:
+            rospy.logfatal("Couldn't open I2C bus, exiting")
+            sys.exit(1)
 
     # get data from Arduino
     def read_encoders(self):
