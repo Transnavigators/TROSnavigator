@@ -52,10 +52,13 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.audio = pyaudio.PyAudio()
         self.chunk = 1024
         # Open an audio stream for the horn
-        self.stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
+        try:
+            self.stream = self.audio.open(format=self.audio.get_format_from_width(self.wav.getsampwidth()),
                                       channels=self.wav.getnchannels(),
                                       rate=self.wav.getframerate(),
                                       output=True)
+        except IOError:
+            self.stream = None
 
         # Either publish velocities to motor or send actions to move_base for assisted driving
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
@@ -170,7 +173,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                         self.used_key = True
                     elif event.code in [301, 308]:
                         # Only play horn if not already playing
-                        if self.wav.tell() == 0:
+                        if self.wav.tell() == 0 and self.stream is not None:
                             wav_data = self.wav.readframes(self.chunk)
                             while wav_data:
                                 self.stream.write(wav_data)
