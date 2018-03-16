@@ -37,50 +37,51 @@ class TestSixaxisPublisher(unittest.TestCase):
         #self.ui = UInput(cap, name='PLAYSTATION(R)3 Controller', version=0x1)
 
         self.ui = UInput()
+
         # stationary
-        self.sendJoystick(128, 128, 0, 0)
+        self.sendJoystick(False, 128, 128, 0, 0)
 
         # Check error detection code with linear impulse
-        self.sendJoystick(128, 255, 0, 0)
+        self.sendJoystick(False, 128, 255, 0, 0)
 
         # Ramp up to full speed
-        self.sendJoystick(128, 192, 1.1, 0)
-        self.sendJoystick(128, 255, 2.2, 0)
+        self.sendJoystick(True, 128, 192, 1.1, 0)
+        self.sendJoystick(True, 128, 255, 2.2, 0)
 
         # Ramp down
-        self.sendJoystick(128, 192, 1.1, 0)
-        self.sendJoystick(128, 128, 0, 0)
+        self.sendJoystick(True, 128, 192, 1.1, 0)
+        self.sendJoystick(True, 128, 128, 0, 0)
 
         # Check error detection code with angular impulse
-        self.sendJoystick(255, 128, 0, 0)
+        self.sendJoystick(False, 255, 128, 0, 0)
 
         # Test turn in place right
-        self.sendJoystick(192, 128, 0, 0.875)
-        self.sendJoystick(255, 128, 0, 1.75)
-        self.sendJoystick(192, 128, 0, 0.875)
-        self.sendJoystick(128, 128, 0, 0)
+        self.sendJoystick(True, 192, 128, 0, 0.875)
+        self.sendJoystick(True, 255, 128, 0, 1.75)
+        self.sendJoystick(True, 192, 128, 0, 0.875)
+        self.sendJoystick(True, 128, 128, 0, 0)
 
         # Test turn in place left
-        self.sendJoystick(64, 128, 0, -0.875)
-        self.sendJoystick(0, 128, 0, -1.75)
-        self.sendJoystick(64, 128, 0, -0.875)
-        self.sendJoystick(128, 128, 0, 0)
+        self.sendJoystick(True, 64, 128, 0, -0.875)
+        self.sendJoystick(True, 0, 128, 0, -1.75)
+        self.sendJoystick(True, 64, 128, 0, -0.875)
+        self.sendJoystick(True, 128, 128, 0, 0)
 
         # Close device so the node doesn't get confused later
         self.ui.close()
 
-    def sendJoystick(self, x, y, linspeed, angspeed):
+    def sendJoystick(self, recv_msg, x, y, linspeed, angspeed):
         self.hasMsg = False
         self.ui.write(3, 4, y)  # Move forward at full speed
         self.ui.write(3, 3, x)  # Don't turn
         self.ui.syn()
-        rospy.sleep(0.1)
+        rospy.sleep(0.02)
 
         # Make sure we received the message and it is moving at correct speed
-        self.assertTrue(self.hasMsg)
+        self.assertEqual(self.hasMsg, recv_msg)
+
         self.assertEqual(self.lastMsg.linear.x, linspeed)
         self.assertEqual(self.lastMsg.angular.z, angspeed)
-        self.hasMsg = False
 
     def callback(self, msg):
         self.hasMsg = True
