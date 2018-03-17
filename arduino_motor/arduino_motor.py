@@ -42,9 +42,9 @@ class ArduinoMotor:
         is_virtual = int(rospy.get_param("~is_virtual", 0))
         # Setup the i2c bus
         if is_virtual:
-            self.bus = smbus.SMBus(1)
-        else:
             self.bus = smbus.SMBus(0)
+        else:
+            self.bus = smbus.SMBus(1)
 
         # The address and command byte to use for i2c communication
         self.address = 0x04

@@ -33,13 +33,6 @@ install:
   - ls /dev
   - sudo i2cdetect -l || true
   - sudo i2cdetect -y 0 || true
-  - sudo i2cdetect -y 1 || true
-  - sudo i2cdetect -y 2 || true
-  - sudo i2cdetect -y 3 || true
-  - sudo i2cdetect -y 4 || true
-  - sudo i2cdetect -y 5 || true
-  - sudo i2cdetect -y 6 || true
-  - sudo i2cdetect -y 7 || true
 
 before_script:
   - docker exec -t ubuntu-test bash -c "cd $CI_SOURCE_PATH/..;
