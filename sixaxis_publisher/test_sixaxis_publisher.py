@@ -21,7 +21,7 @@ class TestSixaxisPublisher(unittest.TestCase):
         self.pub = rospy.Publisher('joytest', Vector3, queue_size=10)
         self.sub = rospy.Subscriber('cmd_vel', Twist, self.callback)
 
-        rospy.sleep(10.0)
+        rospy.sleep(15.0)
 
         # stationary
         self.sendJoystick(True, 128, 128, 0, 0)
@@ -62,11 +62,11 @@ class TestSixaxisPublisher(unittest.TestCase):
 
         self.send_event(3, 4, y)  # Send y axis
         self.send_event(0, 0, 0)  # Syn message
-        rospy.sleep(0.01)
+        rospy.sleep(0.1)
         self.send_event(3, 3, x)  # Send x axis
         self.send_event(0, 0, 0)  # Syn message
 
-        rospy.sleep(0.01)
+        rospy.sleep(0.1)
 
         # Make sure we received the message and it is moving at correct speed
         if recv_msg:
