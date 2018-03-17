@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 import unittest
-import struct
-import random
-import smbus
 import os
 import subprocess
 import rospy
