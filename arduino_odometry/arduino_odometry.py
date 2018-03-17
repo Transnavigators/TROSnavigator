@@ -37,8 +37,12 @@ class ArduinoOdometry:
         self.dx = 0
         self.dr = 0
 
+        is_virtual = int(rospy.get_param("~is_virtual", 0))
         # Setup the i2c bus
-        self.bus = smbus.SMBus(1)
+        if is_virtual:
+            self.bus = smbus.SMBus(1)
+        else:
+            self.bus = smbus.SMBus(0)
 
     # get data from Arduino
     def read_encoders(self):

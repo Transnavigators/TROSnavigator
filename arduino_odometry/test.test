@@ -1,6 +1,7 @@
 <launch>
     <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py" output="screen">
         <param name="address" value="5"/>
+        <param name="is_virtual" value="1"/>
     </node>
     <test test-name="test_arduino_odometry" pkg="arduino_odometry" type="test_arduino_odometry.py" />
 </launch>

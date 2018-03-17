@@ -1,5 +1,6 @@
 <launch>
     <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py" output="screen">
+        <param name="is_virtual" value="1"/>
     </node>
     <test test-name="test_arduino_motor" pkg="arduino_motor" type="test_arduino_motor.py" />
 </launch>

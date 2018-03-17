@@ -39,12 +39,12 @@ class ArduinoMotor:
             rospy.logwarn("Not running on Raspberry Pi, so cannot reset Arduino")
             pass
 
+        is_virtual = int(rospy.get_param("~is_virtual", 0))
         # Setup the i2c bus
-        while not rospy.is_shutdown():
-            try:
-                self.bus = smbus.SMBus(1)
-            except IOError:
-                self.rate.sleep()
+        if is_virtual:
+            self.bus = smbus.SMBus(1)
+        else:
+            self.bus = smbus.SMBus(0)
 
         # The address and command byte to use for i2c communication
         self.address = 0x04

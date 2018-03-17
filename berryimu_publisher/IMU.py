@@ -8,9 +8,12 @@ import time
 class BerryIMU:
     def __init__(self, is_virtual=False, gyr_addr=0, mag_addr=0, acc_addr=0):
         self.LSM9DS0 = 0
-        self.bus = smbus.SMBus(1)
-        if not is_virtual:
-            self.detectIMU()
+
+        if is_virtual:
+            self.bus = smbus.SMBus(0)
+        else:
+            self.bus = smbus.SMBus(1)
+            # self.detectIMU()
         if self.LSM9DS0:
             self.MAG_ADDRESS = LSM9DS0_MAG_ADDRESS
             self.GYR_ADDRESS = LSM9DS0_GYR_ADDRESS
