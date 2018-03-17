@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import unittest
 import rospy
-import logging
 from geometry_msgs.msg import Twist, Vector3
 from std_msgs.msg import UInt8MultiArray
-
 
 package_name = 'arduino_motor'
 test_name = 'arduino_motor'
@@ -39,9 +37,12 @@ class TestArduinoMotor(unittest.TestCase):
     def callback(self, msg):
         self.has_msg = True
         if self.sent_msg:
-            self.assertEqual(msg.data[0:7], [205, 204, 12, 64, 205, 204, 12, 64], "Received wrong messsage")
+            self.assertEqual(msg.data[0:8], [205, 204, 12, 64, 205, 204, 12, 64],
+                             "Received [%s]" % ' '.join(str(int(e)) for e in msg.data[0:8]))
         else:
-            self.assertEqual(msg.data[0:7], [0, 0, 0, 0, 0, 0, 0, 0], "Didn't receive zeros")
+            self.assertEqual(msg.data[0:8], [0, 0, 0, 0, 0, 0, 0, 0],
+                             "Didn't receive zeros, received [%s]" % (' '.join(str(int(e)) for e in msg.data[0:8])))
+
 
 if __name__ == '__main__':
     import rostest

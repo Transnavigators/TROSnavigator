@@ -4,9 +4,9 @@
 import smbus
 import rospy
 import struct
-
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
 from std_msgs.msg import UInt8MultiArray, MultiArrayDimension
+
 
 class ArduinoMotor:
     """Sends commands to the Arduino to relay to the motor controller
