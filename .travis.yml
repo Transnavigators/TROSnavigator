@@ -25,16 +25,18 @@ install:
     apt-get install -y python-smbus python-pip socat python-pyaudio kmod;
     pip install pyserial AWSIoTPythonSDK PyCRC evdev;
     rosdep update"
+  - sudo apt-get update -qq
+  - sudo apt-get install -y pkg-config i2c-tools
+  - sudo modprobe i2c-stub chip_addr=0x32
+  - sudo modprobe i2c-smbus
+  - ls /dev
+  - sudo i2cdetect -y 1 || true
 
 before_script:
   - docker exec -t ubuntu-test bash -c "cd $CI_SOURCE_PATH/..;
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
     openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a"
-  - sudo apt-get install -y pkg-config
-  - ls /lib/modules/`uname -r`/kernel/drivers/i2c
-  - sudo modprobe i2c-stub chip_addr=0x32 || true
-  - sudo modprobe i2c-smbus || true
 
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
