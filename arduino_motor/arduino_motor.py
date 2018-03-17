@@ -6,7 +6,7 @@ import rospy
 import struct
 
 from geometry_msgs.msg import Twist, TransformStamped, Quaternion
-
+from std_msgs.msg import UInt8MultiArray, MultiArrayDimension
 
 class ArduinoMotor:
     """Sends commands to the Arduino to relay to the motor controller
@@ -39,10 +39,11 @@ class ArduinoMotor:
             rospy.logwarn("Not running on Raspberry Pi, so cannot reset Arduino")
             pass
 
-        is_virtual = int(rospy.get_param("~is_virtual", 0))
+        self.is_virtual = int(rospy.get_param("~is_virtual", 0))
         # Setup the i2c bus
-        if is_virtual:
+        if self.is_virtual:
             self.bus = smbus.SMBus(0)
+            self.pub = rospy.Publisher('motorcmd', UInt8MultiArray, queue_size=10)
         else:
             self.bus = smbus.SMBus(1)
 
@@ -81,7 +82,11 @@ class ArduinoMotor:
 
         """
         val = list(bytearray(struct.pack("=ff", m1, m2)))
-        self.bus.write_i2c_block_data(self.address, self.move_cmd, list(val))
+        if self.is_virtual:
+            self.pub.publish(UInt8MultiArray(data=val))
+            # rospy.loginfo(str(val))
+        else:
+            self.bus.write_i2c_block_data(self.address, self.move_cmd, val)
 
     def begin(self):
         """Start the node and spin forever
