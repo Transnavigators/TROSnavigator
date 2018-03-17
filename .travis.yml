@@ -38,7 +38,7 @@ script:
     catkin_init_workspace;
     modprobe i2c-smbus;
     modprobe i2c-stub chip_addr=0x99 ||
-    insmod i2c-stub.ko;
+    insmod i2c-stub.ko chip_addr=0x99;
     cd .. &&
     catkin_make &&
     export INSIDEDOCKER=true &&
