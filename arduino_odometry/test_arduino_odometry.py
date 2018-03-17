@@ -3,7 +3,7 @@ import unittest
 import os
 import subprocess
 import rospy
-from geometry_msgs.msg import Twist, Vector3
+from nav_msgs.msg import Odometry
 
 
 package_name = 'arduino_odometry'
@@ -16,7 +16,7 @@ class TestArduinoOdometry(unittest.TestCase):
         # Initialize the node
         rospy.init_node('test_arduino_odometry', anonymous=True)
         # Publish to the cmd_vel topic
-        self.sub = rospy.Subscriber("cmd_vel", Twist, self.callback)
+        self.sub = rospy.Subscriber("odom", Odometry, self.callback)
         self.hasMsg = False
 
     # test 1 == 1
@@ -25,7 +25,6 @@ class TestArduinoOdometry(unittest.TestCase):
 
     def test_odom(self):
         root_dir = os.path.dirname(os.path.abspath(__file__))
-        rospy.sleep(2.0)
         subprocess.call('i2c-stub-from-dump 0x05 %s/arduino.dump' % root_dir, shell=True)
         rospy.sleep(2.0)
         self.assertTrue(self.hasMsg)
