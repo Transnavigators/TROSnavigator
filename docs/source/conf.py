@@ -35,7 +35,7 @@ files = [(os.path.abspath('../../sixaxis_publisher/sixaxis_publisher.py'),
           'SixaxisPublisher:'),
          (os.path.abspath('../../localino_server/localino_server.py'),
           os.path.abspath(temp_path + '/localino_server.py'),
-         'LocalinoPublisher(asyncore.dispatcher):',
+          'LocalinoPublisher(asyncore.dispatcher):',
           'LocalinoPublisher:')]
 
 # Remove the super class from the python scripts to allow Sphinx to generate docs correctly
@@ -194,4 +194,5 @@ texinfo_documents = [
 todo_include_todos = True
 
 autodoc_mock_imports = ["rospy", "smbus", "tf", "AWSIoTPythonSDK", "RPi", "sensor_msgs", "evdev", "actionlib",
-                        "nav_msgs", "geometry_msgs", "rospkg", "move_base_msgs", "asyncore", "wave", "pyaudio"]
+                        "nav_msgs", "geometry_msgs", "rospkg", "move_base_msgs", "asyncore", "wave", "pyaudio",
+                        "std_msgs"]
