@@ -88,6 +88,7 @@ class BerryIMUPublisher:
                 acc_y_norm = acc_y / norm
 
                 # Calculate pitch and roll
+                rospy.loginfo("acc_x_norm=%f norm=%f" % (acc_x_norm, norm))
                 pitch = math.asin(acc_x_norm)
                 roll = -math.asin(acc_y_norm / math.cos(pitch))
 
