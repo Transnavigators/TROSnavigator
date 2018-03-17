@@ -5,7 +5,6 @@ import rospy
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import json
 import os
-import time
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Pose

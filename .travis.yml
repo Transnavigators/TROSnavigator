@@ -36,6 +36,8 @@ script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
     cd $CI_SOURCE_PATH &&
     catkin_init_workspace;
+    modprobe i2c-tools;
+    modprobe uinput;
     cd .. &&
     catkin_make &&
     export INSIDEDOCKER=true &&

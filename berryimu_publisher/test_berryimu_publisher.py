@@ -20,8 +20,9 @@ class TestBerryimuPublisher(unittest.TestCase):
         self.sub = rospy.Subscriber("imu_data", Imu, self.callback)
         root_dir = os.path.dirname(os.path.abspath(__file__))
         subprocess.call('i2c-stub-from-dump 0x33 %s/berry_iu.dump' % root_dir, shell=True)
+        rospy.sleep(2.0)
         subprocess.call('i2c-stub-from-dump 0x55 %s/berry_mag.dump' % root_dir, shell=True)
-        rospy.sleep(1.0)
+        rospy.sleep(2.0)
         self.assertTrue(self.hasMsg)
 
     def callback(self, msg):

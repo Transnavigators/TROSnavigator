@@ -1,4 +1,6 @@
 <launch>
-  <node name="sixaxis_publisher" pkg="sixaxis_publisher" type="sixaxis_publisher.py" output="screen"/>
-  <test test-name="sixaxis_publisher" pkg="sixaxis_publisher" type="test_sixaxis_publisher.py" />i
+  <node name="sixaxis_publisher" pkg="sixaxis_publisher" type="sixaxis_publisher.py" output="screen">
+    <param name="test" value="1"/>
+  </node>
+  <test test-name="test_sixaxis_publisher" pkg="sixaxis_publisher" type="test_sixaxis_publisher.py"/>
 </launch>

@@ -29,7 +29,7 @@ class TestArduinoOdometry(unittest.TestCase):
     def test_odom(self):
         root_dir = os.path.dirname(os.path.abspath(__file__))
         rospy.sleep(0.5)
-        subprocess.call('i2c-stub-from-dump 0x04 %s/arduino.dump' % root_dir, shell=True)
+        subprocess.call('i2c-stub-from-dump 0x05 %s/arduino.dump' % root_dir, shell=True)
         rospy.sleep(0.5)
         self.assertTrue(self.hasMsg)
 

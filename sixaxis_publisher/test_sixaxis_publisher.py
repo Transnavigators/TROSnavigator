@@ -2,8 +2,9 @@
 
 import unittest
 import rospy
-import subprocess
-from evdev import UInput, AbsInfo, ecodes as e
+import time
+from sixaxis_publisher import SixaxisPublisher
+from evdev import InputEvent, SynEvent
 from geometry_msgs.msg import Quaternion, Point, Twist, Vector3
 
 package_name = 'sixaxis_publisher'
@@ -17,78 +18,73 @@ class TestSixaxisPublisher(unittest.TestCase):
 
     # test sixaxis_publisher
     def test_sixaxis(self):
-        subprocess.call('modprobe uinput', shell=True)
-        self.hasMsg = False
-        self.pub = rospy.Publisher("cmd_vel", Twist, self.callback)
+        self.pub = rospy.Publisher('joytest', Vector3, queue_size=10)
+        self.sub = rospy.Subscriber('cmd_vel', Twist, self.callback)
 
-        # Generated from device.capabilities()
-        # See http://python-evdev.readthedocs.io/en/latest/tutorial.html#injecting-input
-
-        # cap = {0: [0, 1, 3, 4, 21],
-        #        1: [304, 305, 307, 308, 310, 311, 312, 313, 314, 315, 316, 317, 318, 544, 545, 546, 547],
-        #        3: [(0, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (1, AbsInfo(value=126, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (2, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (3, AbsInfo(value=129, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (4, AbsInfo(value=128, min=0, max=255, fuzz=0, flat=15, resolution=0)),
-        #            (5, AbsInfo(value=0, min=0, max=255, fuzz=0, flat=15, resolution=0))],
-        #        4: [4],
-        #        21: [80, 81, 88, 89, 90, 96]}
-        #self.ui = UInput(cap, name='PLAYSTATION(R)3 Controller', version=0x1)
-
-        self.ui = UInput(name='PLAYSTATION(R)3 Controller')
+        rospy.sleep(4.0)
 
         # stationary
-        self.sendJoystick(False, 128, 128, 0, 0)
-
-        # Check error detection code with linear impulse
-        self.sendJoystick(False, 128, 255, 0, 0)
-
-        # Ramp up to full speed
-        self.sendJoystick(True, 128, 192, 1.1, 0)
-        self.sendJoystick(True, 128, 255, 2.2, 0)
-
-        # Ramp down
-        self.sendJoystick(True, 128, 192, 1.1, 0)
         self.sendJoystick(True, 128, 128, 0, 0)
 
-        # Check error detection code with angular impulse
-        self.sendJoystick(False, 255, 128, 0, 0)
+        # Ramp up to full reverse
+        self.sendJoystick(True, 128, 192, -0.25, 0)
+        self.sendJoystick(True, 128, 255, -0.5, 0)
+
+        # Ramp down
+        self.sendJoystick(True, 128, 192, -0.25, 0)
+        self.sendJoystick(True, 128, 128, 0, 0)
+
+        # Ramp up to full speed
+        self.sendJoystick(True, 128, 64, 1.1, 0)
+        self.sendJoystick(True, 128, 0, 2.2, 0)
+
+        # Ramp down
+        self.sendJoystick(True, 128, 64, 1.1, 0)
+        self.sendJoystick(True, 128, 128, 0, 0)
 
         # Test turn in place right
-        self.sendJoystick(True, 192, 128, 0, 0.875)
-        self.sendJoystick(True, 255, 128, 0, 1.75)
-        self.sendJoystick(True, 192, 128, 0, 0.875)
+        self.sendJoystick(True, 192, 128, 0, -0.875)
+        self.sendJoystick(True, 255, 128, 0, -1.75)
+        self.sendJoystick(True, 192, 128, 0, -0.875)
         self.sendJoystick(True, 128, 128, 0, 0)
 
         # Test turn in place left
-        self.sendJoystick(True, 64, 128, 0, -0.875)
-        self.sendJoystick(True, 0, 128, 0, -1.75)
-        self.sendJoystick(True, 64, 128, 0, -0.875)
+        self.sendJoystick(True, 64, 128, 0, 0.875)
+        self.sendJoystick(True, 0, 128, 0, 1.75)
+        self.sendJoystick(True, 64, 128, 0, 0.875)
         self.sendJoystick(True, 128, 128, 0, 0)
 
-        # Close device so the node doesn't get confused later
-        self.ui.close()
+    def send_event(self, mtype, code, value):
+        self.pub.publish(Vector3(float(mtype), float(code), float(value)))
 
     def sendJoystick(self, recv_msg, x, y, linspeed, angspeed):
-        self.hasMsg = False
-        self.ui.write(3, 4, y)  # Move forward at full speed
-        self.ui.write(3, 3, x)  # Don't turn
-        self.ui.syn()
-        rospy.sleep(0.02)
+        self.num_msg = 0
+
+        self.send_event(3, 4, y)  # Send y axis
+        self.send_event(0, 0, 0)  # Syn message
+        self.send_event(3, 3, x)  # Send x axis
+        self.send_event(0, 0, 0)  # Syn message
+
+        rospy.sleep(0.1)
 
         # Make sure we received the message and it is moving at correct speed
-        self.assertEqual(self.hasMsg, recv_msg)
         if recv_msg:
-            self.assertEqual(self.lastMsg.linear.x, linspeed)
-            self.assertEqual(self.lastMsg.angular.z, angspeed)
+            self.assertEqual(self.num_msg, 2, "Received %d messages, not 2" % self.num_msg)
+        else:
+            self.assertEqual(self.num_msg, 0, "Received %d messages, not 0" % self.num_msg)
+        if recv_msg:
+            self.assertTrue(abs(self.lastMsg.linear.x - linspeed) < 0.01,
+                            "Linear speed %f != %f msg=%s" % (self.lastMsg.linear.x, linspeed, str(self.lastMsg)))
+            self.assertTrue(abs(self.lastMsg.angular.z - angspeed) < 0.2,
+                             "Angular speed %f != %f msg=%s" % (self.lastMsg.angular.z, angspeed, str(self.lastMsg)))
 
     def callback(self, msg):
-        self.hasMsg = True
+        self.num_msg += 1
         self.lastMsg = msg
 
 
 if __name__ == '__main__':
     import rostest
 
+    rospy.init_node('test_sixaxis_publisher', anonymous=True)
     rostest.rosrun(package_name, test_name, TestSixaxisPublisher)
