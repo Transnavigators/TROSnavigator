@@ -1,5 +1,5 @@
 sudo: required
-
+dist: trusty
 services:
   - docker
 
@@ -31,8 +31,9 @@ before_script:
     rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
     cd $CI_SOURCE_PATH/alexa_voice_control/Certificates;
     openssl aes-256-cbc -pass \"pass:$SECRET\" -in Pi.private.key.enc -out Pi.private.key -d -a"
-  - sudo modprobe i2c-stub || :
-  - sudo modprobe i2c-smbus || :
+  - sudo apt-get install -y pkg-config
+  - sudo modprobe i2c-stub || true
+  - sudo modprobe i2c-smbus || true
 
 script:
     docker exec -t ubuntu-test bash -c "source /opt/ros/$ROS_DISTRO/setup.bash &&
