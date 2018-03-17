@@ -32,24 +32,10 @@ class BerryIMUPublisher:
         mag_addr = int(rospy.get_param("~mag_addr", 0x44))
         acc_addr = int(rospy.get_param("~acc_addr", 0x55))
 
-        err_count = 0
-        rate = rospy.Rate(1)
-        while not rospy.is_shutdown() and err_count < 5:
-            try:
-                if is_virtual:
-                    self.IMU = IMU.BerryIMU(True, gyr_addr, mag_addr, acc_addr)
-                else:
-                    self.IMU = IMU.BerryIMU()  # Initialise the accelerometer, gyroscope and compass
-                break
-            except rospy.ROSInterruptException:
-                break
-            except IOError:
-                subprocess.call('i2cdetect -y 1', shell=True)
-                rate.sleep()
-                err_count += 1
-        if err_count >= 5:
-            rospy.logfatal("Couldn't connect to BerryIMU")
-            sys.exit(1)
+        if is_virtual:
+            self.IMU = IMU.BerryIMU(True, gyr_addr, mag_addr, acc_addr)
+        else:
+            self.IMU = IMU.BerryIMU()  # Initialise the accelerometer, gyroscope and compass
 
     def begin(self):
         """Keeps reading IMU data and publishing it to the topic imu_data

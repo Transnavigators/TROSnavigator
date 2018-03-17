@@ -9,55 +9,56 @@ class BerryIMU:
     def __init__(self, is_virtual=False, gyr_addr=0, mag_addr=0, acc_addr=0):
         self.LSM9DS0 = 0
         self.bus = smbus.SMBus(1)
+        if not is_virtual:
+            self.detectIMU()
+        if self.LSM9DS0:
+            self.MAG_ADDRESS = LSM9DS0_MAG_ADDRESS
+            self.GYR_ADDRESS = LSM9DS0_GYR_ADDRESS
+            self.ACC_ADDRESS = LSM9DS0_ACC_ADDRESS
+            self.OUT_X_L_G = LSM9DS0_OUT_X_L_G
+            self.OUT_X_H_G = LSM9DS0_OUT_X_H_G
+            self.OUT_Y_L_G = LSM9DS0_OUT_Y_L_G
+            self.OUT_Y_H_G = LSM9DS0_OUT_Y_H_G
+            self.OUT_Z_L_G = LSM9DS0_OUT_Z_L_G
+            self.OUT_Z_H_G = LSM9DS0_OUT_Z_H_G
+            self.OUT_X_L_XL = LSM9DS0_OUT_X_L_A
+            self.OUT_X_H_XL = LSM9DS0_OUT_X_H_A
+            self.OUT_Y_L_XL = LSM9DS0_OUT_Y_L_A
+            self.OUT_Y_H_XL = LSM9DS0_OUT_Y_H_A
+            self.OUT_Z_L_XL = LSM9DS0_OUT_Z_L_A
+            self.OUT_Z_H_XL = LSM9DS0_OUT_Z_H_A
+            self.OUT_X_L_M = LSM9DS0_OUT_X_L_M
+            self.OUT_X_H_M = LSM9DS0_OUT_X_H_M
+            self.OUT_Y_L_M = LSM9DS0_OUT_Y_L_M
+            self.OUT_Y_H_M = LSM9DS0_OUT_Y_H_M
+            self.OUT_Z_L_M = LSM9DS0_OUT_Z_L_M
+            self.OUT_Z_H_M = LSM9DS0_OUT_Z_H_M
+        else:
+            self.MAG_ADDRESS = LSM9DS1_MAG_ADDRESS
+            self.GYR_ADDRESS = LSM9DS1_GYR_ADDRESS
+            self.ACC_ADDRESS = LSM9DS1_ACC_ADDRESS
+            self.OUT_X_L_G = LSM9DS1_OUT_X_L_G
+            self.OUT_X_H_G = LSM9DS1_OUT_X_H_G
+            self.OUT_Y_L_G = LSM9DS1_OUT_Y_L_G
+            self.OUT_Y_H_G = LSM9DS1_OUT_Y_H_G
+            self.OUT_Z_L_G = LSM9DS1_OUT_Z_L_G
+            self.OUT_Z_H_G = LSM9DS1_OUT_Z_H_G
+            self.OUT_X_L_XL = LSM9DS1_OUT_X_L_XL
+            self.OUT_X_H_XL = LSM9DS1_OUT_X_H_XL
+            self.OUT_Y_L_XL = LSM9DS1_OUT_Y_L_XL
+            self.OUT_Y_H_XL = LSM9DS1_OUT_Y_H_XL
+            self.OUT_Z_L_XL = LSM9DS1_OUT_Z_L_XL
+            self.OUT_Z_H_XL = LSM9DS1_OUT_Z_H_XL
+            self.OUT_X_L_M = LSM9DS1_OUT_X_L_M
+            self.OUT_X_H_M = LSM9DS1_OUT_X_H_M
+            self.OUT_Y_L_M = LSM9DS1_OUT_Y_L_M
+            self.OUT_Y_H_M = LSM9DS1_OUT_Y_H_M
+            self.OUT_Z_L_M = LSM9DS1_OUT_Z_L_M
+            self.OUT_Z_H_M = LSM9DS1_OUT_Z_H_M
         if is_virtual:
             self.MAG_ADDRESS = mag_addr
             self.GYR_ADDRESS = gyr_addr
             self.ACC_ADDRESS = acc_addr
-        else:
-            if self.detectIMU():
-                self.MAG_ADDRESS = LSM9DS0_MAG_ADDRESS
-                self.GYR_ADDRESS = LSM9DS0_GYR_ADDRESS
-                self.ACC_ADDRESS = LSM9DS0_ACC_ADDRESS
-                self.OUT_X_L_G = LSM9DS0_OUT_X_L_G
-                self.OUT_X_H_G = LSM9DS0_OUT_X_H_G
-                self.OUT_Y_L_G = LSM9DS0_OUT_Y_L_G
-                self.OUT_Y_H_G = LSM9DS0_OUT_Y_H_G
-                self.OUT_Z_L_G = LSM9DS0_OUT_Z_L_G
-                self.OUT_Z_H_G = LSM9DS0_OUT_Z_H_G
-                self.OUT_X_L_XL = LSM9DS0_OUT_X_L_A
-                self.OUT_X_H_XL = LSM9DS0_OUT_X_H_A
-                self.OUT_Y_L_XL = LSM9DS0_OUT_Y_L_A
-                self.OUT_Y_H_XL = LSM9DS0_OUT_Y_H_A
-                self.OUT_Z_L_XL = LSM9DS0_OUT_Z_L_A
-                self.OUT_Z_H_XL = LSM9DS0_OUT_Z_H_A
-                self.OUT_X_L_M = LSM9DS0_OUT_X_L_M
-                self.OUT_X_H_M = LSM9DS0_OUT_X_H_M
-                self.OUT_Y_L_M = LSM9DS0_OUT_Y_L_M
-                self.OUT_Y_H_M = LSM9DS0_OUT_Y_H_M
-                self.OUT_Z_L_M = LSM9DS0_OUT_Z_L_M
-                self.OUT_Z_H_M = LSM9DS0_OUT_Z_H_M
-            else:
-                self.MAG_ADDRESS = LSM9DS1_MAG_ADDRESS
-                self.GYR_ADDRESS = LSM9DS1_GYR_ADDRESS
-                self.ACC_ADDRESS = LSM9DS1_ACC_ADDRESS
-                self.OUT_X_L_G = LSM9DS1_OUT_X_L_G
-                self.OUT_X_H_G = LSM9DS1_OUT_X_H_G
-                self.OUT_Y_L_G = LSM9DS1_OUT_Y_L_G
-                self.OUT_Y_H_G = LSM9DS1_OUT_Y_H_G
-                self.OUT_Z_L_G = LSM9DS1_OUT_Z_L_G
-                self.OUT_Z_H_G = LSM9DS1_OUT_Z_H_G
-                self.OUT_X_L_XL = LSM9DS1_OUT_X_L_XL
-                self.OUT_X_H_XL = LSM9DS1_OUT_X_H_XL
-                self.OUT_Y_L_XL = LSM9DS1_OUT_Y_L_XL
-                self.OUT_Y_H_XL = LSM9DS1_OUT_Y_H_XL
-                self.OUT_Z_L_XL = LSM9DS1_OUT_Z_L_XL
-                self.OUT_Z_H_XL = LSM9DS1_OUT_Z_H_XL
-                self.OUT_X_L_M = LSM9DS1_OUT_X_L_M
-                self.OUT_X_H_M = LSM9DS1_OUT_X_H_M
-                self.OUT_Y_L_M = LSM9DS1_OUT_Y_L_M
-                self.OUT_Y_H_M = LSM9DS1_OUT_Y_H_M
-                self.OUT_Z_L_M = LSM9DS1_OUT_Z_L_M
-                self.OUT_Z_H_M = LSM9DS1_OUT_Z_H_M
         self.initIMU()
 
     def detectIMU(self):
