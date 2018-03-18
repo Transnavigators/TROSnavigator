@@ -13,7 +13,7 @@ class BerryIMU:
             self.bus = smbus.SMBus(0)
         else:
             self.bus = smbus.SMBus(1)
-            # self.detectIMU()
+            self.detectIMU()
         if self.LSM9DS0:
             self.MAG_ADDRESS = LSM9DS0_MAG_ADDRESS
             self.GYR_ADDRESS = LSM9DS0_GYR_ADDRESS
