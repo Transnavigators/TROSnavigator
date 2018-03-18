@@ -103,8 +103,11 @@ class ArduinoMotor:
 
         """
         count = 0
+
         while not rospy.is_shutdown() and count < self.retry_limit:
             try:
+                if rospy.is_shutdown():
+                    break
                 self.send_speed_to_motor(float(self.left), float(self.right))
                 rospy.loginfo_throttle(1, "Sent speed successfully")
                 break
