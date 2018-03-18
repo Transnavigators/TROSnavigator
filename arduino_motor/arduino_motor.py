@@ -110,6 +110,7 @@ class ArduinoMotor:
                 break
             except IOError:
                 count += 1
+                rospy.logwarn("Failed to send speed %d times" % count)
                 pass
 
 
