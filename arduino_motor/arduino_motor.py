@@ -103,7 +103,7 @@ class ArduinoMotor:
 
         """
         count = 0
-
+        last_err = ''
         while not rospy.is_shutdown() and count < self.retry_limit:
             try:
                 if rospy.is_shutdown():
@@ -113,8 +113,10 @@ class ArduinoMotor:
                 break
             except IOError as e:
                 count += 1
-                rospy.logwarn("Failed to send speed %d times: %s" % (count, e))
+                last_err = str(e)
                 pass
+        if count > 0:
+            rospy.logwarn("Failed to send speed %d times: %s" % (count, last_err))
 
 
 if __name__ == "__main__":
