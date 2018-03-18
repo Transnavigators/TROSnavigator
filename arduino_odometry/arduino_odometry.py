@@ -127,7 +127,8 @@ class ArduinoOdometry:
 
                 ###########################################################
                 self.rate.sleep()
-            except IOError:
+            except IOError as e:
+                rospy.logwarn(e)
                 pass
 
 

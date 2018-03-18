@@ -19,8 +19,8 @@ class ArduinoMotor:
 
         # Get params
         self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
-        self.rate = rospy.Rate(int(rospy.get_param("~rate", 20)))
-        self.retry_limit = int(rospy.get_param("~retry_limit", 10))
+        self.rate = rospy.Rate(int(rospy.get_param("~rate", 10)))
+        self.retry_limit = int(rospy.get_param("~retry_limit", 1))
         reset_pin = int(rospy.get_param("reset_pin", 4))
 
         try:
@@ -86,7 +86,8 @@ class ArduinoMotor:
             self.pub.publish(UInt8MultiArray(data=val))
             # rospy.loginfo(str(val))
         else:
-            self.bus.write_i2c_block_data(self.address, self.move_cmd, val)
+            if m1 != 0 or m2 != 0:
+                self.bus.write_i2c_block_data(self.address, self.move_cmd, val)
 
     def begin(self):
         """Start the node and spin forever

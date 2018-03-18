@@ -2,7 +2,7 @@
     <node name="sixaxis_publisher" pkg="sixaxis_publisher" type="sixaxis_publisher.py"/>
     <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
         <param name="reset_pin" value="4"/>
-        <param name="rate" value="20"/>
+        <param name="rate" value="10"/>
     </node>
     <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
         <param name="poll_rate" value="10"/>
