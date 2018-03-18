@@ -108,9 +108,9 @@ class ArduinoMotor:
                 self.send_speed_to_motor(float(self.left), float(self.right))
                 rospy.loginfo_throttle(1, "Sent speed successfully")
                 break
-            except IOError:
+            except IOError as e:
                 count += 1
-                rospy.logwarn("Failed to send speed %d times" % count)
+                rospy.logwarn("Failed to send speed %d times: %s" % (count, e))
                 pass
 
 
