@@ -216,7 +216,8 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         for event in self.gamepad.read():
             self.process_event(event)
         self.send_cmd()
-
+        if rospy.is_shutdown():
+            raise asyncore.ExitNow('ROS is quitting')
 
 if __name__ == "__main__":
     sp = None
@@ -225,9 +226,8 @@ if __name__ == "__main__":
         if sp.is_test:
             rospy.spin()
         else:
-            while not rospy.is_shutdown():
-                asyncore.loop(timeout=1)
-    except rospy.ROSInterruptException:
+            asyncore.loop()
+    except (rospy.ROSInterruptException, asyncore.ExitNow):
         sp.stream.stop_stream()
         sp.stream.close()
         pass
