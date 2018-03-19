@@ -24,6 +24,7 @@ class ArduinoMotor:
         self.reset_pin = int(rospy.get_param("reset_pin", 4))
         self.err_count = 0
         try:
+            global GPIO
             import RPi.GPIO as GPIO
             # Setup pin 4 as an output pin for resetting the Arduino
             GPIO.setmode(GPIO.BCM)
