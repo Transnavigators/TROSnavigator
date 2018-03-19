@@ -21,24 +21,21 @@ class ArduinoMotor:
         self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
         self.rate = rospy.Rate(int(rospy.get_param("~poll_rate", 10)))
         self.retry_limit = int(rospy.get_param("~retry_limit", 1))
-        reset_pin = int(rospy.get_param("reset_pin", 4))
-
+        self.reset_pin = int(rospy.get_param("reset_pin", 4))
+        self.err_count = 0
         try:
             import RPi.GPIO as GPIO
             # Setup pin 4 as an output pin for resetting the Arduino
             GPIO.setmode(GPIO.BCM)
             GPIO.setwarnings(False)
             GPIO.setup(4, GPIO.OUT)
-
-            # Reset the Arduino
-            GPIO.output(reset_pin, GPIO.LOW)
-            rospy.sleep(1.0)
-            GPIO.output(reset_pin, GPIO.HIGH)
-            rospy.sleep(1.0)
+            self.on_arduino = True
         except (ImportError, RuntimeError):
             rospy.logwarn("Not running on Raspberry Pi, so cannot reset Arduino")
+            self.on_arduino = False
             pass
-
+        # Reset the Arduino
+        self.reset_arduino()
         self.is_virtual = int(rospy.get_param("~is_virtual", 0))
         # Setup the i2c bus
         if self.is_virtual:
@@ -55,6 +52,13 @@ class ArduinoMotor:
 
         self.left = 0
         self.right = 0
+
+    def reset_arduino(self):
+        if self.on_arduino:
+            GPIO.output(self.reset_pin, GPIO.LOW)
+            rospy.sleep(0.1)
+            GPIO.output(self.reset_pin, GPIO.HIGH)
+            rospy.sleep(0.1)
 
     def callback(self, msg):
         """Updates the linear and angular velocity instance variables
@@ -116,7 +120,10 @@ class ArduinoMotor:
                 last_err = str(e)
                 pass
         if count > 0:
+            self.err_count += count
             rospy.logwarn("Failed to send speed %d times: %s" % (count, last_err))
+            if self.err_count > 10:
+                self.reset_arduino()
 
 
 if __name__ == "__main__":
