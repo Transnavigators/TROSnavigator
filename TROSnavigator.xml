@@ -15,17 +15,6 @@
         <param name="reset_pin" value="4"/>
         <param name="rate" value="20"/>
     </node>
-    <node name="localino_server" pkg="localino_server" type="localino_server.py">
-        <param name="base_tag_id" value="1002"/>
-        <param name="poll_rate" value="4000"/>
-        <param name="port" value="10000"/>
-        <param name="anchor_names" value="9002,9003,9005"/>
-        <param name="anchor_9002" value="0,0,0"/>
-        <param name="anchor_9003" value="3.78,0.28,0"/>
-        <param name="anchor_9005" value="1.12,2.03,0"/>
-        <param name="tag_names" value="1001,1002"/>
-        <param name="timeout" value="1000000000"/>
-    </node>
     <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
         <param name="poll_rate" value="10"/>
     </node>
@@ -39,7 +28,7 @@
         <param name="sensor_timeout" value="1.0"/>
         <param name="odom_used" value="true"/>
         <param name="imu_used" value="true"/>
-        <param name="vo_used" value="true"/>
+        <param name="vo_used" value="false"/>
         <param name="debug" value="false"/>
         <param name="self_diagnose" value="false"/>
         <remap from="robot_pose_ekf/odom_combined" to="initialpose"/>

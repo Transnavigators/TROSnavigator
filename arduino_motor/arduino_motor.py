@@ -86,8 +86,7 @@ class ArduinoMotor:
             self.pub.publish(UInt8MultiArray(data=val))
             # rospy.loginfo(str(val))
         else:
-            if m1 != 0 or m2 != 0:
-                self.bus.write_i2c_block_data(self.address, self.move_cmd, val)
+            self.bus.write_i2c_block_data(self.address, self.move_cmd, val)
 
     def begin(self):
         """Start the node and spin forever
