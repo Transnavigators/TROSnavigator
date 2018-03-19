@@ -56,10 +56,10 @@ class ArduinoMotor:
 
     def reset_arduino(self):
         if self.on_arduino:
+            rospy.logerr("Resetting arduino")
             GPIO.output(self.reset_pin, GPIO.LOW)
             rospy.sleep(0.1)
             GPIO.output(self.reset_pin, GPIO.HIGH)
-            rospy.sleep(0.1)
 
     def callback(self, msg):
         """Updates the linear and angular velocity instance variables

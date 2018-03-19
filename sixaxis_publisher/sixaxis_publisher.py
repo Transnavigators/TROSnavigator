@@ -226,7 +226,7 @@ if __name__ == "__main__":
             rospy.spin()
         else:
             while not rospy.is_shutdown():
-                asyncore.loop(timeout=1, count=100)
+                asyncore.loop(timeout=1)
     except rospy.ROSInterruptException:
         sp.stream.stop_stream()
         sp.stream.close()
