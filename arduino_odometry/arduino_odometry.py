@@ -13,6 +13,7 @@ class ArduinoOdometry:
     """Reads encoder data from the Arduino and publishes it as a transform and on the odom topic
     
     """
+
     def __init__(self):
         # Initialize the serial port
         rospy.init_node('arduino_odometry', anonymous=True)
@@ -96,7 +97,8 @@ class ArduinoOdometry:
                 if th != 0:
                     self.th = self.th + th
                 rospy.loginfo_throttle(1, "dLeft=%f dRight=%f th=%f x=%f y=%f dx=%f dr=%f" % (delta_left, delta_right,
-                                       th, self.x, self.y, self.dx, self.dr))
+                                                                                              th, self.x, self.y,
+                                                                                              self.dx, self.dr))
                 # send messages
                 odom_quat = Quaternion()
                 odom_quat.w = math.cos(th / 2)
@@ -117,12 +119,23 @@ class ArduinoOdometry:
                 odom.pose.pose.position.y = self.y
                 odom.pose.pose.position.z = 0.0
                 odom.pose.pose.orientation = odom_quat
+                odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                        0, 1e-3, 1e-9, 0, 0, 0,
+                                        0, 0, 1e6, 0, 0, 0,
+                                        0, 0, 0, 1e6, 0, 0,
+                                        0, 0, 0, 0, 1e6, 0,
+                                        0, 0, 0, 0, 0, 1e-9]
                 # set the velocity
                 odom.child_frame_id = "base_link"
-                odom.twist.twist.linear.x = -self.dx/2
+                odom.twist.twist.linear.x = -self.dx / 2
                 odom.twist.twist.linear.y = 0.0
                 odom.twist.twist.angular.z = self.dr
-
+                odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                         0, 1e-3, 1e-9, 0, 0, 0,
+                                         0, 0, 1e6, 0, 0, 0,
+                                         0, 0, 0, 1e6, 0, 0,
+                                         0, 0, 0, 0, 1e6, 0,
+                                         0, 0, 0, 0, 0, 1e-9]
                 self.pub.publish(odom)
 
                 ###########################################################
