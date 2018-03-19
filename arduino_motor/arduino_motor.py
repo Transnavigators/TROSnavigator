@@ -49,10 +49,12 @@ class ArduinoMotor:
         self.address = 0x04
         self.move_cmd = ord('m')
 
-        rospy.Subscriber("cmd_vel", Twist, self.callback)
-
         self.left = 0
         self.right = 0
+
+        self.stopped = False
+
+        rospy.Subscriber("cmd_vel", Twist, self.callback)
 
     def reset_arduino(self):
         if self.on_arduino:
@@ -88,11 +90,16 @@ class ArduinoMotor:
 
         """
         val = list(bytearray(struct.pack("=ff", m1, m2)))
-        if self.is_virtual:
-            self.pub.publish(UInt8MultiArray(data=val))
-            # rospy.loginfo(str(val))
-        else:
-            self.bus.write_i2c_block_data(self.address, self.move_cmd, val)
+        if not self.stopped or m1 != 0 or m2 != 0:
+            if self.is_virtual:
+                self.pub.publish(UInt8MultiArray(data=val))
+                # rospy.loginfo(str(val))
+            else:
+                self.bus.write_i2c_block_data(self.address, self.move_cmd, val)
+            if m1 == 0 and m2 == 0:
+                self.stopped = True
+            else:
+                self.stopped = False
 
     def begin(self):
         """Start the node and spin forever
