@@ -68,8 +68,35 @@ class ArduinoOdometry:
         previous_time = 0
 
         while not rospy.is_shutdown():
-            # read encoders
+            # Construct Odom message
+            odom = Odometry()
+            odom.header.stamp = now
+            odom.header.frame_id = "odom"
+            odom.child_frame_id = "base_link"
+
+            # set the position
+            odom.pose.pose.position.z = 0.0
+            odom.twist.twist.linear.y = 0.0
+
+            # Set covariances, from turtlebot
+            # TODO: find actual covariances
+            odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                    0, 1e-3, 1e-9, 0, 0, 0,
+                                    0, 0, 1e6, 0, 0, 0,
+                                    0, 0, 0, 1e6, 0, 0,
+                                    0, 0, 0, 0, 1e6, 0,
+                                    0, 0, 0, 0, 0, 1e-9]
+            odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                     0, 1e-3, 1e-9, 0, 0, 0,
+                                     0, 0, 1e6, 0, 0, 0,
+                                     0, 0, 0, 1e6, 0, 0,
+                                     0, 0, 0, 0, 1e6, 0,
+                                     0, 0, 0, 0, 0, 1e-9]
+
+            odom_quat = Quaternion()
+
             try:
+                # read encoders
                 new_left, new_right = self.read_encoders()
                 rospy.loginfo_throttle(1, "Left count: " + str(new_left) + " | Right count: " + str(new_right))
 
@@ -97,50 +124,30 @@ class ArduinoOdometry:
                     self.y = self.y + (math.sin(self.th) * x + math.cos(self.th) * y)
                 if th != 0:
                     self.th = self.th + th
-                rospy.loginfo_throttle(1, "dLeft=%f dRight=%f th=%f x=%f y=%f dx=%f dr=%f" % (delta_left, delta_right,
-                                                                                              th, self.x, self.y,
-                                                                                              self.dx, self.dr))
-                # send messages
-                odom_quat = Quaternion()
+                rospy.loginfo_throttle(1, "dLeft=%f dRight=%f th=%f x=%f y=%f dx=%f dr=%f" % (
+                    delta_left, delta_right, th, self.x, self.y, self.dx, self.dr))
+                # update odom quaternion
                 odom_quat.w = math.cos(th / 2)
                 odom_quat.x = 0.0
                 odom_quat.y = 0.0
                 odom_quat.z = math.sin(th / 2)
-
-                # send the transform
-                self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now,
-                                                    "base_link", "odom")
-
-                # next, we'll publish the odometry message over ROS
-                odom = Odometry()
-                odom.header.stamp = now
-                odom.header.frame_id = "odom"
-                # set the position
-                odom.pose.pose.position.x = self.x
-                odom.pose.pose.position.y = self.y
-                odom.pose.pose.position.z = 0.0
-                odom.pose.pose.orientation = odom_quat
-                odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                        0, 1e-3, 1e-9, 0, 0, 0,
-                                        0, 0, 1e6, 0, 0, 0,
-                                        0, 0, 0, 1e6, 0, 0,
-                                        0, 0, 0, 0, 1e6, 0,
-                                        0, 0, 0, 0, 0, 1e-9]
-                # set the velocity
-                odom.child_frame_id = "base_link"
-                odom.twist.twist.linear.x = -self.dx / 2
-                odom.twist.twist.linear.y = 0.0
-                odom.twist.twist.angular.z = self.dr
-                odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                         0, 1e-3, 1e-9, 0, 0, 0,
-                                         0, 0, 1e6, 0, 0, 0,
-                                         0, 0, 0, 1e6, 0, 0,
-                                         0, 0, 0, 0, 1e6, 0,
-                                         0, 0, 0, 0, 0, 1e-9]
-                self.pub.publish(odom)
             except IOError as e:
                 rospy.logwarn(e)
+                odom_quat.w = 1.0
+                odom_quat.x = 0.0
+                odom_quat.y = 0.0
+                odom_quat.z = 0.0
                 pass
+            # send the transform
+            self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now,
+                                                "base_link", "odom")
+            # Update odom message and send it
+            odom.pose.pose.position.x = self.x
+            odom.pose.pose.position.y = self.y
+            odom.twist.twist.linear.x = -self.dx / 2
+            odom.twist.twist.angular.z = self.dr
+            odom.pose.pose.orientation = odom_quat
+            self.pub.publish(odom)
             self.rate.sleep()
 
 
