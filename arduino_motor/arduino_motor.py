@@ -125,6 +125,7 @@ class ArduinoMotor:
             rospy.logwarn("Failed to send speed %d times: %s" % (count, last_err))
             if self.err_count > 10:
                 self.reset_arduino()
+                self.err_count = 0
 
 
 if __name__ == "__main__":
