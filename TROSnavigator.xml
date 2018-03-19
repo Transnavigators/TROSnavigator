@@ -9,7 +9,7 @@
         <param name="user_tag_id" value="1001"/>
     </node>
     <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
-        <param name="poll_rate" value="10"/>
+        <param name="poll_rate" value="9"/>
     </node>
     <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
         <param name="reset_pin" value="4"/>
@@ -76,9 +76,4 @@
         <param name="odom_frame_id" value="odom"/>
     </node>
     <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 base_link neato_scan 100"/>
-    <node name="table_to_map_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 map table 100"/>
-    <node name="desk_to_map_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 map desk 100"/>
-    <node name="chair_to_map_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 map chair 100"/>
-    <node name="couch_to_map_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 map couch 100"/>
-    <node name="bed_to_map_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 map bed 100"/>
 </launch>

@@ -137,12 +137,10 @@ class ArduinoOdometry:
                                          0, 0, 0, 0, 1e6, 0,
                                          0, 0, 0, 0, 0, 1e-9]
                 self.pub.publish(odom)
-
-                ###########################################################
-                self.rate.sleep()
             except IOError as e:
                 rospy.logwarn(e)
                 pass
+            self.rate.sleep()
 
 
 if __name__ == "__main__":
