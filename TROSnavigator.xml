@@ -77,4 +77,5 @@
     </node>
 
     <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 neato_scan base_link 100"/>
+    <node name="base_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 base_footprint base_link 100"/>
 </launch>

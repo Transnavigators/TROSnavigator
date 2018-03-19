@@ -30,8 +30,7 @@ class ArduinoOdometry:
         # 6" diameter wheel, 4096 pulses per revolution
         self.meters_per_pulse = float(rospy.get_param("~meters_per_pulse", 2 * math.pi * (6 / 2) * 0.0254 / 4096))
         self.rate = rospy.Rate(float(rospy.get_param("~poll_rate", 10)))
-        self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
-        self.odom_broadcaster = tf.TransformBroadcaster()
+
         self.x = 0
         self.y = 0
         self.th = 0
@@ -45,6 +44,9 @@ class ArduinoOdometry:
         else:
             rospy.sleep(4.0)
             self.bus = smbus.SMBus(1)
+
+        self.odom_broadcaster = tf.TransformBroadcaster()
+        self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
 
     # get data from Arduino
     def read_encoders(self):
@@ -96,6 +98,8 @@ class ArduinoOdometry:
                                      0, 0, 0, 0, 0, 1e-9]
 
             odom_quat = Quaternion()
+            odom_quat.x = 0.0
+            odom_quat.y = 0.0
 
             try:
                 # read encoders
@@ -128,18 +132,13 @@ class ArduinoOdometry:
                     delta_left, delta_right, th, self.x, self.y, self.dx, self.dr))
                 # update odom quaternion
                 odom_quat.w = math.cos(th / 2)
-                odom_quat.x = 0.0
-                odom_quat.y = 0.0
                 odom_quat.z = math.sin(th / 2)
             except IOError as e:
                 rospy.logwarn(e)
                 odom_quat.w = 1.0
-                odom_quat.x = 0.0
-                odom_quat.y = 0.0
                 odom_quat.z = 0.0
-                pass
             # send the transform
-            self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [odom_quat.w, 0.0, 0.0, odom_quat.z], now,
+            self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [0.0, 0.0, odom_quat.z, odom_quat.w], now,
                                                 "base_link", "odom")
             # Update odom message and send it
             odom.pose.pose.position.x = self.x
