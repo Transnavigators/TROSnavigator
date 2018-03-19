@@ -20,7 +20,7 @@ class ArduinoMotor:
         # Get params
         self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
         self.rate = rospy.Rate(int(rospy.get_param("~poll_rate", 10)))
-        self.retry_limit = int(rospy.get_param("~retry_limit", 1))
+        self.retry_limit = int(rospy.get_param("~retry_limit", 10))
         self.reset_pin = int(rospy.get_param("reset_pin", 4))
         self.err_count = 0
         try:
@@ -60,7 +60,7 @@ class ArduinoMotor:
             GPIO.output(self.reset_pin, GPIO.LOW)
             rospy.sleep(0.1)
             GPIO.output(self.reset_pin, GPIO.HIGH)
-            rospy.sleep(2.0)
+            rospy.sleep(3.0)
 
     def callback(self, msg):
         """Updates the linear and angular velocity instance variables
@@ -123,10 +123,10 @@ class ArduinoMotor:
                 pass
         if count > 0:
             self.err_count += count
-            rospy.logwarn("Failed to send speed %d times: %s" % (count, last_err))
-            if self.err_count > 100:
-                self.reset_arduino()
-                self.err_count = 0
+            rospy.logwarn("Failed to send speed %d times or %d total: %s" % (count, self.err_count, last_err))
+        if count == self.retry_limit:
+            self.reset_arduino()
+
 
 
 if __name__ == "__main__":
