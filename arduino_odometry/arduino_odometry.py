@@ -68,6 +68,8 @@ class ArduinoOdometry:
         previous_time = 0
 
         while not rospy.is_shutdown():
+            now = rospy.Time.now()
+
             # Construct Odom message
             odom = Odometry()
             odom.header.stamp = now
@@ -101,8 +103,6 @@ class ArduinoOdometry:
                 rospy.loginfo_throttle(1, "Left count: " + str(new_left) + " | Right count: " + str(new_right))
 
                 current_time = rospy.get_time()
-                now = rospy.Time.now()
-
                 # adapted from Mastering ROS for Robotics Programming page 303-306
                 # https://github.com/qboticslabs/mastering_ros/blob/master/chapter_9_codes/chefbot_navig_cpp/src/diff_tf.cpp
                 ##################################################################
