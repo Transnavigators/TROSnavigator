@@ -60,6 +60,7 @@ class ArduinoMotor:
             GPIO.output(self.reset_pin, GPIO.LOW)
             rospy.sleep(0.1)
             GPIO.output(self.reset_pin, GPIO.HIGH)
+            rospy.sleep(2.0)
 
     def callback(self, msg):
         """Updates the linear and angular velocity instance variables
@@ -123,7 +124,7 @@ class ArduinoMotor:
         if count > 0:
             self.err_count += count
             rospy.logwarn("Failed to send speed %d times: %s" % (count, last_err))
-            if self.err_count > 10:
+            if self.err_count > 100:
                 self.reset_arduino()
                 self.err_count = 0
 
