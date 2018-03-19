@@ -43,6 +43,7 @@ class ArduinoOdometry:
         if is_virtual:
             self.bus = smbus.SMBus(0)
         else:
+            rospy.sleep(4.0)
             self.bus = smbus.SMBus(1)
 
     # get data from Arduino

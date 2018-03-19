@@ -19,7 +19,7 @@ class ArduinoMotor:
 
         # Get params
         self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
-        self.rate = rospy.Rate(int(rospy.get_param("~rate", 10)))
+        self.rate = rospy.Rate(int(rospy.get_param("~poll_rate", 10)))
         self.retry_limit = int(rospy.get_param("~retry_limit", 1))
         reset_pin = int(rospy.get_param("reset_pin", 4))
 

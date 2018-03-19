@@ -1,4 +1,8 @@
 <launch>
+    <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
+        <param name="reset_pin" value="4"/>
+        <param name="poll_rate" value="10"/>
+    </node>
     <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py">
         <param name="host" value="a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com"/>
         <param name="rootCAPath" value="/Certificates/root-CA.crt"/>
@@ -9,11 +13,7 @@
         <param name="user_tag_id" value="1001"/>
     </node>
     <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
-        <param name="poll_rate" value="9"/>
-    </node>
-    <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
-        <param name="reset_pin" value="4"/>
-        <param name="rate" value="10"/>
+        <param name="poll_rate" value="10"/>
     </node>
     <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
         <param name="poll_rate" value="10"/>
@@ -75,5 +75,6 @@
         <param name="update_min_a" value="0.5"/>
         <param name="odom_frame_id" value="odom"/>
     </node>
+
     <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 base_link neato_scan 100"/>
 </launch>
