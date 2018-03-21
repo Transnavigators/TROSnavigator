@@ -77,5 +77,4 @@
         <param name="odom_frame_id" value="odom_combined"/>
     </node>
     <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.04445 0 0 0 0 0 1 neato_scan base_link 100"/>
-    <node name="base_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.15 0 0 0 0 0 2 base_link base_footprint 100"/>
 </launch>
