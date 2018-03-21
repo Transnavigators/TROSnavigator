@@ -3,8 +3,8 @@
     <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
         <param name="reset_pin" value="4"/>
         <param name="poll_rate" value="10"/>
-    </node>
-    <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
-        <param name="poll_rate" value="10"/>
+</node>
+<node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
+        <param name="poll_rate" value="5"/>
     </node>
 </launch>
