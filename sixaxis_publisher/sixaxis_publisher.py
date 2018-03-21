@@ -42,22 +42,6 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.x_vel = 0
 
         self.gamepad = None
-        if is_test == 1:
-            self.sub = rospy.Subscriber('joytest', Vector3, self.callback)
-            self.is_test = True
-        else:
-            self.is_test = False
-            rospy.loginfo("Finding PS3 controller.")
-            # Check every second
-            rate = rospy.Rate(1.0)
-            for i in range(0, search_time):
-                if self.connect_joystick():
-                    break
-                rate.sleep()
-            if self.gamepad is None:
-                rospy.logerr("Could not find the PS3 controller.")
-                if is_test == 0:
-                    sys.exit(1)
 
         # Setup audio
         rospack = rospkg.RosPack()
@@ -72,6 +56,26 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                                           output=True)
         except IOError:
             self.stream = None
+
+        if is_test == 1:
+            self.sub = rospy.Subscriber('joytest', Vector3, self.callback)
+            self.is_test = True
+        else:
+            self.is_test = False
+            rospy.loginfo("Finding PS3 controller.")
+            # Check every second
+            rate = rospy.Rate(1.0)
+            for i in range(0, search_time):
+                if self.connect_joystick():
+                    break
+                rospy.loginfo("Waiting for controller...")
+                rate.sleep()
+            if self.gamepad is None:
+                rospy.logerr("Could not find the PS3 controller.")
+                if is_test == 0:
+                    sys.exit(1)
+
+
 
     def connect_joystick(self):
         devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
