@@ -31,7 +31,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.MAX_REVERSE_SPEED = float(rospy.get_param("~max_reverse_speed", 0.5))
         self.MAX_ROT_SPEED = float(rospy.get_param("~max_rot_speed", 1.75))
         self.threshold = int(rospy.get_param("~joystick_threshold", 5))
-        search_time = float(rospy.get_param("~search_time",60))
+        search_time = int(rospy.get_param("~search_time", 60))
         is_test = int(rospy.get_param("~test", 0))
 
         # Instance variables for helping the callback remember its state
