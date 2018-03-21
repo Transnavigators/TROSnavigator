@@ -103,7 +103,7 @@ class BerryIMUPublisher:
 
                     msg = Imu()
                     msg.header.stamp = rospy.Time.now()
-                    msg.header.frame_id = "base_link"
+                    msg.header.frame_id = "base_footprint"
 
                     # Convert from euler to quaternion for ROS
                     q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle)
