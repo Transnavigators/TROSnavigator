@@ -75,5 +75,5 @@
         <param name="update_min_a" value="0.5"/>
         <param name="odom_frame_id" value="odom_combined"/>
     </node>
-    <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.04445 0 0 0 0 0 1 neato_scan base_link 100"/>
+    <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.04445 0 0 0 0 0 1 base_link neato_scan 100"/>
 </launch>

@@ -139,7 +139,7 @@ class ArduinoOdometry:
                 odom_quat.z = 0.0
             # send the transform
             self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [0.0, 0.0, odom_quat.z, odom_quat.w], now,
-                                                "base_link", "odom")
+                                                "odom", "base_link")
             # Update odom message and send it
             odom.pose.pose.position.x = self.x
             odom.pose.pose.position.y = self.y
