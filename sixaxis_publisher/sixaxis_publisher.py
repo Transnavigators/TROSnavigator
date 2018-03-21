@@ -31,32 +31,32 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.MAX_REVERSE_SPEED = float(rospy.get_param("~max_reverse_speed", 0.5))
         self.MAX_ROT_SPEED = float(rospy.get_param("~max_rot_speed", 1.75))
         self.threshold = int(rospy.get_param("~joystick_threshold", 5))
+        search_time = float(rospy.get_param("~search_time",60))
+        is_test = int(rospy.get_param("~test", 0))
 
         # Instance variables for helping the callback remember its state
         self.used_key = False
-        #self.stopped = True
+        # self.stopped = True
         self.stop = False
         self.rot_vel = 0
         self.x_vel = 0
 
         self.gamepad = None
-        if int(rospy.get_param("~test", 0)) == 1:
+        if is_test == 1:
             self.sub = rospy.Subscriber('joytest', Vector3, self.callback)
             self.is_test = True
         else:
             self.is_test = False
             rospy.loginfo("Finding PS3 controller.")
-            devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
-            for device in devices:
-                if 'PLAYSTATION(R)3 Controller' == device.name:
-                    rospy.loginfo("Found the PS3 controller.")
-                    self.gamepad = device
-                    asyncore.file_dispatcher.__init__(self, self.gamepad)
+            # Check every second
+            rate = rospy.Rate(1.0)
+            for i in range(0, search_time):
+                if self.connect_joystick():
                     break
-
+                rate.sleep()
             if self.gamepad is None:
                 rospy.logerr("Could not find the PS3 controller.")
-                if int(rospy.get_param("~test", 0)) == 0:
+                if is_test == 0:
                     sys.exit(1)
 
         # Setup audio
@@ -72,6 +72,16 @@ class SixaxisPublisher(asyncore.file_dispatcher):
                                           output=True)
         except IOError:
             self.stream = None
+
+    def connect_joystick(self):
+        devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
+        for device in devices:
+            if 'PLAYSTATION(R)3 Controller' == device.name:
+                rospy.loginfo("Found the PS3 controller.")
+                self.gamepad = device
+                asyncore.file_dispatcher.__init__(self, self.gamepad)
+                return True
+        return False
 
     def scale_stick(self, value):
         """Normalizes a joystick output byte (0-255) to the range -1 to 1
