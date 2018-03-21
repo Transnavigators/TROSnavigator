@@ -31,7 +31,6 @@
         <param name="vo_used" value="false"/>
         <param name="debug" value="false"/>
         <param name="self_diagnose" value="true"/>
-        <remap from="robot_pose_ekf/odom_combined" to="initialpose"/>
     </node>
     <arg name="map_file" default="$(find nav_config)/shiley3.yaml"/>
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="false"/>
