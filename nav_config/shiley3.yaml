@@ -1,5 +1,5 @@
 image: sh3rdfloor_small.png
-resolution: 14.2
+resolution: 0.070422535
 origin: [-70.18561436903198, -20.92454953162854, 0.0]
 # TODO: Change these values, rotate png as necessary, and calibrate origin to match localino
 occupied_thresh: 0.65
