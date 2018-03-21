@@ -45,7 +45,7 @@ class ArduinoOdometry:
             rospy.sleep(4.0)
             self.bus = smbus.SMBus(1)
 
-        self.odom_broadcaster = tf.TransformBroadcaster()
+        #self.odom_broadcaster = tf.TransformBroadcaster()
         self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
 
     # get data from Arduino
@@ -138,8 +138,8 @@ class ArduinoOdometry:
                 odom_quat.w = 1.0
                 odom_quat.z = 0.0
             # send the transform
-            self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [0.0, 0.0, odom_quat.z, odom_quat.w], now,
-                                                "base_link", "odom")
+            #self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [0.0, 0.0, odom_quat.z, odom_quat.w], now,
+            #                                    "base_link", "odom")
             # Update odom message and send it
             odom.pose.pose.position.x = self.x
             odom.pose.pose.position.y = self.y
