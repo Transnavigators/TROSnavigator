@@ -1,0 +1,5 @@
+<launch>
+    <node name="master" pkg="master" type="master.py">
+    </node>
+    <test test-name="test_master" pkg="master" type="test_master.py" />
+</launch>
