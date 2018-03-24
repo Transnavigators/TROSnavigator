@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# modified from https://answers.ros.org/question/209963/cmd_veltwist-transform-twist-message-into-left-and-right-motor-commands/
+# modified from http://docs.ros.org/fuerte/api/differential_drive/html/twist__to__motors_8py_source.html
 import smbus
 import rospy
 import struct
