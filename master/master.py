@@ -27,16 +27,18 @@ class Master:
         
         # get publish rate and PID constants
         self.rate = rospy.get_param("~rate", 100)
-        self.Kp = rospy.get_param("~position_contant", 1.0)
-        self.Ki = rospy.get_param("~derivative_contant", 1.0)
-        self.Kd = rospy.get_param("~integral_contant", 1.0)
+        # self.Kp = rospy.get_param("~position_contant", 1.0)
+        # self.Ki = rospy.get_param("~derivative_contant", 1.0)
+        # self.Kd = rospy.get_param("~integral_contant", 1.0)
         
         # current positions
-        self.desired.position = 0.0
+        self.desired.position.x = 0.0
+        self.desired.position.y = 0.0
         self.desired.orientation = 0.o
         
         # desired positions
-        self.current.position = 0.0
+        self.desired.position.x = 0.0
+        self.desired.position.y = 0.0
         self.current.orientation = 0.0
         
     def begin(self):
@@ -45,22 +47,22 @@ class Master:
         """
         r = rospy.Rate(self.rate):
         
-        # integral sum
-        self.forward_integral = 0.0
-        self.orientation_integral = 0.0
+        # # integral sum
+        # self.forward_integral = 0.0
+        # self.orientation_integral = 0.0
         
-        # old error
-        old_forward_error = 0.0
-        old_orientation_error = 0.0
+        # # old error
+        # old_forward_error = 0.0
+        # old_orientation_error = 0.0
         
-        # old time
-        old_time = 0.0
+        # # old time
+        # old_time = 0.0
         
         while not rospy.is_shutdown():
-            # get current time
-            new_time = rospy.get_time()
-            time_diff = new_time - old_time
-            old_time = new_time
+            # # get current time
+            # new_time = rospy.get_time()
+            # time_diff = new_time - old_time
+            # old_time = new_time
             
             # generate message
             msg = Twist()
@@ -74,28 +76,32 @@ class Master:
             
             # http://robotsforroboticists.com/pid-control/
             
-            # forward PID
-            forward_error = self.desired.position - self.current.position
-            forward_integral = forward_integral + (forward_error*time_diff)
-            forward_derivative = forward_error - old_forward_error)/time_diff
-            forward_output = Kp*forward_error+Ki*forward_integral + Kd*forward_derivative
+            # # forward PID
+            # forward_error = self.desired.position - self.current.position
+            # forward_integral = forward_integral + (forward_error*time_diff)
+            # forward_derivative = forward_error - old_forward_error)/time_diff
+            # forward_output = Kp*forward_error+Ki*forward_integral + Kd*forward_derivative
             
-            # orientation PID
-            orientation_error = self.desired.orientation - self.current.orientation
-            orientation_integral = orientation_integral + (orientation_error*time_diff)
-            orientation_derivative = orientation_error - old_orientation_error)/time_diff
-            orientation_output = Kp*orientation_error+Ki*orientation_integral + Kd*orientation_derivative
+            # # orientation PID
+            # orientation_error = self.desired.orientation - self.current.orientation
+            # orientation_integral = orientation_integral + (orientation_error*time_diff)
+            # orientation_derivative = orientation_error - old_orientation_error)/time_diff
+            # orientation_output = Kp*orientation_error+Ki*orientation_integral + Kd*orientation_derivative
             
-            # set old errors
-            old_forward_error = forward_error
-            old_orientation_error = orientation_error
+            # # set old errors
+            # old_forward_error = forward_error
+            # old_orientation_error = orientation_error
             
             ##################################################
             
             
             # lets do simple positional control for now
-            forward_vel = Kp*(self.desired.position - self.current.position)
-            rotational_vel = Kp*(self.desired.orientation - self.current.orientation)
+            forward_vel = 0.5*((self.desired.position.x*math.cos(self.current.orientation)+self.desired.position.y*math.sin(self.current.orientation)) - (self.current.position.x*math.cos(self.current.orientation) + self.current.position.x*math.cos(self.current.orientation)))
+            rotational_vel = 0.5*(self.desired.orientation - self.current.orientation)
+            
+            # update desired orientation if we are trying to move forward
+            if (math.sqrt((self.desired.position.x-self.current.position.x)**2+(self.desired.position.y-self.current.position.y)**2) >= 0.01):
+                self.desired.orientatation = math.atan((self.desired.position.y-self.current.position.y)/(self.desired.position.x-self.current.position.x))
             
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
@@ -118,7 +124,8 @@ class Master:
 
         """
         
-        self.current.position = msg.pose.point.x
+        self.current.position.x = msg.pose.point.x
+        self.current.position.y = msg.pose.point.y
         self.current.orientation = math.asin(msg.pose.orientation.z) * 2
         
     def alexa_callback(self, goal):
@@ -130,8 +137,9 @@ class Master:
 
         """
         
-        self.desired.position = goal.target_pose.pose.position.x
         self.desired.orientation = math.asin(goal.target_pose.pose.orientation.z) * 2
+        self.desired.position.x = goal.target_pose.pose.position.x*math.cos(self.desired.orientation)
+        self.desired.position.y = goal.target_pose.pose.position.x*math.sin(self.desired.orientation)
         
 
 if __name__ == "__main__":
