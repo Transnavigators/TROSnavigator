@@ -23,92 +23,90 @@ class Master:
         rospy.Subscriber("odom", Odometry, self.odometry_callback)
         self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=50)
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback)
-        
+
         # get publish rate and PID constants
         self.rate = rospy.get_param("~rate", 100)
         # self.Kp = rospy.get_param("~position_contant", 1.0)
         # self.Ki = rospy.get_param("~derivative_contant", 1.0)
         # self.Kd = rospy.get_param("~integral_contant", 1.0)
-        
+
         # current positions
         self.current_position_x = 0.0
         self.current_position_y = 0.0
         self.current_orientation = 0.0
-        
+
         # desired positions
         self.desired_position_x = 0.0
         self.desired_position_y = 0.0
         self.desired_orientation = 0.0
-        
+
     def begin(self):
         """Sends velocities to the motors depending on the current and desired positions and orientations
         
         """
         r = rospy.Rate(self.rate)
-        
+
         # # integral sum
         # self.forward_integral = 0.0
         # self.orientation_integral = 0.0
-        
+
         # # old error
         # old_forward_error = 0.0
         # old_orientation_error = 0.0
-        
+
         # # old time
         # old_time = 0.0
-        
+
         while not rospy.is_shutdown():
             # # get current time
             # new_time = rospy.get_time()
             # time_diff = new_time - old_time
             # old_time = new_time
-            
+
             # generate message
             msg = Twist()
-            
+
             # current velocity
             forward_vel = 0.0
             rotational_vel = 0.0
-            
-            
+
             ###### To test ignore PID output ########################
-            
+
             # http://robotsforroboticists.com/pid-control/
-            
+
             # # forward PID
             # forward_error = self.desired.position - self.current.position
             # forward_integral = forward_integral + (forward_error*time_diff)
             # forward_derivative = forward_error - old_forward_error)/time_diff
             # forward_output = Kp*forward_error+Ki*forward_integral + Kd*forward_derivative
-            
+
             # # orientation PID
             # orientation_error = self.desired_orientation - self.current_orientation
             # orientation_integral = orientation_integral + (orientation_error*time_diff)
             # orientation_derivative = orientation_error - old_orientation_error)/time_diff
             # orientation_output = Kp*orientation_error+Ki*orientation_integral + Kd*orientation_derivative
-            
+
             # # set old errors
             # old_forward_error = forward_error
             # old_orientation_error = orientation_error
-            
+
             ##################################################
-            
-            
+
             # lets do simple positional control for now
             forward_vel = 0.5*((self.desired_position_x*math.cos(self.current_orientation)+self.desired_position_y*math.sin(self.current_orientation)) - (self.current_position_x*math.cos(self.current_orientation) + self.current_position_x*math.cos(self.current_orientation)))
             rotational_vel = 0.5*(self.desired_orientation - self.current_orientation)
-            
+
             # update desired orientation if we are trying to move forward
-            if (math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2) >= 0.01):
-                self.desired.orientatation = math.atan((self.desired_position_y-self.current_position_y)/(self.desired_position_x-self.current_position_x))
-            
+            if math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2) >= 0.01:
+                self.desired_orientation = math.atan((self.desired_position_y-self.current_position_y)/(self.desired_position_x-self.current_position_x))
+
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, rotational_vel)
-           
+
             # publish the message
             self.pub.publish(msg)
-            
+
             # sleep
             r.sleep()
 
@@ -121,11 +119,11 @@ class Master:
             msg (nav_msgs.msg.Odometry): The current position
 
         """
-        
+
         self.current_position_x = msg.pose.pose.position.x
         self.current_position_y = msg.pose.pose.position.y
         self.current_orientation = math.asin(msg.pose.pose.orientation.z) * 2
-        
+
     def alexa_callback(self, goal):
         """Sets the desired position and orientation 
         The message definition can be found here: http://docs.ros.org/api/move_base_msgs/html/action/MoveBase.html
@@ -134,11 +132,11 @@ class Master:
             msg (move_base_msgs.msg.MoveBaseAction): The desired position
 
         """
-        
+
         self.desired_orientation = self.desired_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
         self.desired_position_x = goal.target_pose.pose.position.x*math.cos(self.desired_orientation)
         self.desired_position_y = goal.target_pose.pose.position.x*math.sin(self.desired_orientation)
-        
+
 
 if __name__ == "__main__":
     try:
@@ -146,5 +144,4 @@ if __name__ == "__main__":
         controller.begin()
     except rospy.ROSInterruptException:
         pass
-        
-    
+
