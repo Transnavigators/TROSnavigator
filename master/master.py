@@ -122,8 +122,8 @@ class Master:
 
         """
         
-        self.current_position_x = msg.pose.pose.point.x
-        self.current_position_y = msg.pose.pose.point.y
+        self.current_position_x = msg.pose.pose.position.x
+        self.current_position_y = msg.pose.pose.position.y
         self.current_orientation = math.asin(msg.pose.pose.orientation.z) * 2
         
     def alexa_callback(self, goal):
