@@ -22,7 +22,7 @@ class Master:
         rospy.init_node("master", anonymous=True)
         rospy.Subscriber("odom", Odometry, self.odometry_callback)
         self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=50)
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback)
+        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback, False)
 
         # get publish rate and PID constants
         self.rate = rospy.get_param("~rate", 100)
@@ -39,6 +39,7 @@ class Master:
         self.desired_position_x = 0.0
         self.desired_position_y = 0.0
         self.desired_orientation = 0.0
+        self.action_server.start()
 
     def begin(self):
         """Sends velocities to the motors depending on the current and desired positions and orientations
