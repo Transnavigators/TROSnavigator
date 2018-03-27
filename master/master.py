@@ -129,13 +129,13 @@ class Master:
         The message definition can be found here: http://docs.ros.org/api/move_base_msgs/html/action/MoveBase.html
         
         Args:
-            msg (move_base_msgs.msg.MoveBaseAction): The desired position
+            goal (move_base_msgs.msg.MoveBaseAction): The desired position
 
         """
 
         self.desired_orientation = self.desired_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
-        self.desired_position_x = goal.target_pose.pose.position.x*math.cos(self.desired_orientation)
-        self.desired_position_y = goal.target_pose.pose.position.x*math.sin(self.desired_orientation)
+        self.desired_position_x = self.desired_position_x + goal.target_pose.pose.position.x*math.cos(self.desired_orientation)
+        self.desired_position_y = self.desired_position_y + goal.target_pose.pose.position.x*math.sin(self.desired_orientation)
 
 
 if __name__ == "__main__":
