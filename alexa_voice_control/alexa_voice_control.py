@@ -74,7 +74,7 @@ class Alexa:
                 angle = 90
             if 'direction' in data and data['direction'] == 'left':
                 angle = -angle
-            goal.target_pose.pose.orientation = Quaternion(math.cos(angle/2), 0, 0, math.sin(angle/2))
+            goal.target_pose.pose.orientation = Quaternion(0, 0,  math.sin(angle/2), math.cos(angle/2))
 
         # Stop the wheelchair
         elif data['type'] == 'stop':
