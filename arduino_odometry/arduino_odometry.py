@@ -114,7 +114,7 @@ class ArduinoOdometry:
                 delta_left = (new_left - old_left) * self.meters_per_pulse  # m
                 delta_right = (new_right - old_right) * self.meters_per_pulse  # m
 
-                d = (delta_left + delta_right) / self.width
+                d = (delta_left + delta_right) / 2
                 th = (delta_right - delta_left) / self.width
                 self.dx = d / delta_time
                 self.dr = th / delta_time
