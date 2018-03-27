@@ -32,14 +32,14 @@ class Master:
         # self.Kd = rospy.get_param("~integral_contant", 1.0)
         
         # current positions
-        self.desired_position_x = 0.0
-        self.desired_position_y = 0.0
-        self.desired_orientation = 0.0
+        self.current_position_x = 0.0
+        self.current_position_y = 0.0
+        self.current_orientation = 0.0
         
         # desired positions
         self.desired_position_x = 0.0
         self.desired_position_y = 0.0
-        self.current_orientation = 0.0
+        self.desired_orientation = 0.0
         
     def begin(self):
         """Sends velocities to the motors depending on the current and desired positions and orientations
