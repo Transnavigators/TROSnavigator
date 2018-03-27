@@ -8,7 +8,6 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Vector3
 
 
-
 class Master:
     """Master Node
     
@@ -112,8 +111,7 @@ class Master:
             
             # sleep
             r.sleep()
-           
-        
+
     def odometry_callback(self, msg):
         """Updates the current position and orientation 
         
@@ -124,9 +122,9 @@ class Master:
 
         """
         
-        self.current_position_x = msg.pose.point.x
-        self.current_position_y = msg.pose.point.y
-        self.current_orientation = math.asin(msg.pose.orientation.z) * 2
+        self.current_position_x = msg.pose.pose.point.x
+        self.current_position_y = msg.pose.pose.point.y
+        self.current_orientation = math.asin(msg.pose.pose.orientation.z) * 2
         
     def alexa_callback(self, goal):
         """Sets the desired position and orientation 
