@@ -5,7 +5,7 @@ import actionlib
 import math
 from move_base_msgs.msg import MoveBaseAction
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Vector3
 
 
 
@@ -32,20 +32,20 @@ class Master:
         # self.Kd = rospy.get_param("~integral_contant", 1.0)
         
         # current positions
-        self.desired.position.x = 0.0
-        self.desired.position.y = 0.0
-        self.desired.orientation = 0.o
+        self.desired_position_x = 0.0
+        self.desired_position_y = 0.0
+        self.desired_orientation = 0.0
         
         # desired positions
-        self.desired.position.x = 0.0
-        self.desired.position.y = 0.0
-        self.current.orientation = 0.0
+        self.desired_position_x = 0.0
+        self.desired_position_y = 0.0
+        self.current_orientation = 0.0
         
     def begin(self):
         """Sends velocities to the motors depending on the current and desired positions and orientations
         
         """
-        r = rospy.Rate(self.rate):
+        r = rospy.Rate(self.rate)
         
         # # integral sum
         # self.forward_integral = 0.0
@@ -83,7 +83,7 @@ class Master:
             # forward_output = Kp*forward_error+Ki*forward_integral + Kd*forward_derivative
             
             # # orientation PID
-            # orientation_error = self.desired.orientation - self.current.orientation
+            # orientation_error = self.desired_orientation - self.current_orientation
             # orientation_integral = orientation_integral + (orientation_error*time_diff)
             # orientation_derivative = orientation_error - old_orientation_error)/time_diff
             # orientation_output = Kp*orientation_error+Ki*orientation_integral + Kd*orientation_derivative
@@ -96,12 +96,12 @@ class Master:
             
             
             # lets do simple positional control for now
-            forward_vel = 0.5*((self.desired.position.x*math.cos(self.current.orientation)+self.desired.position.y*math.sin(self.current.orientation)) - (self.current.position.x*math.cos(self.current.orientation) + self.current.position.x*math.cos(self.current.orientation)))
-            rotational_vel = 0.5*(self.desired.orientation - self.current.orientation)
+            forward_vel = 0.5*((self.desired_position_x*math.cos(self.current_orientation)+self.desired_position_y*math.sin(self.current_orientation)) - (self.current_position_x*math.cos(self.current_orientation) + self.current_position_x*math.cos(self.current_orientation)))
+            rotational_vel = 0.5*(self.desired_orientation - self.current_orientation)
             
             # update desired orientation if we are trying to move forward
-            if (math.sqrt((self.desired.position.x-self.current.position.x)**2+(self.desired.position.y-self.current.position.y)**2) >= 0.01):
-                self.desired.orientatation = math.atan((self.desired.position.y-self.current.position.y)/(self.desired.position.x-self.current.position.x))
+            if (math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2) >= 0.01):
+                self.desired.orientatation = math.atan((self.desired_position_y-self.current_position_y)/(self.desired_position_x-self.current_position_x))
             
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
@@ -124,9 +124,9 @@ class Master:
 
         """
         
-        self.current.position.x = msg.pose.point.x
-        self.current.position.y = msg.pose.point.y
-        self.current.orientation = math.asin(msg.pose.orientation.z) * 2
+        self.current_position_x = msg.pose.point.x
+        self.current_position_y = msg.pose.point.y
+        self.current_orientation = math.asin(msg.pose.orientation.z) * 2
         
     def alexa_callback(self, goal):
         """Sets the desired position and orientation 
@@ -137,9 +137,9 @@ class Master:
 
         """
         
-        self.desired.orientation = self.desired.orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
-        self.desired.position.x = goal.target_pose.pose.position.x*math.cos(self.desired.orientation)
-        self.desired.position.y = goal.target_pose.pose.position.x*math.sin(self.desired.orientation)
+        self.desired_orientation = self.desired_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
+        self.desired_position_x = goal.target_pose.pose.position.x*math.cos(self.desired_orientation)
+        self.desired_position_y = goal.target_pose.pose.position.x*math.sin(self.desired_orientation)
         
 
 if __name__ == "__main__":

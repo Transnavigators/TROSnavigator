@@ -82,5 +82,5 @@
         <param name="initial_cov_yy" value="5.0"/>
         <param name="initial_cov_aa" value="39.48"/>
     </node>
-    <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="0.04445 0 0 0 0 0 1 neato_scan base_link 100"/>
+    <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="0.04445 0 0 0 0 0 1 base_footprint neato_laser 100"/>
 </launch>
