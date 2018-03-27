@@ -137,7 +137,7 @@ class Master:
 
         """
         
-        self.desired.orientation = math.asin(goal.target_pose.pose.orientation.z) * 2
+        self.desired.orientation = self.desired.orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
         self.desired.position.x = goal.target_pose.pose.position.x*math.cos(self.desired.orientation)
         self.desired.position.y = goal.target_pose.pose.position.x*math.sin(self.desired.orientation)
         
