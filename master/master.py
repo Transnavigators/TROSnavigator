@@ -102,11 +102,11 @@ class Master:
             #                   - (self.current_position_x/math.cos(self.current_orientation) + self.current_position_x/math.cos(self.current_orientation)))
 
             # update desired orientation if we are trying to move forward
-            if math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2) >= 0.01:
+            dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
+            if dist >= 0.01:
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                 #forward_vel = 1.1
-                forward_vel = min(1.1, 0.5*((self.desired_position_x/math.cos(self.current_orientation)+self.desired_position_y/math.sin(self.current_orientation))
-                                - (self.current_position_x/math.cos(self.current_orientation) + self.current_position_x/math.cos(self.current_orientation))))
+                forward_vel = min(1.1, 0.5*dist)
             else:
                 forward_vel = 0
                 if self.recv_msg:
