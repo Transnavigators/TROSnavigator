@@ -116,6 +116,9 @@ class ArduinoOdometry:
 
                 d = (delta_left + delta_right) / 2
                 th = (delta_right - delta_left) / self.width
+                if d / delta_time > 10:
+                    # Ignore the input if the speed is above 10m/s
+                    continue
                 self.dx = d / delta_time
                 self.dr = th / delta_time
                 old_left = new_left
