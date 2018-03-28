@@ -113,7 +113,7 @@ class Master:
                         self.action_server.set_succeeded()
                         self.recv_msg = False
             else:
-                rotational_vel = 0.05 * (self.desired_orientation - self.current_orientation)
+                rotational_vel = min(0.75, -0.05 * (self.desired_orientation - self.current_orientation))
 
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
