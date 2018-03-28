@@ -146,7 +146,7 @@ class ArduinoOdometry:
             # Update odom message and send it
             odom.pose.pose.position.x = self.x
             odom.pose.pose.position.y = self.y
-            odom.twist.twist.linear.x = -self.dx / 2
+            odom.twist.twist.linear.x = -self.dx
             odom.twist.twist.angular.z = self.dr
             odom.pose.pose.orientation = odom_quat
             self.pub.publish(odom)
