@@ -103,18 +103,19 @@ class Master:
 
             # update desired orientation if we are trying to move forward
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
-            if abs(self.desired_orientation - self.current_orientation) < math.pi/180:
-                if dist >= 0.03:
+            orientation_err = abs(self.desired_orientation - self.current_orientation)
+            if orientation_err < 0.01:
+                if dist >= 0.05:
                     self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                     forward_vel = min(1.1, 0.2*dist)
                 else:
-                    forward_vel = 0
                     if self.recv_msg:
                         self.action_server.set_succeeded()
                         self.recv_msg = False
+                    continue
             else:
-                rotational_vel = min(0.75, -0.05 * (self.desired_orientation - self.current_orientation))
-
+                rotational_vel = min(0.75, 0.05 * (self.desired_orientation - self.current_orientation))
+            rospy.loginfo_throttle(1, "Dist=%f Forward vel=%f Rotational vel=%f" % (dist, forward_vel, rotational_vel))
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, rotational_vel)
