@@ -96,13 +96,15 @@ class Master:
 
             # lets do simple positional control for now
             #if abs(self.desired_position_x - self.current_orientation)
-            #forward_vel = 0.5*((self.desired_position_x*math.cos(self.current_orientation)+self.desired_position_y*math.sin(self.current_orientation))
-            #                   - (self.current_position_x*math.cos(self.current_orientation) + self.current_position_x*math.cos(self.current_orientation)))
+            #forward_vel = 0.5*((self.desired_position_x/math.cos(self.current_orientation)+self.desired_position_y/math.sin(self.current_orientation))
+            #                   - (self.current_position_x/math.cos(self.current_orientation) + self.current_position_x/math.cos(self.current_orientation)))
 
             # update desired orientation if we are trying to move forward
             if math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2) >= 0.01:
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
-                forward_vel = 1.1
+                #forward_vel = 1.1
+                forward_vel = 0.5*((self.desired_position_x/math.cos(self.current_orientation)+self.desired_position_y/math.sin(self.current_orientation))
+                                - (self.current_position_x/math.cos(self.current_orientation) + self.current_position_x/math.cos(self.current_orientation)))
             else:
                 forward_vel = 0
             if abs(self.desired_orientation - self.current_orientation) > math.pi/180:
@@ -147,8 +149,8 @@ class Master:
         """
 
         self.desired_orientation = self.desired_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
-        self.desired_position_x = self.desired_position_x + goal.target_pose.pose.position.x*math.cos(self.desired_orientation)
-        self.desired_position_y = self.desired_position_y + goal.target_pose.pose.position.x*math.sin(self.desired_orientation)
+        self.desired_position_x = self.desired_position_x + goal.target_pose.pose.position.x*math.cos(self.current_orientation)
+        self.desired_position_y = self.desired_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
 
 
 if __name__ == "__main__":
