@@ -107,6 +107,7 @@ class Master:
                                 - (self.current_position_x/math.cos(self.current_orientation) + self.current_position_x/math.cos(self.current_orientation))))
             else:
                 forward_vel = 0
+                self.action_server.set_succeeded()
             if abs(self.desired_orientation - self.current_orientation) > math.pi/180:
                 rotational_vel = 0.5 * (self.desired_orientation - self.current_orientation)
 
