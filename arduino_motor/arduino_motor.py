@@ -78,7 +78,7 @@ class ArduinoMotor:
         self.right = 1.0 * dx + dr * self.width / 2
         self.left = 1.0 * dx - dr * self.width / 2
         if dx != 0 or dr != 0:
-            rospy.loginfo("linear.x = " + str(dx) + " angular.z: " + str(dr))
+            rospy.loginfo_throttle(1, "linear.x = " + str(dx) + " angular.z: " + str(dr))
 
     # send data to arduino
     def send_speed_to_motor(self, m1, m2):
