@@ -39,6 +39,7 @@ class Master:
         self.desired_position_x = 0.0
         self.desired_position_y = 0.0
         self.desired_orientation = 0.0
+        self.first_run = True
         self.action_server.start()
 
     def begin(self):
@@ -94,12 +95,13 @@ class Master:
             ##################################################
 
             # lets do simple positional control for now
+            #if abs(self.desired_position_x - self.current_orientation)
             forward_vel = 0.5*((self.desired_position_x*math.cos(self.current_orientation)+self.desired_position_y*math.sin(self.current_orientation)) - (self.current_position_x*math.cos(self.current_orientation) + self.current_position_x*math.cos(self.current_orientation)))
             rotational_vel = 0.5*(self.desired_orientation - self.current_orientation)
 
             # update desired orientation if we are trying to move forward
             if math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2) >= 0.01:
-                self.desired_orientation = math.atan((self.desired_position_y-self.current_position_y)/(self.desired_position_x-self.current_position_x))
+                self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
 
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
@@ -128,6 +130,11 @@ class Master:
         self.current_position_x = msg.pose.pose.position.x
         self.current_position_y = msg.pose.pose.position.y
         self.current_orientation = math.asin(msg.pose.pose.orientation.z) * 2
+        if self.first_run:
+            self.desired_position_x = self.current_position_x
+            self.desired_position_y = self.current_position_y
+            self.desired_orientation = self.current_orientation
+            self.first_run = False
 
     def alexa_callback(self, goal):
         """Sets the desired position and orientation 
