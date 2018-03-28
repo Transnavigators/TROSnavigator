@@ -104,6 +104,10 @@ class Master:
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, rotational_vel)
+           
+
+
+            rospy.loginfo_throttle(1, "Desired Postion: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
 
             # publish the message
             self.pub.publish(msg)
