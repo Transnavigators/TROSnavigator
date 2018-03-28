@@ -103,7 +103,7 @@ class Master:
 
             # update desired orientation if we are trying to move forward
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
-            if not abs(self.desired_orientation - self.current_orientation) < math.pi/180:
+            if abs(self.desired_orientation - self.current_orientation) < math.pi/180:
                 if dist >= 0.03:
                     self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                     forward_vel = min(1.1, 0.2*dist)
