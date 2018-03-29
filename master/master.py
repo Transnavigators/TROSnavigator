@@ -104,10 +104,10 @@ class Master:
             # update desired orientation if we are trying to move forward
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
             orientation_err = abs(self.desired_orientation - self.current_orientation)
-            if orientation_err < 0.01:
+            if orientation_err < 0.02:
                 if dist >= 0.05:
                     self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
-                    forward_vel = min(1.1, 0.5*dist)
+                    forward_vel = min(1.1, 0.2*dist)
                 else:
                     if self.recv_msg:
                         self.action_server.set_succeeded()
