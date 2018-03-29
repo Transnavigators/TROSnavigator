@@ -1,4 +1,8 @@
 <launch>
+    <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
+        <param name="firmware_version" value="2"/>
+        <param name="port" value="/dev/ttyAMA0"/>
+    </node>
     <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
         <param name="reset_pin" value="4"/>
         <param name="poll_rate" value="10"/>
@@ -17,10 +21,6 @@
     </node>
     <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
         <param name="poll_rate" value="10"/>
-    </node>
-    <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
-        <param name="firmware_version" value="2"/>
-        <param name="port" value="/dev/ttyAMA0"/>
     </node>
     <node name="robot_pose_ekf" pkg="robot_pose_ekf" type="robot_pose_ekf">
         <param name="output_frame" value="odom"/>
