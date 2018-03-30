@@ -21,6 +21,7 @@
     <node name="neato_laser_publisher" pkg="xv_11_laser_driver" type="neato_laser_publisher">
         <param name="firmware_version" value="2"/>
         <param name="port" value="/dev/ttyAMA0"/>
+        <param name="frame_id" value="neato_laser"/>
     </node>
     <node name="robot_pose_ekf" pkg="robot_pose_ekf" type="robot_pose_ekf">
         <param name="output_frame" value="odom"/>
