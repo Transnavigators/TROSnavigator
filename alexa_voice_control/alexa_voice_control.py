@@ -54,7 +54,8 @@ class Alexa:
         goal.target_pose.header.frame_id = "base_link"
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.pose.position.z = 0
-
+        goal.target_pose.pose.position = Point(0, 0, 0)
+        goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
         # Move forward
         if data['type'] == 'forward':
             if 'distance' in data and 'distanceUnit' in data:
@@ -77,9 +78,9 @@ class Alexa:
             goal.target_pose.pose.orientation = Quaternion(0, 0,  math.sin(angle/2), math.cos(angle/2))
 
         # Stop the wheelchair
-        elif data['type'] == 'stop':
-            goal.target_pose.pose.position = Point(0, 0, 0)
-            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
+        # data['type'] == 'stop':
+            # goal.target_pose.pose.position = Point(0, 0, 0)
+            # goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
 
         # Go to the localino tag
         elif data['type'] == 'locateme' and self.tf.frameExists("/base_link") and self.tf.frameExists(
@@ -87,9 +88,10 @@ class Alexa:
             t = self.tf.getLatestCommonTime("/base_link", '/tag_' + self.tag_id)
             pos, quat = self.tf.lookupTransform("/base_link", "/tag_" + self.tag_id, t)
 
-            # Go to the target, don't care about rotation
+            # Go to the target, rotation is the vector from here to the tag
             goal.target_pose.pose.position = pos
-            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
+            dist = math.sqrt(pos.x ** 2 + pos.y ** 2)
+            goal.target_pose.pose.orientation = Quaternion(0, 0, pos.y / dist, pos.x / dist)
 
         # Go to the static landmark
         elif data['type'] == 'moveto' and self.tf.frameExists("/map") and self.tf.frameExists(
@@ -97,9 +99,11 @@ class Alexa:
             t = self.tf.getLatestCommonTime("/base_link", "/%s" % str(data['location']))
             pos, quat = self.tf.lookupTransform("/base_link", "/%s" % str(data['location']), t)
 
-            # Go to the target, don't care about rotation
+            # Go to the target, rotation is the vector from here to the location
             goal.target_pose.pose.position = pos
-            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
+            dist = math.sqrt(pos.x**2+pos.y**2)
+            goal.target_pose.pose.orientation = Quaternion(0, 0, pos.y/dist, pos.x/dist)
+
         else:
             rospy.logerr("Could not find transform from base_link to map")
 
