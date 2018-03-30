@@ -33,8 +33,8 @@
         <param name="debug" value="false"/>
         <param name="self_diagnose" value="true"/>
     </node>
-    <arg name="map_file" default="$(find nav_config)/shiley3.yaml"/>
-    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="false"/>
+    <!--<arg name="map_file" default="$(find nav_config)/shiley3.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="false"/>-->
     <node name="move_base" pkg="move_base" type="move_base" respawn="false" output="screen">
         <rosparam file="$(find nav_config)/move_base_params.yaml"/>
         <rosparam file="$(find nav_config)/costmap_common_params.yaml"  ns="global_costmap"/>
