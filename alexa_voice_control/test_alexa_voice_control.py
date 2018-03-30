@@ -25,13 +25,13 @@ class TestAlexaVoiceControl(unittest.TestCase):
         # list of poses and their result
         # TODO: UPDATE POSES with expected results
         self.pose_list = [
-            (json.dumps({"type": "forward"}), [100000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            (json.dumps({"type": "forward"}), [100000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
             (json.dumps({"type": "stop"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
-            (json.dumps({"type": "turn"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            (json.dumps({"type": "turn"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
             (json.dumps({"type": "forward", "distance": 10, "distanceUnit": "meters"}),
-             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+             [10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
             (json.dumps({"type": "turn", "direction": "left", "angle": 45, "angleUnit": "degrees"}),
-             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+             [0.0, 0.0, 0.0, 0.0, 0.0, -0.383, 0.924])
         ]
         self.current_pose = 0
 
@@ -62,10 +62,10 @@ class TestAlexaVoiceControl(unittest.TestCase):
             if pose[1][0] == goal.target_pose.pose.position.x \
                     and pose[1][1] == goal.target_pose.pose.position.y \
                     and pose[1][2] == goal.target_pose.pose.position.z \
-                    and pose[1][3] == goal.target_pose.pose.orientation.x \
-                    and pose[1][4] == goal.target_pose.pose.orientation.y \
-                    and pose[1][5] == goal.target_pose.pose.orientation.z \
-                    and pose[1][6] == goal.target_pose.pose.orientation.w:
+                    and abs(pose[1][3]-goal.target_pose.pose.orientation.x) < 0.01 \
+                    and abs(pose[1][4]-goal.target_pose.pose.orientation.y) < 0.01 \
+                    and abs(pose[1][5]-goal.target_pose.pose.orientation.z) < 0.01 \
+                    and abs(pose[1][6]-goal.target_pose.pose.orientation.w) < 0.01:
 
                 # idk why this is needed
                 # self.action_server.set_succeeded()
