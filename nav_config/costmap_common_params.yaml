@@ -2,8 +2,8 @@ map_type: costmap
 obstacle_range: 6.0
 raytrace_range: 3.0
 transform_tolerance: 0.2
-footprint: [[0.381, 0.3937], [0.381, -0.3937], [-0.381, 0.3937], [-0.381,-0.3937]]
-inflation_radius: 0.25
+footprint: [[0.4, 0.4], [0.4, -0.4], [-0.4, 0.4], [-0.4, -0.4]]
+inflation_radius: 0.4
 
 observation_sources: laser_scan_sensor
 
