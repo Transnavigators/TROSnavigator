@@ -181,7 +181,7 @@ class Master:
         self.desired_orientation = self.desired_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
         self.desired_position_x = self.desired_position_x + goal.target_pose.pose.position.x*math.cos(self.current_orientation)
         self.desired_position_y = self.desired_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
-        rospy.loginfo("Desired position offset %f", goal.target_pose.pos.position.x)
+        rospy.loginfo("Desired position offset %f", goal.target_pose.pose.position.x)
         
         self.action_server.set_succeeded()
         self.recv_msg = True
