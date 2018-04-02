@@ -21,38 +21,38 @@ class TestAlexaVoiceControl(unittest.TestCase):
     def test_one_equals_one(self):
         self.assertEquals(1, 1, "1!=1")
 
-    def test_alexa(self):
-        # list of poses and their result
-        # TODO: UPDATE POSES with expected results
-        self.pose_list = [
-            (json.dumps({"type": "forward"}), [100000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
-            (json.dumps({"type": "stop"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
-            (json.dumps({"type": "turn"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
-            (json.dumps({"type": "forward", "distance": 10, "distanceUnit": "meters"}),
-             [10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
-            (json.dumps({"type": "turn", "direction": "left", "angle": 45, "angleUnit": "degrees"}),
-             [0.0, 0.0, 0.0, 0.0, 0.0, -0.383, 0.924])
-        ]
-        self.current_pose = 0
+    # def test_alexa(self):
+        # # list of poses and their result
+        # # TODO: UPDATE POSES with expected results
+        # self.pose_list = [
+            # (json.dumps({"type": "forward"}), [100000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
+            # (json.dumps({"type": "stop"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
+            # (json.dumps({"type": "turn"}), [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
+            # (json.dumps({"type": "forward", "distance": 10, "distanceUnit": "meters"}),
+             # [10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
+            # (json.dumps({"type": "turn", "direction": "left", "angle": 45, "angleUnit": "degrees"}),
+             # [0.0, 0.0, 0.0, 0.0, 0.0, -0.383, 0.924])
+        # ]
+        # self.current_pose = 0
 
-        # set up aws iot
+        # # set up aws iot
 
-        self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
-        # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
+        # self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.callback)
+        # # sub = rospy.Subscriber("/cmd_vel/goal", MoveBaseAction, self.callback)
 
-        # start client
-        rospy.sleep(3)
-        self.done = False
+        # # start client
+        # rospy.sleep(3)
+        # self.done = False
 
-        # test 
-        message = self.pose_list[self.current_pose][0]
-        rospy.loginfo("Sending " + message)
-        self.current_pose += 1
-        aws_iot_mqtt_client.publish(topic, message, 1)
+        # # test 
+        # message = self.pose_list[self.current_pose][0]
+        # rospy.loginfo("Sending " + message)
+        # self.current_pose += 1
+        # aws_iot_mqtt_client.publish(topic, message, 1)
 
-        # wait for tests to finish
-        rospy.sleep(5)
-        self.assertTrue(self.done)
+        # # wait for tests to finish
+        # rospy.sleep(5)
+        # self.assertTrue(self.done)
 
     def callback(self, goal):
         rospy.loginfo("In callback")
