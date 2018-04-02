@@ -109,7 +109,7 @@ class Master:
             if orientation_err > math.pi:
                 orientation_err = orientation_err - 2*math.pi
             elif orientation_err < -math.pi:
-                orientation_erro = orientation_err + 2*math.pi
+                orientation_err = orientation_err + 2*math.pi
             
 
             # we are trying to move forward
