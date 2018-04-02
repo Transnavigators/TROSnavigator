@@ -78,9 +78,9 @@ class Alexa:
             goal.target_pose.pose.orientation = Quaternion(0, 0,  math.sin(angle/2), math.cos(angle/2))
 
         # Stop the wheelchair
-        # data['type'] == 'stop':
-            # goal.target_pose.pose.position = Point(0, 0, 0)
-            # goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
+        elif data['type'] == 'stop':
+            goal.target_pose.pose.position = Point(0, 0, 0)
+            goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
 
         # Go to the localino tag
         elif data['type'] == 'locateme' and self.tf.frameExists("/base_link") and self.tf.frameExists(
@@ -106,6 +106,7 @@ class Alexa:
 
         else:
             rospy.logerr("Could not find transform from base_link to map")
+            return
 
         self.action_client.send_goal(goal)
 
