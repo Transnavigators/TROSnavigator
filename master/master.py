@@ -108,7 +108,7 @@ class Master:
             orientation_err = (self.desired_orientation - self.current_orientation)
             if orientation_err > math.pi:
                 orientation_err = orientation_err - 2*math.pi
-            elif orientation_err < -math.pi
+            elif orientation_err < -math.pi:
                 orientation_erro = orientation_err + 2*math.pi
             
 
