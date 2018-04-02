@@ -1,52 +1,233 @@
 #!/usr/bin/env python
+
+"""
+   diff_tf.py - follows the output of a wheel encoder and
+   creates tf and odometry messages.
+   some code borrowed from the arbotix diff_controller script
+   A good reference: http://rossum.sourceforge.net/papers/DiffSteer/
+   
+    Copyright (C) 2012 Jon Stephan. 
+     
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   
+   ----------------------------------
+   Portions of this code borrowed from the arbotix_python diff_controller.
+   
+diff_controller.py - controller for a differential drive
+  Copyright (c) 2010-2011 Vanadium Labs LLC.  All right reserved.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+      * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+      * Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+      * Neither the name of Vanadium Labs LLC nor the names of its 
+        contributors may be used to endorse or promote products derived 
+        from this software without specific prior written permission.
+  
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL VANADIUM LABS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
+import rospy
+#import roslib
+#roslib.load_manifest('differential_drive')
+from math import sin, cos, pi
+
+from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+from tf.broadcaster import TransformBroadcaster
+from std_msgs.msg import Int16, Int64
 import smbus
 import struct
-import rospy
-import math
-import tf
-import sys
-from geometry_msgs.msg import Twist, TransformStamped, Quaternion
-from nav_msgs.msg import Odometry
 
+#############################################################################
+class DiffTf:
+#############################################################################
 
-class ArduinoOdometry:
-    """Reads encoder data from the Arduino and publishes it as a transform and on the odom topic
-    
-    """
-
+    #############################################################################
     def __init__(self):
-        # Initialize the serial port
-        rospy.init_node('arduino_odometry', anonymous=True)
-
+    #############################################################################
+        rospy.init_node("odometry")
+        self.nodename = rospy.get_name()
+        rospy.loginfo("-I- %s started" % self.nodename)
+        
+        
         # Setup I2C variables
         self.encoder_cmd = ord('e')
         self.address = int(rospy.get_param("~address", 0x04))
-
-        # The width between the wheels
-        self.width = float(rospy.get_param("~width", 31.5 * 0.0254))
-        self.radius = self.width / 2.0
-
+        self.bus = smbus.SMBus(1)
+        
+        #### parameters #######
+        self.rate = rospy.get_param('~rate',10.0)  # the rate at which to publish the transform
         # Constant distance travelled per pulse of the encoder
         # 6" diameter wheel, 4096 pulses per revolution
-        self.meters_per_pulse = float(rospy.get_param("~meters_per_pulse", 2 * math.pi * (6 / 2) * 0.0254 / 4096))
-        self.rate = rospy.Rate(float(rospy.get_param("~poll_rate", 10)))
-
-        self.x = 0
+        self.ticks_meter = float(rospy.get_param('ticks_meter', 4096 / (6 * pi *0.0254)))  # The number of wheel encoder ticks per meter of travel
+        self.base_width = float(rospy.get_param('~base_width', 31.5 * 0.0254)) # The wheel base width in meters
+        
+        self.base_frame_id = rospy.get_param('~base_frame_id','base_footprint') # the name of the base frame of the robot
+        self.odom_frame_id = rospy.get_param('~odom_frame_id', 'odom') # the name of the odometry reference frame
+        
+        self.encoder_min = rospy.get_param('encoder_min', -2147483648)
+        self.encoder_max = rospy.get_param('encoder_max', 2147483648)
+        self.encoder_low_wrap = rospy.get_param('wheel_low_wrap', (self.encoder_max - self.encoder_min) * 0.3 + self.encoder_min )
+        self.encoder_high_wrap = rospy.get_param('wheel_high_wrap', (self.encoder_max - self.encoder_min) * 0.7 + self.encoder_min )
+ 
+        self.t_delta = rospy.Duration(1.0/self.rate)
+        self.t_next = rospy.Time.now() + self.t_delta
+        
+        # internal data
+        self.enc_left = None        # wheel encoder readings
+        self.enc_right = None
+        self.left = 0               # actual values coming back from robot
+        self.right = 0
+        self.lmult = 0
+        self.rmult = 0
+        self.prev_lencoder = 0
+        self.prev_rencoder = 0
+        self.x = 0                  # position in xy plane 
         self.y = 0
         self.th = 0
-        self.dx = 0
+        self.dx = 0                 # speeds in x/rotation
         self.dr = 0
+        self.then = rospy.Time.now()
+        
+        # subscriptions
+        self.odomPub = rospy.Publisher("odom", Odometry,queue_size=10)
+        self.odomBroadcaster = TransformBroadcaster()
+        
+    #############################################################################
+    def spin(self):
+    #############################################################################
+        r = rospy.Rate(self.rate)
+        while not rospy.is_shutdown():
+            self.update()
+            r.sleep()
+       
+     
+    #############################################################################
+    def update(self):
+    #############################################################################
+    
+        l,r = self.read_encoders()
+        self.lwheelCallback(l)
+        self.rwheelCallback(r)
+    
+        now = rospy.Time.now()
+        if now > self.t_next:
+            elapsed = now - self.then
+            self.then = now
+            elapsed = elapsed.to_sec()
+            
 
-        is_virtual = int(rospy.get_param("~is_virtual", 0))
-        # Setup the i2c bus
-        if is_virtual:
-            self.bus = smbus.SMBus(0)
-        else:
-            rospy.sleep(4.0)
-            self.bus = smbus.SMBus(1)
+            # calculate odometry
+            if self.enc_left == None:
+                d_left = 0
+                d_right = 0
+            else:
+                d_left = (self.left - self.enc_left) / self.ticks_meter
+                d_right = (self.right - self.enc_right) / self.ticks_meter
+            self.enc_left = self.left
+            self.enc_right = self.right
+           
+            # distance traveled is the average of the two wheels 
+            d = ( d_left + d_right ) / 2
+            # this approximation works (in radians) for small angles
+            th = ( d_right - d_left ) / self.base_width
+            # calculate velocities
+            self.dx = d / elapsed
+            self.dr = th / elapsed
+           
 
-        self.odom_broadcaster = tf.TransformBroadcaster()
-        self.pub = rospy.Publisher("odom", Odometry, queue_size=50)
+             
+            if (d != 0):
+                # calculate distance traveled in x and y
+                x = cos( th ) * d
+                y = -sin( th ) * d
+                # calculate the final position of the robot
+                self.x = self.x + ( cos( self.th ) * x - sin( self.th ) * y )
+                self.y = self.y + ( sin( self.th ) * x + cos( self.th ) * y )
+            if( th != 0):
+                self.th = self.th + th
+                
+            # publish the odom information
+            quaternion = Quaternion()
+            quaternion.x = 0.0
+            quaternion.y = 0.0
+            quaternion.z = sin( self.th / 2 )
+            quaternion.w = cos( self.th / 2 )
+            self.odomBroadcaster.sendTransform(
+                (self.x, self.y, 0),
+                (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
+                rospy.Time.now(),
+                self.base_frame_id,
+                self.odom_frame_id
+                )
+            
+            odom = Odometry()
+            odom.header.stamp = now
+            odom.header.frame_id = self.odom_frame_id
+            odom.pose.pose.position.x = self.x
+            odom.pose.pose.position.y = self.y
+            odom.pose.pose.position.z = 0
+            odom.pose.pose.orientation = quaternion
+            odom.child_frame_id = self.base_frame_id
+            odom.twist.twist.linear.x = self.dx
+            odom.twist.twist.linear.y = 0
+            odom.twist.twist.angular.z = self.dr
+            self.odomPub.publish(odom)
+            
+            
+
+
+    #############################################################################
+    def lwheelCallback(self, msg):
+    #############################################################################
+        enc = msg
+        if (enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap):
+            self.lmult = self.lmult + 1
+            
+        if (enc > self.encoder_high_wrap and self.prev_lencoder < self.encoder_low_wrap):
+            self.lmult = self.lmult - 1
+            
+        self.left = 1.0 * (enc + self.lmult * (self.encoder_max - self.encoder_min)) 
+
+
+        self.prev_lencoder = enc
+        
+    #############################################################################
+    def rwheelCallback(self, msg):
+    #############################################################################
+        enc = msg
+        if(enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap):
+            self.rmult = self.rmult + 1
+        
+        if(enc > self.encoder_high_wrap and self.prev_rencoder < self.encoder_low_wrap):
+            self.rmult = self.rmult - 1
+            
+        self.right = 1.0 * (enc + self.rmult * (self.encoder_max - self.encoder_min))
+
+
+        self.prev_rencoder = enc
 
     # get data from Arduino
     def read_encoders(self):
@@ -60,104 +241,9 @@ class ArduinoOdometry:
 
         return left, right
 
-    # start the node: spin forever
-    def begin(self):
-        """Keeps reading the encoder, determines the new position and velocity, and publishes it to the odom topic
-
-        """
-        old_left = 0
-        old_right = 0
-        previous_time = 0
-
-        while not rospy.is_shutdown():
-            now = rospy.Time.now()
-
-            # Construct Odom message
-            odom = Odometry()
-            odom.header.stamp = now
-            odom.header.frame_id = "odom"
-            odom.child_frame_id = "base_link"
-
-            # set the position
-            odom.pose.pose.position.z = 0.0
-            odom.twist.twist.linear.y = 0.0
-
-            # Set covariances, from turtlebot
-            # TODO: find actual covariances
-            odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                    0, 1e-3, 1e-9, 0, 0, 0,
-                                    0, 0, 1e6, 0, 0, 0,
-                                    0, 0, 0, 1e6, 0, 0,
-                                    0, 0, 0, 0, 1e6, 0,
-                                    0, 0, 0, 0, 0, 1e-9]
-            odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                     0, 1e-3, 1e-9, 0, 0, 0,
-                                     0, 0, 1e6, 0, 0, 0,
-                                     0, 0, 0, 1e6, 0, 0,
-                                     0, 0, 0, 0, 1e6, 0,
-                                     0, 0, 0, 0, 0, 1e-9]
-
-            odom_quat = Quaternion()
-            odom_quat.x = 0.0
-            odom_quat.y = 0.0
-
-            try:
-                # read encoders
-                new_left, new_right = self.read_encoders()
-                rospy.loginfo_throttle(1, "Left count: " + str(new_left) + " | Right count: " + str(new_right))
-
-                current_time = rospy.get_time()
-                # adapted from Mastering ROS for Robotics Programming page 303-306
-                # https://github.com/qboticslabs/mastering_ros/blob/master/chapter_9_codes/chefbot_navig_cpp/src/diff_tf.cpp
-                ##################################################################
-                delta_time = current_time - previous_time
-                delta_left = (new_left - old_left) * self.meters_per_pulse  # m
-                delta_right = (new_right - old_right) * self.meters_per_pulse  # m
-
-                d = (delta_left + delta_right) / 2
-                th = (delta_right - delta_left) / self.width
-                if d / delta_time > 10:
-                    # Ignore the input if the speed is above 10m/s
-                    continue
-                self.dx = d / delta_time
-                self.dr = th / delta_time
-                old_left = new_left
-                old_right = new_right
-                previous_time = current_time
-                if d != 0:
-                    x = math.cos(th) * d
-                    y = -math.sin(th) * d
-                    self.x = self.x + (math.cos(self.th) * x - math.sin(self.th) * y)
-                    self.y = self.y + (math.sin(self.th) * x + math.cos(self.th) * y)
-                if th != 0:
-                    self.th = self.th + th
-                rospy.loginfo_throttle(1, "dLeft=%f dRight=%f th=%f x=%f y=%f dx=%f dr=%f" % (
-                    delta_left, delta_right, th, self.x, self.y, self.dx, self.dr))
-                # update odom quaternion
-                odom_quat.w = math.cos(th / 2)
-                odom_quat.z = math.sin(th / 2)
-            except IOError as e:
-                rospy.logwarn(e)
-                odom_quat.w = 1.0
-                odom_quat.z = 0.0
-            # send the transform
-            self.odom_broadcaster.sendTransform((self.x, self.y, 0.0), [0.0, 0.0, odom_quat.z, odom_quat.w], now,
-                                                "base_link", "odom")
-            # Update odom message and send it
-            odom.pose.pose.position.x = self.x
-            odom.pose.pose.position.y = self.y
-            odom.twist.twist.linear.x = -self.dx
-            odom.twist.twist.angular.z = self.dr
-            odom.pose.pose.orientation = odom_quat
-            self.pub.publish(odom)
-            self.rate.sleep()
-
-
-if __name__ == "__main__":
-    controller = None
-    try:
-        controller = ArduinoOdometry()
-        controller.begin()
-    except rospy.ROSInterruptException:
-        controller.bus.close()
-        pass
+#############################################################################
+#############################################################################
+if __name__ == '__main__':
+    """ main """
+    diffTf = DiffTf()
+    diffTf.spin()
