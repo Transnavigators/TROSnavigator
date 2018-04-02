@@ -58,7 +58,7 @@ class ArduinoOdometry:
         data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
         left, right = struct.unpack('=ii', bytearray(data[0:8]))
 
-        return -left, -right
+        return left, right
 
     # start the node: spin forever
     def begin(self):
