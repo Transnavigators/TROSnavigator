@@ -104,8 +104,8 @@ class Master:
             
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
             
-            
-            orientation_err = (self.desired_orientation - self.current_orientation)+math.floor((self.desired_orientation - self.current_orientation)/pi)*pi
+            # get delta orientation in the range -pi to pi
+            orientation_err = (self.desired_orientation - self.current_orientation)+math.floor((self.desired_orientation - self.current_orientation)/math.pi)*math.pi
             
 
             # we are trying to move forward
