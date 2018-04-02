@@ -65,14 +65,21 @@ class DiffTf:
     #############################################################################
     def __init__(self):
     #############################################################################
-        rospy.init_node("diff_tf")
+        rospy.init_node("odometry")
         self.nodename = rospy.get_name()
         rospy.loginfo("-I- %s started" % self.nodename)
         
+        
+        # Setup I2C variables
+        self.encoder_cmd = ord('e')
+        self.address = int(rospy.get_param("~address", 0x04))
+        
         #### parameters #######
         self.rate = rospy.get_param('~rate',10.0)  # the rate at which to publish the transform
-        self.ticks_meter = float(rospy.get_param('ticks_meter', 50))  # The number of wheel encoder ticks per meter of travel
-        self.base_width = float(rospy.get_param('~base_width', 0.3)) # The wheel base width in meters
+        # Constant distance travelled per pulse of the encoder
+        # 6" diameter wheel, 4096 pulses per revolution
+        self.ticks_meter = float(rospy.get_param('ticks_meter', 4096 / (6 * pi *0.0254)))  # The number of wheel encoder ticks per meter of travel
+        self.base_width = float(rospy.get_param('~base_width', 31.5 * 0.0254)) # The wheel base width in meters
         
         self.base_frame_id = rospy.get_param('~base_frame_id','base_footprint') # the name of the base frame of the robot
         self.odom_frame_id = rospy.get_param('~odom_frame_id', 'odom') # the name of the odometry reference frame
@@ -102,8 +109,6 @@ class DiffTf:
         self.then = rospy.Time.now()
         
         # subscriptions
-        rospy.Subscriber("lwheel", Int64, self.lwheelCallback)
-        rospy.Subscriber("rwheel", Int64, self.rwheelCallback)
         self.odomPub = rospy.Publisher("odom", Odometry,queue_size=10)
         self.odomBroadcaster = TransformBroadcaster()
         
@@ -119,6 +124,11 @@ class DiffTf:
     #############################################################################
     def update(self):
     #############################################################################
+    
+        l,r = self.read_encoders()
+        lwheelCallback(self,l)
+        lwheelCallback(self,r)
+    
         now = rospy.Time.now()
         if now > self.t_next:
             elapsed = now - self.then
@@ -189,7 +199,7 @@ class DiffTf:
     #############################################################################
     def lwheelCallback(self, msg):
     #############################################################################
-        enc = msg.data
+        enc = msg
         if (enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap):
             self.lmult = self.lmult + 1
             
@@ -204,7 +214,7 @@ class DiffTf:
     #############################################################################
     def rwheelCallback(self, msg):
     #############################################################################
-        enc = msg.data
+        enc = msg
         if(enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap):
             self.rmult = self.rmult + 1
         
@@ -215,6 +225,18 @@ class DiffTf:
 
 
         self.prev_rencoder = enc
+
+    # get data from Arduino
+    def read_encoders(self):
+        """Reads the encoder count from the Arduino using I2C
+        
+        Returns: 
+            tuple: The left and right encoder counts as ints
+        """
+        data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
+        left, right = struct.unpack('=ii', bytearray(data[0:8]))
+
+        return left, right
 
 #############################################################################
 #############################################################################
