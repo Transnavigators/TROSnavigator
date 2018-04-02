@@ -178,7 +178,7 @@ class Master:
 
         """
 
-        self.desired_orientation = self.desired_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
+        self.desired_orientation = self.current_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
         
         # keep theta between -pi and pi
         if self.desired_orientation > math.pi:
@@ -187,16 +187,12 @@ class Master:
             self.desired_orientation = self.desired_orientation + 2*pi
         
         # update desired positions
-        self.desired_position_x = self.desired_position_x + goal.target_pose.pose.position.x*math.cos(self.current_orientation)
-        self.desired_position_y = self.desired_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
+        self.desired_position_x = self.current_position_x + goal.target_pose.pose.position.x*math.cos(self.current_orientation)
+        self.desired_position_y = self.current_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
+        
+        
         rospy.loginfo("Desired position offset %f", goal.target_pose.pose.position.x)
 
-        # special case for stop
-        if goal.target_pose.pose.orientation.z == 1 and goal.target_pose.pose.position.x == 0:
-            self.desired_orientation = self.current_orientation
-            self.desired_position_x = self.current_position_x
-            self.desired_position_y = self.current_position_y
-        
         self.action_server.set_succeeded()
         self.recv_msg = True
 
