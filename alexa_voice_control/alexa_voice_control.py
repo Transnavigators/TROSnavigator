@@ -73,7 +73,7 @@ class Alexa:
                     angle *= self.DEGREES_TO_RAD
             else:
                 angle = 90
-            if 'direction' in data and data['direction'] == 'left':
+            if 'direction' in data and data['direction'] == 'right':
                 angle = -angle
             goal.target_pose.pose.orientation = Quaternion(0, 0,  math.sin(angle/2), math.cos(angle/2))
 
