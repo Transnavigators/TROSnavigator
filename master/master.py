@@ -103,9 +103,9 @@ class Master:
 
             
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
-            orientation_err = abs(self.desired_orientation - self.current_orientation)
             
-
+            
+            orientation_err = (self.desired_orientation - self.current_orientation)+math.floor((self.desired_orientation - self.current_orientation)/pi)*pi
             
 
             # we are trying to move forward
@@ -113,11 +113,11 @@ class Master:
                 # update desired orientation to point in the correct direction
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                 
-                rotational_vel = max(-0.75, min(0.75, 0.3 * (self.desired_orientation - self.current_orientation)))
+                rotational_vel = max(-0.75, min(0.75, 0.3 * (orientation_err)))
                 
                 
                 # make sure we are in the correct orientation before moving forward
-                if orientation_err < 0.087: # 5 degrees
+                if abs(orientation_err < 0.087: # 5 degrees
                     forward_vel = min(1.1, 0.2*dist)
             
             # turn command
@@ -128,8 +128,8 @@ class Master:
                 # continue
             
                 # orientation deadband if we are doing a rotate command
-                if orientation_err >= 0.087: # 5 degrees
-                    rotational_vel = max(-0.75, min(0.75, 0.3 * (self.desired_orientation - self.current_orientation)))
+                if abs(orientation_err) >= 0.087: # 5 degrees
+                    rotational_vel = max(-0.75, min(0.75, 0.3 * (orientation_err)))
                  
             
             
