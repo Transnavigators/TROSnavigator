@@ -101,27 +101,48 @@ class Master:
             # forward_vel = 0.5*((self.desired_position_x/math.cos(self.current_orientation)+self.desired_position_y/math.sin(self.current_orientation))
             #                   - (self.current_position_x/math.cos(self.current_orientation) + self.current_position_x/math.cos(self.current_orientation)))
 
-            # update desired orientation if we are trying to move forward
+            
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
             orientation_err = abs(self.desired_orientation - self.current_orientation)
-            if orientation_err < 0.02:
-                if dist >= 0.05:
-                    self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
+            
+
+            
+
+            # we are trying to move forward
+            if dist >= 0.05: # 5 cm
+                # update desired orientation to point in the correct direction
+                self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
+                
+                rotational_vel = max(-0.75, min(0.75, 0.3 * (self.desired_orientation - self.current_orientation)))
+                
+                
+                # make sure we are in the correct orientation before moving forward
+                if orientation_err < 0.087: # 5 degrees
                     forward_vel = min(1.1, 0.2*dist)
-                else:
-                    if self.recv_msg:
-                        self.action_server.set_succeeded()
-                        self.recv_msg = False
-                    continue
-            rotational_vel = max(-0.75, min(0.75, 0.3 * (self.desired_orientation - self.current_orientation)))
+            
+            # turn command
+            else:
+                # if self.recv_msg:
+                    # self.action_server.set_succeeded()
+                    # self.recv_msg = False
+                # continue
+            
+                # orientation deadband if we are doing a rotate command
+                if orientation_err >= 0.087: # 5 degrees
+                    rotational_vel = max(-0.75, min(0.75, 0.3 * (self.desired_orientation - self.current_orientation)))
+                 
+            
+            
+            
             rospy.loginfo_throttle(1, "Dist=%f Forward vel=%f Rotational vel=%f" % (dist, forward_vel, rotational_vel))
+            
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, rotational_vel)
            
 
 
-            rospy.loginfo_throttle(1, "Desired Postion: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
+            rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
 
             # publish the message
             self.pub.publish(msg)
@@ -160,7 +181,9 @@ class Master:
         self.desired_orientation = self.desired_orientation + math.asin(goal.target_pose.pose.orientation.z) * 2
         self.desired_position_x = self.desired_position_x + goal.target_pose.pose.position.x*math.cos(self.current_orientation)
         self.desired_position_y = self.desired_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
-        rospy.loginfo("Desired position offset %f")
+        rospy.loginfo("Desired position offset %f", math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2))
+        
+        self.action_server.set_succeeded()
         self.recv_msg = True
 
 
