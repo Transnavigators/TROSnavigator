@@ -57,6 +57,8 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf.broadcaster import TransformBroadcaster
 from std_msgs.msg import Int16, Int64
+import smbus
+import struct
 
 #############################################################################
 class DiffTf:
@@ -73,6 +75,7 @@ class DiffTf:
         # Setup I2C variables
         self.encoder_cmd = ord('e')
         self.address = int(rospy.get_param("~address", 0x04))
+        self.bus = smbus.SMBus(1)
         
         #### parameters #######
         self.rate = rospy.get_param('~rate',10.0)  # the rate at which to publish the transform
