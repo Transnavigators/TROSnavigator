@@ -182,9 +182,9 @@ class Master:
         
         # keep theta between -pi and pi
         if self.desired_orientation > math.pi:
-            self.desired_orientation = self.desired_orientation - 2*pi
+            self.desired_orientation = self.desired_orientation - 2*math.pi
         elif self.desired_orientation < -math.pi:
-            self.desired_orientation = self.desired_orientation + 2*pi
+            self.desired_orientation = self.desired_orientation + 2*math.pi
         
         # update desired positions
         self.desired_position_x = self.current_position_x + goal.target_pose.pose.position.x*math.cos(self.current_orientation)
