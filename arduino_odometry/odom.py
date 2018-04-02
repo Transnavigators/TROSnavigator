@@ -129,8 +129,8 @@ class DiffTf:
     #############################################################################
     
         l,r = self.read_encoders()
-        lwheelCallback(self,l)
-        lwheelCallback(self,r)
+        self.lwheelCallback(l)
+        self.rwheelCallback(r)
     
         now = rospy.Time.now()
         if now > self.t_next:
