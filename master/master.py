@@ -136,7 +136,10 @@ class Master:
             
                 # orientation deadband if we are doing a rotate command
                 if abs(orientation_err) >= 0.043: # 5 degrees
-                    rotational_vel = min(0.875, 0.5*orientation_err)
+                    if orientation_err>0.5:
+                        rotational_vel = 0.875
+                    else:
+                        rotational_vel = orientation_err
                  
             
             
@@ -198,7 +201,7 @@ class Master:
         self.desired_position_y = self.current_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
         
         
-        rospy.loginfo("Desired position offset %f", goal.target_pose.pose.position.x)
+        rospy.loginfo("Desired position %f", goal.target_pose.pose.position.x)
 
         self.action_server.set_succeeded()
         self.recv_msg = True
