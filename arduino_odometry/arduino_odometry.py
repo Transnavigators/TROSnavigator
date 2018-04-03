@@ -5,9 +5,9 @@
    creates tf and odometry messages.
    some code borrowed from the arbotix diff_controller script
    A good reference: http://rossum.sourceforge.net/papers/DiffSteer/
-   
-    Copyright (C) 2012 Jon Stephan. 
-     
+
+    Copyright (C) 2012 Jon Stephan.
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -18,10 +18,10 @@
     GNU General Public License for more details.
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-   
+
    ----------------------------------
    Portions of this code borrowed from the arbotix_python diff_controller.
-   
+
 diff_controller.py - controller for a differential drive
   Copyright (c) 2010-2011 Vanadium Labs LLC.  All right reserved.
   Redistribution and use in source and binary forms, with or without
@@ -31,10 +31,10 @@ diff_controller.py - controller for a differential drive
       * Redistributions in binary form must reproduce the above copyright
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
-      * Neither the name of Vanadium Labs LLC nor the names of its 
-        contributors may be used to endorse or promote products derived 
+      * Neither the name of Vanadium Labs LLC nor the names of its
+        contributors may be used to endorse or promote products derived
         from this software without specific prior written permission.
-  
+
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -48,8 +48,8 @@ diff_controller.py - controller for a differential drive
 """
 
 import rospy
-#import roslib
-#roslib.load_manifest('differential_drive')
+# import roslib
+# roslib.load_manifest('differential_drive')
 from math import sin, cos, pi
 
 from geometry_msgs.msg import Quaternion
@@ -60,66 +60,68 @@ from std_msgs.msg import Int16, Int64
 import smbus
 import struct
 
+
 #############################################################################
 class DiffTf:
-#############################################################################
+    #############################################################################
 
     #############################################################################
     def __init__(self):
-    #############################################################################
-        rospy.init_node("arduino_odometry")
+        #############################################################################
+        rospy.init_node("odometry")
         self.nodename = rospy.get_name()
         rospy.loginfo("-I- %s started" % self.nodename)
-        
-        
+
         # Setup I2C variables
         self.encoder_cmd = ord('e')
         self.address = int(rospy.get_param("~address", 0x04))
         self.bus = smbus.SMBus(1)
-        
+
         #### parameters #######
-        self.rate = rospy.get_param('~rate',10.0)  # the rate at which to publish the transform
+        self.rate = rospy.get_param('~rate', 10.0)  # the rate at which to publish the transform
         # Constant distance travelled per pulse of the encoder
         # 6" diameter wheel, 4096 pulses per revolution
-        self.ticks_meter = float(rospy.get_param('ticks_meter', 4096 / (6 * pi *0.0254)))  # The number of wheel encoder ticks per meter of travel
-        self.base_width = float(rospy.get_param('~base_width', 31.5 * 0.0254)) # The wheel base width in meters
-        
-        self.base_frame_id = rospy.get_param('~base_frame_id','base_footprint') # the name of the base frame of the robot
-        self.odom_frame_id = rospy.get_param('~odom_frame_id', 'odom') # the name of the odometry reference frame
-        
+        self.ticks_meter = float(rospy.get_param('ticks_meter', 4096 / (
+                    6 * pi * 0.0254)))  # The number of wheel encoder ticks per meter of travel
+        self.base_width = float(rospy.get_param('~base_width', 31.5 * 0.0254))  # The wheel base width in meters
+
+        self.base_frame_id = rospy.get_param('~base_frame_id',
+                                             'base_footprint')  # the name of the base frame of the robot
+        self.odom_frame_id = rospy.get_param('~odom_frame_id', 'odom')  # the name of the odometry reference frame
+
         self.encoder_min = rospy.get_param('encoder_min', -2147483648)
         self.encoder_max = rospy.get_param('encoder_max', 2147483648)
-        self.encoder_low_wrap = rospy.get_param('wheel_low_wrap', (self.encoder_max - self.encoder_min) * 0.3 + self.encoder_min )
-        self.encoder_high_wrap = rospy.get_param('wheel_high_wrap', (self.encoder_max - self.encoder_min) * 0.7 + self.encoder_min )
- 
-        self.t_delta = rospy.Duration(1.0/self.rate)
+        self.encoder_low_wrap = rospy.get_param('wheel_low_wrap',
+                                                (self.encoder_max - self.encoder_min) * 0.3 + self.encoder_min)
+        self.encoder_high_wrap = rospy.get_param('wheel_high_wrap',
+                                                 (self.encoder_max - self.encoder_min) * 0.7 + self.encoder_min)
+
+        self.t_delta = rospy.Duration(1.0 / self.rate)
         self.t_next = rospy.Time.now() + self.t_delta
 
-        self.max_speed = rospy.get_param('max_speed', 2.2)
-        
         # internal data
-        self.enc_left = None        # wheel encoder readings
+        self.enc_left = None  # wheel encoder readings
         self.enc_right = None
-        self.left = 0               # actual values coming back from robot
+        self.left = 0  # actual values coming back from robot
         self.right = 0
         self.lmult = 0
         self.rmult = 0
         self.prev_lencoder = 0
         self.prev_rencoder = 0
-        self.x = 0                  # position in xy plane 
+        self.x = 0  # position in xy plane
         self.y = 0
         self.th = 0
-        self.dx = 0                 # speeds in x/rotation
+        self.dx = 0  # speeds in x/rotation
         self.dr = 0
         self.then = rospy.Time.now()
-        
+
         # subscriptions
         self.odomPub = rospy.Publisher("odom", Odometry, queue_size=10)
         self.odomBroadcaster = TransformBroadcaster()
-        
+
     #############################################################################
     def spin(self):
-    #############################################################################
+        #############################################################################
         r = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             self.update()
@@ -127,14 +129,14 @@ class DiffTf:
 
     #############################################################################
     def update(self):
-    #############################################################################
-    
-        l,r = self.read_encoders()
+        #############################################################################
+
+        l, r = self.read_encoders()
         self.lwheelCallback(l)
         self.rwheelCallback(r)
-    
-        rospy.loginfo("Lcnt=%d|Rcnt=%d"%(l,r))
-    
+
+        rospy.loginfo("Lcnt=%d|Rcnt=%d" % (l, r))
+
         now = rospy.Time.now()
         if now > self.t_next:
             elapsed = now - self.then
@@ -148,110 +150,113 @@ class DiffTf:
             else:
                 d_left = (self.left - self.enc_left) / self.ticks_meter
                 d_right = (self.right - self.enc_right) / self.ticks_meter
-
             self.enc_left = self.left
             self.enc_right = self.right
-           
-            # distance traveled is the average of the two wheels 
+
+            # distance traveled is the average of the two wheels
             d = (d_left + d_right) / 2
             # this approximation works (in radians) for small angles
             th = (d_right - d_left) / self.base_width
 
-            if d/elapsed > self.max_speed*2:
+            if d / elapsed > self.max_speed * 2:
                 return
 
-            # calculate velocities
-            self.dx = d / elapsed
-            self.dr = th / elapsed
+        # calculate velocities
+        self.dx = d / elapsed
+        self.dr = th / elapsed
 
-            if d != 0:
-                # calculate distance traveled in x and y
-                x = cos(th) * d
-                y = -sin(th) * d
-                # calculate the final position of the robot
-                self.x = self.x + cos(self.th * x - sin(self.th) * y)
-                self.y = self.y + sin(self.th * x + cos(self.th) * y)
-            if th != 0:
-                self.th = self.th + th
-                
-            # publish the odom information
-            quaternion = Quaternion()
-            quaternion.x = 0.0
-            quaternion.y = 0.0
-            quaternion.z = sin( self.th / 2 )
-            quaternion.w = cos( self.th / 2 )
-            self.odomBroadcaster.sendTransform(
-                (self.x, self.y, 0),
-                (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
-                rospy.Time.now(),
-                self.base_frame_id,
-                self.odom_frame_id
-                )
-            
-            odom = Odometry()
-            odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                    0, 1e-3, 1e-9, 0, 0, 0,
-                                    0, 0, 1e6, 0, 0, 0,
-                                    0, 0, 0, 1e6, 0, 0,
-                                    0, 0, 0, 0, 1e6, 0,
-                                    0, 0, 0, 0, 0, 1e-9]
-            odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                     0, 1e-3, 1e-9, 0, 0, 0,
-                                     0, 0, 1e6, 0, 0, 0,
-                                     0, 0, 0, 1e6, 0, 0,
-                                     0, 0, 0, 0, 1e6, 0,
-                                     0, 0, 0, 0, 0, 1e-9]
-            odom.header.stamp = now
-            odom.header.frame_id = self.odom_frame_id
-            odom.pose.pose.position.x = self.x
-            odom.pose.pose.position.y = self.y
-            odom.pose.pose.position.z = 0
-            odom.pose.pose.orientation = quaternion
-            odom.child_frame_id = self.base_frame_id
-            odom.twist.twist.linear.x = self.dx
-            odom.twist.twist.linear.y = 0
-            odom.twist.twist.angular.z = self.dr
-            self.odomPub.publish(odom)
+        if (d != 0):
+            # calculate distance traveled in x and y
+            x = cos(th) * d
+            y = -sin(th) * d
+            # calculate the final position of the robot
+            self.x = self.x + (cos(self.th) * x - sin(self.th) * y)
+            self.y = self.y + (sin(self.th) * x + cos(self.th) * y)
+        if (th != 0):
+            self.th = self.th + th
 
+        # publish the odom information
+        quaternion = Quaternion()
+        quaternion.x = 0.0
+        quaternion.y = 0.0
+        quaternion.z = sin(self.th / 2)
+        quaternion.w = cos(self.th / 2)
+        self.odomBroadcaster.sendTransform(
+            (self.x, self.y, 0),
+            (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
+            rospy.Time.now(),
+            self.base_frame_id,
+            self.odom_frame_id
+        )
+
+        odom = Odometry()
+        odom.header.stamp = now
+        odom.header.frame_id = self.odom_frame_id
+        odom.pose.pose.position.x = self.x
+        odom.pose.pose.position.y = self.y
+        odom.pose.pose.position.z = 0
+        odom.pose.pose.orientation = quaternion
+        odom.child_frame_id = self.base_frame_id
+        odom.twist.twist.linear.x = self.dx
+        odom.twist.twist.linear.y = 0
+        odom.twist.twist.angular.z = self.dr
+        odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                0, 1e-3, 1e-9, 0, 0, 0,
+                                0, 0, 1e6, 0, 0, 0,
+                                0, 0, 0, 1e6, 0, 0,
+                                0, 0, 0, 0, 1e6, 0,
+                                0, 0, 0, 0, 0, 1e-9]
+        odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                 0, 1e-3, 1e-9, 0, 0, 0,
+                                 0, 0, 1e6, 0, 0, 0,
+                                 0, 0, 0, 1e6, 0, 0,
+                                 0, 0, 0, 0, 1e6, 0,
+                                 0, 0, 0, 0, 0, 1e-9]
+        self.odomPub.publish(odom)
+
+
+#############################################################################
+def lwheelCallback(self, msg):
     #############################################################################
-    def lwheelCallback(self, msg):
+    enc = msg
+    if (enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap):
+        self.lmult = self.lmult + 1
+
+    if (enc > self.encoder_high_wrap and self.prev_lencoder < self.encoder_low_wrap):
+        self.lmult = self.lmult - 1
+
+    self.left = 1.0 * (enc + self.lmult * (self.encoder_max - self.encoder_min))
+
+    self.prev_lencoder = enc
+
+
+#############################################################################
+def rwheelCallback(self, msg):
     #############################################################################
-        enc = msg
-        if enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap:
-            self.lmult = self.lmult + 1
-            
-        if enc > self.encoder_high_wrap and self.prev_lencoder < self.encoder_low_wrap:
-            self.lmult = self.lmult - 1
-            
-        self.left = 1.0 * (enc + self.lmult * (self.encoder_max - self.encoder_min)) 
+    enc = msg
+    if (enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap):
+        self.rmult = self.rmult + 1
 
-        self.prev_lencoder = enc
-        
-    #############################################################################
-    def rwheelCallback(self, msg):
-    #############################################################################
-        enc = msg
-        if enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap:
-            self.rmult = self.rmult + 1
-        
-        if enc > self.encoder_high_wrap and self.prev_rencoder < self.encoder_low_wrap:
-            self.rmult = self.rmult - 1
-            
-        self.right = 1.0 * (enc + self.rmult * (self.encoder_max - self.encoder_min))
+    if (enc > self.encoder_high_wrap and self.prev_rencoder < self.encoder_low_wrap):
+        self.rmult = self.rmult - 1
 
-        self.prev_rencoder = enc
+    self.right = 1.0 * (enc + self.rmult * (self.encoder_max - self.encoder_min))
 
-    # get data from Arduino
-    def read_encoders(self):
-        """Reads the encoder count from the Arduino using I2C
-        
-        Returns: 
-            tuple: The left and right encoder counts as ints
-        """
-        data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
-        left, right = struct.unpack('=ii', bytearray(data[0:8]))
+    self.prev_rencoder = enc
 
-        return left, right
+
+# get data from Arduino
+def read_encoders(self):
+    """Reads the encoder count from the Arduino using I2C
+
+    Returns:
+        tuple: The left and right encoder counts as ints
+    """
+    data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
+    left, right = struct.unpack('=ii', bytearray(data[0:8]))
+
+    return left, right
+
 
 #############################################################################
 #############################################################################
