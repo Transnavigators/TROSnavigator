@@ -56,6 +56,8 @@ class Alexa:
         goal.target_pose.pose.position.z = 0
         goal.target_pose.pose.position = Point(0, 0, 0)
         goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
+        if 'type' not in data:
+            return
         # Move forward
         if data['type'] == 'forward':
             if 'distance' in data and 'distanceUnit' in data:
