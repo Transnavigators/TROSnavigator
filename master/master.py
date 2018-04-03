@@ -148,8 +148,6 @@ class Master:
             
             
             
-            rospy.loginfo_throttle(1, "Dist=%f Forward vel=%f Rotational vel=%f" % (dist, forward_vel, rotational_vel))
-            
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, rotational_vel)
