@@ -99,6 +99,8 @@ class DiffTf:
         self.t_delta = rospy.Duration(1.0 / self.rate)
         self.t_next = rospy.Time.now() + self.t_delta
 
+        self.max_speed = float(rospy.get_param('max_speed', 2.2))
+
         # internal data
         self.enc_left = None  # wheel encoder readings
         self.enc_right = None
@@ -215,47 +217,47 @@ class DiffTf:
         self.odomPub.publish(odom)
 
 
-#############################################################################
-def lwheelCallback(self, msg):
     #############################################################################
-    enc = msg
-    if (enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap):
-        self.lmult = self.lmult + 1
+    def lwheelCallback(self, msg):
+        #############################################################################
+        enc = msg
+        if (enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap):
+            self.lmult = self.lmult + 1
 
-    if (enc > self.encoder_high_wrap and self.prev_lencoder < self.encoder_low_wrap):
-        self.lmult = self.lmult - 1
+        if (enc > self.encoder_high_wrap and self.prev_lencoder < self.encoder_low_wrap):
+            self.lmult = self.lmult - 1
 
-    self.left = 1.0 * (enc + self.lmult * (self.encoder_max - self.encoder_min))
+        self.left = 1.0 * (enc + self.lmult * (self.encoder_max - self.encoder_min))
 
-    self.prev_lencoder = enc
+        self.prev_lencoder = enc
 
 
-#############################################################################
-def rwheelCallback(self, msg):
     #############################################################################
-    enc = msg
-    if (enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap):
-        self.rmult = self.rmult + 1
+    def rwheelCallback(self, msg):
+        #############################################################################
+        enc = msg
+        if (enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap):
+            self.rmult = self.rmult + 1
 
-    if (enc > self.encoder_high_wrap and self.prev_rencoder < self.encoder_low_wrap):
-        self.rmult = self.rmult - 1
+        if (enc > self.encoder_high_wrap and self.prev_rencoder < self.encoder_low_wrap):
+            self.rmult = self.rmult - 1
 
-    self.right = 1.0 * (enc + self.rmult * (self.encoder_max - self.encoder_min))
+        self.right = 1.0 * (enc + self.rmult * (self.encoder_max - self.encoder_min))
 
-    self.prev_rencoder = enc
+        self.prev_rencoder = enc
 
 
-# get data from Arduino
-def read_encoders(self):
-    """Reads the encoder count from the Arduino using I2C
+    # get data from Arduino
+    def read_encoders(self):
+        """Reads the encoder count from the Arduino using I2C
 
-    Returns:
-        tuple: The left and right encoder counts as ints
-    """
-    data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
-    left, right = struct.unpack('=ii', bytearray(data[0:8]))
+        Returns:
+            tuple: The left and right encoder counts as ints
+        """
+        data = self.bus.read_i2c_block_data(self.address, self.encoder_cmd)
+        left, right = struct.unpack('=ii', bytearray(data[0:8]))
 
-    return left, right
+        return left, right
 
 
 #############################################################################
