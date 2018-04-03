@@ -112,7 +112,7 @@ class DiffTf:
         self.then = rospy.Time.now()
         
         # subscriptions
-        self.odomPub = rospy.Publisher("odom", Odometry,queue_size=10)
+        self.odomPub = rospy.Publisher("odom", Odometry, queue_size=10)
         self.odomBroadcaster = TransformBroadcaster()
         
     #############################################################################
@@ -122,8 +122,7 @@ class DiffTf:
         while not rospy.is_shutdown():
             self.update()
             r.sleep()
-       
-     
+
     #############################################################################
     def update(self):
     #############################################################################
@@ -139,10 +138,9 @@ class DiffTf:
             elapsed = now - self.then
             self.then = now
             elapsed = elapsed.to_sec()
-            
 
             # calculate odometry
-            if self.enc_left == None:
+            if self.enc_left is None:
                 d_left = 0
                 d_right = 0
             else:
@@ -152,23 +150,21 @@ class DiffTf:
             self.enc_right = self.right
            
             # distance traveled is the average of the two wheels 
-            d = ( d_left + d_right ) / 2
+            d = (d_left + d_right) / 2
             # this approximation works (in radians) for small angles
-            th = ( d_right - d_left ) / self.base_width
+            th = (d_right - d_left) / self.base_width
             # calculate velocities
             self.dx = d / elapsed
             self.dr = th / elapsed
-           
 
-             
-            if (d != 0):
+            if d != 0:
                 # calculate distance traveled in x and y
-                x = cos( th ) * d
-                y = -sin( th ) * d
+                x = cos(th) * d
+                y = -sin(th) * d
                 # calculate the final position of the robot
-                self.x = self.x + ( cos( self.th ) * x - sin( self.th ) * y )
-                self.y = self.y + ( sin( self.th ) * x + cos( self.th ) * y )
-            if( th != 0):
+                self.x = self.x + cos(self.th * x - sin(self.th) * y)
+                self.y = self.y + sin(self.th * x + cos(self.th) * y)
+            if th != 0:
                 self.th = self.th + th
                 
             # publish the odom information
@@ -186,6 +182,18 @@ class DiffTf:
                 )
             
             odom = Odometry()
+            odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                    0, 1e-3, 1e-9, 0, 0, 0,
+                                    0, 0, 1e6, 0, 0, 0,
+                                    0, 0, 0, 1e6, 0, 0,
+                                    0, 0, 0, 0, 1e6, 0,
+                                    0, 0, 0, 0, 0, 1e-9]
+            odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                     0, 1e-3, 1e-9, 0, 0, 0,
+                                     0, 0, 1e6, 0, 0, 0,
+                                     0, 0, 0, 1e6, 0, 0,
+                                     0, 0, 0, 0, 1e6, 0,
+                                     0, 0, 0, 0, 0, 1e-9]
             odom.header.stamp = now
             odom.header.frame_id = self.odom_frame_id
             odom.pose.pose.position.x = self.x
@@ -197,22 +205,18 @@ class DiffTf:
             odom.twist.twist.linear.y = 0
             odom.twist.twist.angular.z = self.dr
             self.odomPub.publish(odom)
-            
-            
-
 
     #############################################################################
     def lwheelCallback(self, msg):
     #############################################################################
         enc = msg
-        if (enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap):
+        if enc < self.encoder_low_wrap and self.prev_lencoder > self.encoder_high_wrap:
             self.lmult = self.lmult + 1
             
-        if (enc > self.encoder_high_wrap and self.prev_lencoder < self.encoder_low_wrap):
+        if enc > self.encoder_high_wrap and self.prev_lencoder < self.encoder_low_wrap:
             self.lmult = self.lmult - 1
             
         self.left = 1.0 * (enc + self.lmult * (self.encoder_max - self.encoder_min)) 
-
 
         self.prev_lencoder = enc
         
@@ -220,14 +224,13 @@ class DiffTf:
     def rwheelCallback(self, msg):
     #############################################################################
         enc = msg
-        if(enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap):
+        if enc < self.encoder_low_wrap and self.prev_rencoder > self.encoder_high_wrap:
             self.rmult = self.rmult + 1
         
-        if(enc > self.encoder_high_wrap and self.prev_rencoder < self.encoder_low_wrap):
+        if enc > self.encoder_high_wrap and self.prev_rencoder < self.encoder_low_wrap:
             self.rmult = self.rmult - 1
             
         self.right = 1.0 * (enc + self.rmult * (self.encoder_max - self.encoder_min))
-
 
         self.prev_rencoder = enc
 
