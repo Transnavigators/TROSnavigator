@@ -157,7 +157,7 @@ class Master:
            
 
 
-            rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
+            rospy.loginfo("Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
 
             # publish the message
             self.pub.publish(msg)
