@@ -163,58 +163,58 @@ class DiffTf:
             if d / elapsed > self.max_speed * 2:
                 return
 
-        # calculate velocities
-        self.dx = d / elapsed
-        self.dr = th / elapsed
+            # calculate velocities
+            self.dx = d / elapsed
+            self.dr = th / elapsed
 
-        if (d != 0):
-            # calculate distance traveled in x and y
-            x = cos(th) * d
-            y = -sin(th) * d
-            # calculate the final position of the robot
-            self.x = self.x + (cos(self.th) * x - sin(self.th) * y)
-            self.y = self.y + (sin(self.th) * x + cos(self.th) * y)
-        if (th != 0):
-            self.th = self.th + th
+            if (d != 0):
+                # calculate distance traveled in x and y
+                x = cos(th) * d
+                y = -sin(th) * d
+                # calculate the final position of the robot
+                self.x = self.x + (cos(self.th) * x - sin(self.th) * y)
+                self.y = self.y + (sin(self.th) * x + cos(self.th) * y)
+            if (th != 0):
+                self.th = self.th + th
 
-        # publish the odom information
-        quaternion = Quaternion()
-        quaternion.x = 0.0
-        quaternion.y = 0.0
-        quaternion.z = sin(self.th / 2)
-        quaternion.w = cos(self.th / 2)
-        self.odomBroadcaster.sendTransform(
-            (self.x, self.y, 0),
-            (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
-            rospy.Time.now(),
-            self.base_frame_id,
-            self.odom_frame_id
-        )
+            # publish the odom information
+            quaternion = Quaternion()
+            quaternion.x = 0.0
+            quaternion.y = 0.0
+            quaternion.z = sin(self.th / 2)
+            quaternion.w = cos(self.th / 2)
+            self.odomBroadcaster.sendTransform(
+                (self.x, self.y, 0),
+                (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
+                rospy.Time.now(),
+                self.base_frame_id,
+                self.odom_frame_id
+            )
 
-        odom = Odometry()
-        odom.header.stamp = now
-        odom.header.frame_id = self.odom_frame_id
-        odom.pose.pose.position.x = self.x
-        odom.pose.pose.position.y = self.y
-        odom.pose.pose.position.z = 0
-        odom.pose.pose.orientation = quaternion
-        odom.child_frame_id = self.base_frame_id
-        odom.twist.twist.linear.x = self.dx
-        odom.twist.twist.linear.y = 0
-        odom.twist.twist.angular.z = self.dr
-        odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                0, 1e-3, 1e-9, 0, 0, 0,
-                                0, 0, 1e6, 0, 0, 0,
-                                0, 0, 0, 1e6, 0, 0,
-                                0, 0, 0, 0, 1e6, 0,
-                                0, 0, 0, 0, 0, 1e-9]
-        odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
-                                 0, 1e-3, 1e-9, 0, 0, 0,
-                                 0, 0, 1e6, 0, 0, 0,
-                                 0, 0, 0, 1e6, 0, 0,
-                                 0, 0, 0, 0, 1e6, 0,
-                                 0, 0, 0, 0, 0, 1e-9]
-        self.odomPub.publish(odom)
+            odom = Odometry()
+            odom.header.stamp = now
+            odom.header.frame_id = self.odom_frame_id
+            odom.pose.pose.position.x = self.x
+            odom.pose.pose.position.y = self.y
+            odom.pose.pose.position.z = 0
+            odom.pose.pose.orientation = quaternion
+            odom.child_frame_id = self.base_frame_id
+            odom.twist.twist.linear.x = self.dx
+            odom.twist.twist.linear.y = 0
+            odom.twist.twist.angular.z = self.dr
+            odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                    0, 1e-3, 1e-9, 0, 0, 0,
+                                    0, 0, 1e6, 0, 0, 0,
+                                    0, 0, 0, 1e6, 0, 0,
+                                    0, 0, 0, 0, 1e6, 0,
+                                    0, 0, 0, 0, 0, 1e-9]
+            odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                     0, 1e-3, 1e-9, 0, 0, 0,
+                                     0, 0, 1e6, 0, 0, 0,
+                                     0, 0, 0, 1e6, 0, 0,
+                                     0, 0, 0, 0, 1e6, 0,
+                                     0, 0, 0, 0, 0, 1e-9]
+            self.odomPub.publish(odom)
 
 
     #############################################################################
