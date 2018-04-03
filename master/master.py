@@ -113,7 +113,7 @@ class Master:
             
 
             # we are trying to move forward
-            if dist >= 0.05: # 5 cm
+            if dist >= 0.025: # 5 cm
                 # update desired orientation to point in the correct direction
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                 
@@ -121,7 +121,7 @@ class Master:
                 
                 
                 # make sure we are in the correct orientation before moving forward
-                if abs(orientation_err) < 0.087: # 5 degrees
+                if abs(orientation_err) < 0.043: # 5 degrees/2
                     forward_vel = min(1.1, 0.2*dist)
             
             # turn command
@@ -132,7 +132,7 @@ class Master:
                 # continue
             
                 # orientation deadband if we are doing a rotate command
-                if abs(orientation_err) >= 0.087: # 5 degrees
+                if abs(orientation_err) >= 0.043: # 5 degrees
                     rotational_vel = 0.3*orientation_err
                  
             
