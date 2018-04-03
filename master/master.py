@@ -122,7 +122,7 @@ class Master:
                 
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
-                    forward_vel = min(1.1, 0.2*dist)
+                    forward_vel = min(1.1, dist**3)
             
             # turn command
             else:
