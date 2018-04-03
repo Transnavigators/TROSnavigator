@@ -205,7 +205,7 @@ class Master:
         self.desired_position_y = self.current_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
         
         
-        rospy.loginfo("Desired position %f", goal.target_pose.pose.position.x)
+        rospy.loginfo("Getting updated goal P:%f R:%f", goal.target_pose.pose.position.x, math.asin(goal.target_pose.pose.orientation.z) * 2)
 
         self.action_server.set_succeeded()
         self.recv_msg = True
