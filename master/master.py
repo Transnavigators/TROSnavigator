@@ -113,11 +113,11 @@ class Master:
             
 
             # we are trying to move forward
-            if dist >= 0.025: # 5 cm
+            if dist >= 0.05: # 5 cm
                 # update desired orientation to point in the correct direction
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                 
-                rospy.loginfo("updating desired location %f",self.desired_orientation)
+                rospy.loginfo("updating desired orientation %f",self.desired_orientation)
                 
                 # rotate toward the correct location
                 # if orientation_err>0.875:
