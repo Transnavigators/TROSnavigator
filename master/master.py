@@ -117,6 +117,8 @@ class Master:
                 # update desired orientation to point in the correct direction
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                 
+                rospy.loginfo("updating desired location %f",self.desired_orientation)
+                
                 # rotate toward the correct location
                 if orientation_err>0.875:
                     rotational_vel = min(0.875,orientation_err)
