@@ -67,7 +67,7 @@ class DiffTf:
     #############################################################################
     def __init__(self):
     #############################################################################
-        rospy.init_node("odometry")
+        rospy.init_node("arduino_odometry")
         self.nodename = rospy.get_name()
         rospy.loginfo("-I- %s started" % self.nodename)
         
