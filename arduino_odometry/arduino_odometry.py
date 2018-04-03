@@ -132,7 +132,7 @@ class DiffTf:
         self.lwheelCallback(l)
         self.rwheelCallback(r)
     
-        rospy.loginfo("Lcnt=" + str(l) + "|Rcnt="+str(r));
+        rospy.loginfo("Lcnt=%d|Rcnt=%d"%(l,r))
     
         now = rospy.Time.now()
         if now > self.t_next:
