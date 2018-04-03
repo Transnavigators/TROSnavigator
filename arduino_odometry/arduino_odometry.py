@@ -184,6 +184,18 @@ class DiffTf:
                 )
             
             odom = Odometry()
+            odom.pose.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                    0, 1e-3, 1e-9, 0, 0, 0,
+                                    0, 0, 1e6, 0, 0, 0,
+                                    0, 0, 0, 1e6, 0, 0,
+                                    0, 0, 0, 0, 1e6, 0,
+                                    0, 0, 0, 0, 0, 1e-9]
+            odom.twist.covariance = [1e-9, 0, 0, 0, 0, 0,
+                                     0, 1e-3, 1e-9, 0, 0, 0,
+                                     0, 0, 1e6, 0, 0, 0,
+                                     0, 0, 0, 1e6, 0, 0,
+                                     0, 0, 0, 0, 1e6, 0,
+                                     0, 0, 0, 0, 0, 1e-9]
             odom.header.stamp = now
             odom.header.frame_id = self.odom_frame_id
             odom.pose.pose.position.x = self.x
