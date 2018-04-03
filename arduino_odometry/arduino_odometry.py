@@ -94,6 +94,8 @@ class DiffTf:
  
         self.t_delta = rospy.Duration(1.0/self.rate)
         self.t_next = rospy.Time.now() + self.t_delta
+
+        self.max_speed = rospy.get_param('max_speed', 2.2)
         
         # internal data
         self.enc_left = None        # wheel encoder readings
@@ -146,6 +148,7 @@ class DiffTf:
             else:
                 d_left = (self.left - self.enc_left) / self.ticks_meter
                 d_right = (self.right - self.enc_right) / self.ticks_meter
+
             self.enc_left = self.left
             self.enc_right = self.right
            
@@ -153,6 +156,10 @@ class DiffTf:
             d = (d_left + d_right) / 2
             # this approximation works (in radians) for small angles
             th = (d_right - d_left) / self.base_width
+
+            if d/elapsed > self.max_speed*2:
+                return
+
             # calculate velocities
             self.dx = d / elapsed
             self.dr = th / elapsed
