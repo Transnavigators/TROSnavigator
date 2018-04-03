@@ -132,6 +132,8 @@ class DiffTf:
         self.lwheelCallback(l)
         self.rwheelCallback(r)
     
+        rospy.loginfo("Lcnt=" + str(l) + "|Rcnt="+str(r));
+    
         now = rospy.Time.now()
         if now > self.t_next:
             elapsed = now - self.then
