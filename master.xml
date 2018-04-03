@@ -1,11 +1,9 @@
 <launch>
     <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py"/>
     <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
-        <param name="reset_pin" value="4"/>
-        <param name="poll_rate" value="10"/>
     </node>
     <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
-        <param name="poll_rate" value="5"/>
     </node>
-    <node name="master" pkg="master" type="master.py" output="screen"/>
+    <node name="master" pkg="master" type="master.py" output="screen">
+    </node>
 </launch>

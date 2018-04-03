@@ -25,7 +25,7 @@ class Master:
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback, False)
 
         # get publish rate and PID constants
-        self.rate = rospy.get_param("~rate", 100)
+        self.rate = rospy.get_param("~rate", 10)
         # self.Kp = rospy.get_param("~position_contant", 1.0)
         # self.Ki = rospy.get_param("~derivative_contant", 1.0)
         # self.Kd = rospy.get_param("~integral_contant", 1.0)
