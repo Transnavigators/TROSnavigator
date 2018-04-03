@@ -63,7 +63,8 @@ class Alexa:
                 if data['distanceUnit'] == 'feet':
                     goal.target_pose.pose.position.x *= self.FEET_TO_M
             else:
-                goal.target_pose.pose.position.x = 100000.0
+                return  # Remove this if it works
+                #goal.target_pose.pose.position.x = 100000.0
 
         # Turn the wheelchair
         elif data['type'] == 'turn':
