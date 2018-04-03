@@ -51,7 +51,7 @@ class Alexa:
 
         # publish data
         goal = MoveBaseGoal()
-        goal.target_pose.header.frame_id = "base_link"
+        goal.target_pose.header.frame_id = "base_footprint"
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.pose.position.z = 0
         goal.target_pose.pose.position = Point(0, 0, 0)
