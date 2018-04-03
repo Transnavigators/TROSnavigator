@@ -133,7 +133,7 @@ class Master:
             
                 # orientation deadband if we are doing a rotate command
                 if abs(orientation_err) >= 0.043: # 5 degrees
-                    rotational_vel = 0.3*orientation_err
+                    rotational_vel = min(0.875, 0.6*orientation_err)
                  
             
             
