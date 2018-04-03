@@ -117,9 +117,12 @@ class Master:
                 # update desired orientation to point in the correct direction
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
                 
-                rotational_vel = 0.3*orientation_err
-                
-                
+                # rotate toward the correct location
+                if orientation_err>0.5:
+                    rotational_vel = 0.875
+                else:
+                    rotational_vel = orientation_err
+                 
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
                     if dist>1:
