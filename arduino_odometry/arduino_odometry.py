@@ -160,7 +160,8 @@ class DiffTf:
             # this approximation works (in radians) for small angles
             th = (d_right - d_left) / self.base_width
 
-            if d / elapsed > self.max_speed * 2:
+            if abs(d) / elapsed > self.max_speed * 2:
+                rospy.logwarn("Filtering Encoder Left: %d Encoder Right: %d Elapsed: %f" % (self.enc_left, self.enc_right, elapsed))
                 return
 
             # calculate velocities
