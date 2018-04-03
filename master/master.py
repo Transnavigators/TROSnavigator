@@ -106,10 +106,10 @@ class Master:
             
             # get delta orientation in the range -pi to pi so we always take the short way around
             orientation_err = (self.desired_orientation - self.current_orientation)
-            # if orientation_err > math.pi:
-                # orientation_err = orientation_err - 2*math.pi
-            # elif orientation_err < -math.pi:
-                # orientation_err = orientation_err + 2*math.pi
+            if orientation_err > math.pi:
+                orientation_err = orientation_err - 2*math.pi
+            elif orientation_err < -math.pi:
+                orientation_err = orientation_err + 2*math.pi
             
 
             # we are trying to move forward
@@ -139,7 +139,11 @@ class Master:
             
                 # orientation deadband if we are doing a rotate command
                 if abs(orientation_err) >= 0.043: # 5 degrees
-                    rotational_vel = min(0.875,orientation_err)
+                    if (orientation_err > 0):
+                        rotational_vel = 0.05
+                    else:
+                        rotational_vel = -0.05
+                    #rotational_vel = min(0.875,orientation_err)
                  
             
             
