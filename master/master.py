@@ -125,7 +125,7 @@ class Master:
                     if dist>1:
                         forward_vel = 1.1
                     else:
-                        forward_vel = 0.5*dist
+                        forward_vel = dist
             
             # turn command
             else:
@@ -136,7 +136,7 @@ class Master:
             
                 # orientation deadband if we are doing a rotate command
                 if abs(orientation_err) >= 0.043: # 5 degrees
-                    rotational_vel = min(0.875, 0.6*orientation_err)
+                    rotational_vel = min(0.875, 0.5*orientation_err)
                  
             
             
