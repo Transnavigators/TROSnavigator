@@ -140,7 +140,7 @@ class DiffTf:
             elapsed = elapsed.to_sec()
 
             # calculate odometry
-            if self.enc_left is None:
+            if self.enc_left == None:
                 d_left = 0
                 d_right = 0
             else:
