@@ -120,10 +120,11 @@ class Master:
                 rospy.loginfo("updating desired location %f",self.desired_orientation)
                 
                 # rotate toward the correct location
-                if orientation_err>0.875:
-                    rotational_vel = min(0.875,orientation_err)
-                else:
-                    rotational_vel = 0.3*orientation_err
+                # if orientation_err>0.875:
+                    # rotational_vel = min(0.875,orientation_err)
+                # else:
+                    # rotational_vel = 0.3*orientation_err
+                rotational_vel = 0.3*orientation_err
                  
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
@@ -141,12 +142,12 @@ class Master:
             
                 # orientation deadband if we are doing a rotate command
                 if abs(orientation_err) >= 0.043: # 5 degrees
-                    if (orientation_err > 0):
-                        rotational_vel = 0.05
-                    else:
-                        rotational_vel = -0.05
+                    # if (orientation_err > 0):
+                        # rotational_vel = 0.05
+                    # else:
+                        # rotational_vel = -0.05
                     #rotational_vel = min(0.875,orientation_err)
-                 
+                    rotational_vel = 0.3*orientation_err
             
             
             
