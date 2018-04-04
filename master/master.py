@@ -122,27 +122,26 @@ class Master:
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y,
                                                       self.desired_position_x - self.current_position_x)
                 rospy.loginfo_throttle(1, "updating desired orientation %f" % self.desired_orientation)
-            else:
+            elif dist < 0.05:
                 self.desired_position_x = self.current_position_x
                 self.desired_position_y = self.current_position_y
             # get delta orientation in the range -pi to pi so we always take the short way around
             orientation_err = self.desired_orientation - self.current_orientation
             if orientation_err > math.pi:
-                orientation_err = -(orientation_err - 2*math.pi)
+                orientation_err = orientation_err - 2*math.pi
                 rospy.loginfo_throttle(1, "Wrapping orientation error from %f to %f" % (orientation_err+2*math.pi, orientation_err))
             elif orientation_err < -math.pi:
-                orientation_err = -(orientation_err + 2*math.pi)
+                orientation_err = orientation_err + 2*math.pi
                 rospy.loginfo_throttle(1, "Wrapping orientation error from %f to %f" % (orientation_err-2*math.pi, orientation_err))
 
             # we are trying to move forward
-            if dist >= 0.05: # 5 cm
+            if dist >= 0.05 and not self.turning: # 5 cm
                 # rotate toward the correct location
                 # if orientation_err>0.875:
                     # self.rotational_vel = min(0.875,orientation_err)
                 # else:
                     # self.rotational_vel = 0.3*orientation_err
 
-                self.rotational_vel = 0.5*orientation_err
                 rospy.loginfo_throttle(1, "Scaling rotational velocity=%f=%f*0.5" % (self.rotational_vel,orientation_err))
 
                 # make sure we are in the correct orientation before moving forward
@@ -151,15 +150,18 @@ class Master:
                         self.forward_vel = 1.1
                     else:
                         self.forward_vel = dist
+                # elif not self.is_turning:
+                    # self.rotational_vel = max(-0.875, min(0.875, 0.3 * orientation_err))
+
             # turn command
-            else:
+            # elif self.is_turning:
                 # if self.recv_msg:
                     # self.action_server.set_succeeded()
                     # self.recv_msg = False
                 # continue
             
                 # orientation deadband if we are doing a rotate command
-                if abs(orientation_err) >= 0.043: # 5 degrees (abs = 2.5 degrees)
+                # if abs(orientation_err) >= 0.043: # 5 degrees (abs = 2.5 degrees)
                     # if orientation_err > 0.172: # 10 degrees
                     #      self.rotational_vel = 0.875
                     #  elif orientation_err < -0.172:
@@ -169,11 +171,10 @@ class Master:
                     # self.rotational_vel = min(0.875,orientation_err)
 
                     # Prefer right turns when turning 180 degrees
-                    self.rotational_vel = max(-0.875, min(0.875, 0.3*orientation_err))
-                    rospy.loginfo_throttle(1, "Turning rotational velocity=%f=%f*0.3" % (self.rotational_vel, orientation_err))
 
-            if self.rotational_vel == 0 and self.forward_vel == 0:
-                self.is_turning = False
+            if abs(orientation_err) >= 0.043:
+                self.rotational_vel = max(-0.875, min(0.875, 0.3 * orientation_err))
+                rospy.loginfo_throttle(1,"Turning rotational velocity=%f=%f*0.3" % (self.rotational_vel, orientation_err))
             max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
             min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
             self.forward_vel = max(min_forward_vel, min(max_forward_vel, self.forward_vel))
@@ -181,6 +182,9 @@ class Master:
             max_rot_vel = self.last_rot_vel + self.rot_accel * time_diff
             min_rot_vel = self.last_rot_vel - self.rot_accel * time_diff
             self.rotational_vel = max(min_rot_vel, min(max_rot_vel, self.rotational_vel))
+
+            if self.rotational_vel == 0 and self.forward_vel == 0:
+                self.is_turning = False
 
             # fill in values for the Twist
             msg.linear = Vector3(self.forward_vel, 0, 0)
