@@ -25,7 +25,7 @@ class Master:
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback, False)
 
         self.linear_accel = float(rospy.get_param("~linear_accel",0.2))
-        self.rot_accel = float(rospy.get_param("~linear_accel", 0.2))
+        self.rot_accel = float(rospy.get_param("~rot_accel", 1))
 
         # get publish rate and PID constants
         self.rate = rospy.get_param("~rate", 100)
@@ -116,7 +116,9 @@ class Master:
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y,
                                                       self.desired_position_x - self.current_position_x)
                 rospy.loginfo_throttle(1, "updating desired orientation %f" % self.desired_orientation)
-
+            else:
+                self.desired_position_x = self.current_position_x
+                self.desired_position_y = self.current_position_y
             # get delta orientation in the range -pi to pi so we always take the short way around
             orientation_err = (self.desired_orientation - self.current_orientation)
             # if orientation_err > math.pi:
@@ -148,12 +150,14 @@ class Master:
                 # continue
             
                 # orientation deadband if we are doing a rotate command
-                if abs(orientation_err) >= 0.043: # 5 degrees
-                    # if (orientation_err > 0):
-                        # rotational_vel = 0.05
-                    # else:
-                        # rotational_vel = -0.05
-                    #rotational_vel = min(0.875,orientation_err)
+                if abs(orientation_err) >= 0.043: # 5 degrees (abs = 2.5 degrees)
+                    # if orientation_err > 0.172: # 10 degrees
+                    #      rotational_vel = 0.875
+                    #  elif orientation_err < -0.172:
+                    #      rotational_vel = -0.875
+                    #  else:
+                    #      rotational_vel = 1.29/orientation_err
+                    # rotational_vel = min(0.875,orientation_err)
                     rotational_vel = 0.3*orientation_err
 
             max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
