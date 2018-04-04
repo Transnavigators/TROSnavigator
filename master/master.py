@@ -49,6 +49,9 @@ class Master:
         self.last_forward_vel = 0
         self.last_rot_vel = 0
         self.current_speed = 0
+
+        self.negate = 1
+
         self.action_server.start()
 
     def begin(self):
@@ -121,39 +124,12 @@ class Master:
                 self.desired_position_y = self.current_position_y
             # get delta orientation in the range -pi to pi so we always take the short way around
             orientation_err = (self.desired_orientation - self.current_orientation)
-            
+
             if orientation_err > math.pi:
                 orientation_err = orientation_err - 2*math.pi
                 # fill in values for the Twist
-                rotational_vel = 0.3 * orientation_err
-                msg.linear = Vector3(forward_vel, 0, 0)
-                msg.angular = Vector3(0, 0, rotational_vel)
-                self.last_forward_vel = forward_vel
-                self.last_rot_vel = rotational_vel
-
-
-                rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
-
-                # publish the message
-                self.pub.publish(msg)
-                return
-                
             elif orientation_err < -math.pi:
                 orientation_err = orientation_err + 2*math.pi
-                
-                # fill in values for the Twist
-                rotational_vel = 0.3 * orientation_err
-                msg.linear = Vector3(forward_vel, 0, 0)
-                msg.angular = Vector3(0, 0, rotational_vel)
-                self.last_forward_vel = forward_vel
-                self.last_rot_vel = rotational_vel
-
-
-                rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
-
-                # publish the message
-                self.pub.publish(msg)
-                return
 
             # we are trying to move forward
             if dist >= 0.05: # 5 cm
@@ -187,7 +163,7 @@ class Master:
                     #  else:
                     #      rotational_vel = 1.29/orientation_err
                     # rotational_vel = min(0.875,orientation_err)
-                    rotational_vel = 0.3*orientation_err
+                    rotational_vel = 0.3*orientation_err*self.negate
 
             max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
             min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
@@ -226,6 +202,10 @@ class Master:
         self.current_position_x = msg.pose.pose.position.x
         self.current_position_y = msg.pose.pose.position.y
         self.current_orientation = math.asin(msg.pose.pose.orientation.z) * 2
+        if abs(self.desired_orientation - self.current_orientation) > math.pi:
+            self.negate = -1
+        else:
+            self.negate = 1
         self.current_speed = msg.twist.twist.linear.x
         if self.first_run:
             self.desired_position_x = self.current_position_x
