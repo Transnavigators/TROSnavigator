@@ -24,7 +24,7 @@
         <param name="poll_rate" value="10"/>
     </node>
     <node name="robot_pose_ekf" pkg="robot_pose_ekf" type="robot_pose_ekf">
-        <param name="output_frame" value="odom_combined"/>
+        <param name="output_frame" value="odom"/>
         <param name="freq" value="1000"/>
         <param name="sensor_timeout" value="1.0"/>
         <param name="odom_used" value="true"/>
@@ -45,7 +45,7 @@
         <rosparam file="$(find nav_config)/global_costmap_params.yaml"/>
     </node>
     <node name="gmapping_node" pkg="gmapping" type="slam_gmapping" output="screen">
-        <param name="odom_frame" value="odom_combined"/>
+        <param name="odom_frame" value="odom"/>
         <param name="base_frame" value="base_footprint"/>
         <param name="map_frame" value="map"/>
         <!-- Process 1 out of every this many scans (set it to a higher number to skip more scans)  -->
