@@ -103,6 +103,5 @@
 
         <!-- <remap from="scan" to="$(arg scan_topic)"/>  -->
     </node>
-    <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.04445 0 0 0 0 0 1  base_footprint neato_laser 100"/>
-    <!--<node name="base_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.15 0 0 0 0 0 2 base_footprint neato_laser 100"/>-->
+    <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.04445 0 0 0.986 0 0 -0.167 base_footprint neato_laser 100"/>
 </launch>
