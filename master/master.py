@@ -24,7 +24,7 @@ class Master:
         self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=50)
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback, False)
 
-        self.linear_accel = float(rospy.get_param("~linear_accel",0.1))
+        self.linear_accel = float(rospy.get_param("~linear_accel",0.2))
         self.rot_accel = float(rospy.get_param("~linear_accel", 0.2))
 
         # get publish rate and PID constants
