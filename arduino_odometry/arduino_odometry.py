@@ -132,8 +132,11 @@ class DiffTf:
     #############################################################################
     def update(self):
         #############################################################################
-
-        l, r = self.read_encoders()
+        try:
+            l, r = self.read_encoders()
+        except IOError as e:
+            rospy.logerr("Couldn't read the encoders: " % e)
+            return
         self.lwheelCallback(l)
         self.rwheelCallback(r)
 
