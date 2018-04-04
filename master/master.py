@@ -103,32 +103,32 @@ class Master:
 
             
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
-            
+
+            # update desired orientation to point in the correct direction
+            if dist >= 0.05:  # 5 cm
+                self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y,
+                                                      self.desired_position_x - self.current_position_x)
+                rospy.loginfo_throttle(1, "updating desired orientation %f" % self.desired_orientation)
+
             # get delta orientation in the range -pi to pi so we always take the short way around
             orientation_err = (self.desired_orientation - self.current_orientation)
             # if orientation_err > math.pi:
                 # orientation_err = orientation_err - 2*math.pi
             # elif orientation_err < -math.pi:
                 # orientation_err = orientation_err + 2*math.pi
-            
 
             # we are trying to move forward
             if dist >= 0.05: # 5 cm
-                # update desired orientation to point in the correct direction
-                self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y, self.desired_position_x - self.current_position_x)
-                
-                rospy.loginfo("updating desired orientation %f",self.desired_orientation)
-                
                 # rotate toward the correct location
                 # if orientation_err>0.875:
                     # rotational_vel = min(0.875,orientation_err)
                 # else:
                     # rotational_vel = 0.3*orientation_err
                 rotational_vel = 0.3*orientation_err
-                 
+                
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
-                    if dist>1:
+                    if dist > 1:
                         forward_vel = 1.1
                     else:
                         forward_vel = dist
@@ -157,7 +157,7 @@ class Master:
            
 
 
-            rospy.loginfo("Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
+            rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
 
             # publish the message
             self.pub.publish(msg)
