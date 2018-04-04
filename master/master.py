@@ -127,10 +127,10 @@ class Master:
             orientation_err = self.desired_orientation - self.current_orientation
             if orientation_err > math.pi:
                 orientation_err -= 2*math.pi
-                rospy.loginfo("Wrapping orientation error from %f to %f" % (orientation_err+2*math.pi, orientation_err))
+                rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err+2*math.pi, orientation_err))
             elif orientation_err < -math.pi:
                 orientation_err += 2*math.pi
-                rospy.loginfo("Wrapping orientation error from %f to %f" % (orientation_err-2*math.pi, orientation_err))
+                rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err-2*math.pi, orientation_err))
 
             # we are trying to move forward
             if dist >= 0.05: # 5 cm
@@ -141,8 +141,10 @@ class Master:
                     # self.rotational_vel = 0.3*orientation_err
                 if math.pi - 0.043 < abs(orientation_err) < math.pi + 0.043:
                     self.rotational_vel = -0.5*orientation_err
+                    rospy.loginfo_throttle(0.25, "Scaling backwards rotational velocity=%f=-%f*0.5" % (self.rotational_vel, orientation_err))
                 else:
                     self.rotational_vel = 0.5*orientation_err
+                    rospy.loginfo_throttle(0.25,"Scaling rotational velocity=%f=%f*0.5" % (self.rotational_vel,orientation_err))
 
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
