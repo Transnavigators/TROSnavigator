@@ -24,6 +24,9 @@ class Master:
         self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=50)
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback, False)
 
+        self.linear_accel = float(rospy.get_param("~linear_accel",0.1))
+        self.rot_accel = float(rospy.get_param("~linear_accel", 0.05))
+
         # get publish rate and PID constants
         self.rate = rospy.get_param("~rate", 10)
         # self.Kp = rospy.get_param("~position_contant", 1.0)
@@ -42,6 +45,10 @@ class Master:
         self.desired_position_y = 0.0
         self.desired_orientation = 0.0
         self.first_run = True
+
+        self.last_forward_vel = 0
+        self.last_rot_vel = 0
+        self.current_speed = 0
         self.action_server.start()
 
     def begin(self):
@@ -59,13 +66,13 @@ class Master:
         # old_orientation_error = 0.0
 
         # # old time
-        # old_time = 0.0
+        old_time = rospy.get_time()
 
         while not rospy.is_shutdown():
             # # get current time
-            # new_time = rospy.get_time()
-            # time_diff = new_time - old_time
-            # old_time = new_time
+            new_time = rospy.get_time()
+            time_diff = new_time - old_time
+            old_time = new_time
 
             # generate message
             msg = Twist()
@@ -148,13 +155,20 @@ class Master:
                         # rotational_vel = -0.05
                     #rotational_vel = min(0.875,orientation_err)
                     rotational_vel = 0.3*orientation_err
-            
-            
+
+            max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
+            min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
+            forward_vel = max(min_forward_vel, min(max_forward_vel, forward_vel))
+
+            max_rot_vel = self.last_rot_vel + self.rot_accel*time_diff
+            min_rot_vel = self.last_rot_vel - self.rot_accel*time_diff
+            rotational_vel = max(min_rot_vel, min(max_rot_vel, rotational_vel))
             
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, rotational_vel)
-           
+            self.last_forward_vel = forward_vel
+            self.last_rot_vel = rotational_vel
 
 
             rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
@@ -178,6 +192,7 @@ class Master:
         self.current_position_x = msg.pose.pose.position.x
         self.current_position_y = msg.pose.pose.position.y
         self.current_orientation = math.asin(msg.pose.pose.orientation.z) * 2
+        self.current_speed = msg.twist.twist.linear.x
         if self.first_run:
             self.desired_position_x = self.current_position_x
             self.desired_position_y = self.current_position_y
