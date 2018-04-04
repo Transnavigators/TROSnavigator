@@ -28,7 +28,7 @@ class Master:
         self.rot_accel = float(rospy.get_param("~linear_accel", 0.05))
 
         # get publish rate and PID constants
-        self.rate = rospy.get_param("~rate", 10)
+        self.rate = rospy.get_param("~rate", 100)
         # self.Kp = rospy.get_param("~position_contant", 1.0)
         # self.Ki = rospy.get_param("~derivative_contant", 1.0)
         # self.Kd = rospy.get_param("~integral_contant", 1.0)
