@@ -125,6 +125,7 @@ class Master:
             if orientation_err > math.pi:
                 orientation_err = orientation_err - 2*math.pi
                 # fill in values for the Twist
+                rotational_vel = 0.3 * orientation_err
                 msg.linear = Vector3(forward_vel, 0, 0)
                 msg.angular = Vector3(0, 0, rotational_vel)
                 self.last_forward_vel = forward_vel
@@ -141,6 +142,7 @@ class Master:
                 orientation_err = orientation_err + 2*math.pi
                 
                 # fill in values for the Twist
+                rotational_vel = 0.3 * orientation_err
                 msg.linear = Vector3(forward_vel, 0, 0)
                 msg.angular = Vector3(0, 0, rotational_vel)
                 self.last_forward_vel = forward_vel
