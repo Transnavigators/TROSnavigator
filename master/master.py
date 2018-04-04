@@ -124,12 +124,12 @@ class Master:
                 self.desired_position_x = self.current_position_x
                 self.desired_position_y = self.current_position_y
             # get delta orientation in the range -pi to pi so we always take the short way around
-            orientation_err = self.desired_orientation - self.current_orientation
+            orientation_err = self.current_orientation - self.desired_orientation
             if orientation_err > math.pi:
-                orientation_err = 2*math.pi - orientation_err
+                orientation_err = orientation_err - 2*math.pi
                 rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err+2*math.pi, orientation_err))
             elif orientation_err < -math.pi:
-                orientation_err = 2*math.pi + orientation_err
+                orientation_err = orientation_err + 2*math.pi
                 rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err-2*math.pi, orientation_err))
 
             # we are trying to move forward
@@ -139,12 +139,9 @@ class Master:
                     # self.rotational_vel = min(0.875,orientation_err)
                 # else:
                     # self.rotational_vel = 0.3*orientation_err
-                if math.pi - 0.043 < abs(orientation_err) < math.pi + 0.043:
-                    self.rotational_vel = -0.5*orientation_err
-                    rospy.loginfo_throttle(0.25, "Scaling backwards rotational velocity=%f=-%f*0.5" % (self.rotational_vel, orientation_err))
-                else:
-                    self.rotational_vel = 0.5*orientation_err
-                    rospy.loginfo_throttle(0.25,"Scaling rotational velocity=%f=%f*0.5" % (self.rotational_vel,orientation_err))
+
+                self.rotational_vel = -0.5*orientation_err
+                rospy.loginfo_throttle(0.25, "Scaling rotational velocity=%f=%f*0.5" % (self.rotational_vel,orientation_err))
 
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
@@ -171,10 +168,7 @@ class Master:
                     # self.rotational_vel = min(0.875,orientation_err)
 
                     # Prefer right turns when turning 180 degrees
-                    if math.pi-0.043 < abs(orientation_err) < math.pi+0.043:
-                        self.rotational_vel = -max(-0.875, min(0.875, 0.3*orientation_err))
-                    else:
-                        self.rotational_vel = max(-0.875, min(0.875, 0.3*orientation_err))
+                    self.rotational_vel = max(-0.875, min(0.875, -0.3*orientation_err))
 
             max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
             min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
