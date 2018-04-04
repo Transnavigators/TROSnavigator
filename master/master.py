@@ -202,8 +202,9 @@ class Master:
         self.current_position_x = msg.pose.pose.position.x
         self.current_position_y = msg.pose.pose.position.y
         self.current_orientation = math.asin(msg.pose.pose.orientation.z) * 2
-        if abs(self.desired_orientation - self.current_orientation) > math.pi:
+        if self.current_orientation > math.pi/2 and self.desired_orientation < -math.pi/2:
             self.negate = -1
+            rospy.loginfo("Negating direction")
         else:
             self.negate = 1
         self.current_speed = msg.twist.twist.linear.x
