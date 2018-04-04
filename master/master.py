@@ -53,6 +53,8 @@ class Master:
         self.rotational_vel = 0
         self.forward_vel = 0
 
+        self.is_turning = False
+
         self.action_server.start()
 
     def begin(self):
@@ -116,7 +118,7 @@ class Master:
             dist = math.sqrt((self.desired_position_x-self.current_position_x)**2+(self.desired_position_y-self.current_position_y)**2)
 
             # update desired orientation to point in the correct direction
-            if dist >= 0.05:  # 5 cm
+            if dist >= 0.05 and not self.is_turning:  # 5 cm
                 self.desired_orientation = math.atan2(self.desired_position_y - self.current_position_y,
                                                       self.desired_position_x - self.current_position_x)
                 rospy.loginfo_throttle(1, "updating desired orientation %f" % self.desired_orientation)
@@ -124,13 +126,13 @@ class Master:
                 self.desired_position_x = self.current_position_x
                 self.desired_position_y = self.current_position_y
             # get delta orientation in the range -pi to pi so we always take the short way around
-            orientation_err = self.current_orientation - self.desired_orientation
+            orientation_err = self.desired_orientation - self.current_orientation
             if orientation_err > math.pi:
                 orientation_err = orientation_err - 2*math.pi
-                rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err+2*math.pi, orientation_err))
+                rospy.loginfo_throttle(1, "Wrapping orientation error from %f to %f" % (orientation_err+2*math.pi, orientation_err))
             elif orientation_err < -math.pi:
                 orientation_err = orientation_err + 2*math.pi
-                rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err-2*math.pi, orientation_err))
+                rospy.loginfo_throttle(1, "Wrapping orientation error from %f to %f" % (orientation_err-2*math.pi, orientation_err))
 
             # we are trying to move forward
             if dist >= 0.05: # 5 cm
@@ -140,8 +142,8 @@ class Master:
                 # else:
                     # self.rotational_vel = 0.3*orientation_err
 
-                self.rotational_vel = -0.5*orientation_err
-                rospy.loginfo_throttle(0.25, "Scaling rotational velocity=%f=%f*0.5" % (self.rotational_vel,orientation_err))
+                self.rotational_vel = 0.5*orientation_err
+                rospy.loginfo_throttle(1, "Scaling rotational velocity=%f=%f*0.5" % (self.rotational_vel,orientation_err))
 
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
@@ -149,7 +151,6 @@ class Master:
                         self.forward_vel = 1.1
                     else:
                         self.forward_vel = dist
-            
             # turn command
             else:
                 # if self.recv_msg:
@@ -168,8 +169,11 @@ class Master:
                     # self.rotational_vel = min(0.875,orientation_err)
 
                     # Prefer right turns when turning 180 degrees
-                    self.rotational_vel = max(-0.875, min(0.875, -0.3*orientation_err))
+                    self.rotational_vel = max(-0.875, min(0.875, 0.3*orientation_err))
+                    rospy.loginfo_throttle(1, "Turning rotational velocity=%f=%f*0.3" % (self.rotational_vel, orientation_err))
 
+            if self.rotational_vel == 0:
+                self.is_turning = False
             max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
             min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
             self.forward_vel = max(min_forward_vel, min(max_forward_vel, self.forward_vel))
@@ -232,8 +236,9 @@ class Master:
         # update desired positions
         self.desired_position_x = self.current_position_x + goal.target_pose.pose.position.x*math.cos(self.current_orientation)
         self.desired_position_y = self.current_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
-        
-        
+
+        self.is_turning = goal.target_pose.pose.position.x == 0
+
         rospy.loginfo("Getting updated goal P:%f R:%f" % (goal.target_pose.pose.position.x, math.asin(goal.target_pose.pose.orientation.z) * 2))
 
         self.action_server.set_succeeded()
