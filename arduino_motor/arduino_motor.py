@@ -23,20 +23,20 @@ class ArduinoMotor:
         self.retry_limit = int(rospy.get_param("~retry_limit", 10))
         self.reset_pin = int(rospy.get_param("reset_pin", 4))
         self.err_count = 0
-        #try:
-        #    global GPIO
-        #    import RPi.GPIO as GPIO
+        try:
+            global GPIO
+            import RPi.GPIO as GPIO
             # Setup pin 4 as an output pin for resetting the Arduino
-        #    GPIO.setmode(GPIO.BCM)
-        #    GPIO.setwarnings(False)
-        #    GPIO.setup(4, GPIO.OUT)
-        #    self.on_arduino = True
-        #except (ImportError, RuntimeError):
-        #    rospy.logwarn("Not running on Raspberry Pi, so cannot reset Arduino")
-        #    self.on_arduino = False
-        #    pass
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setwarnings(False)
+            GPIO.setup(4, GPIO.OUT)
+            self.on_arduino = True
+        except (ImportError, RuntimeError):
+            rospy.logwarn("Not running on Raspberry Pi, so cannot reset Arduino")
+            self.on_arduino = False
+            pass
         # Reset the Arduino
-        #self.reset_arduino()
+        self.reset_arduino()
         self.is_virtual = int(rospy.get_param("~is_virtual", 0))
         # Setup the i2c bus
         if self.is_virtual:
@@ -56,13 +56,13 @@ class ArduinoMotor:
 
         rospy.Subscriber("cmd_vel", Twist, self.callback)
 
-    #def reset_arduino(self):
-    #    if self.on_arduino:
-    #        rospy.logerr("Resetting arduino")
-    #        GPIO.output(self.reset_pin, GPIO.LOW)
-    #        rospy.sleep(0.1)
-    #        GPIO.output(self.reset_pin, GPIO.HIGH)
-    #        rospy.sleep(2.5)
+    def reset_arduino(self):
+        if self.on_arduino:
+            rospy.logerr("Resetting arduino")
+            GPIO.output(self.reset_pin, GPIO.LOW)
+            rospy.sleep(0.1)
+            GPIO.output(self.reset_pin, GPIO.HIGH)
+            rospy.sleep(2.5)
 
     def callback(self, msg):
         """Updates the linear and angular velocity instance variables
