@@ -25,7 +25,7 @@ class Master:
         self.action_server = actionlib.SimpleActionServer('move_base', MoveBaseAction, self.alexa_callback, False)
 
         self.linear_accel = float(rospy.get_param("~linear_accel",0.1))
-        self.rot_accel = float(rospy.get_param("~linear_accel", 0.05))
+        self.rot_accel = float(rospy.get_param("~linear_accel", 0.2))
 
         # get publish rate and PID constants
         self.rate = rospy.get_param("~rate", 100)
@@ -160,9 +160,10 @@ class Master:
             min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
             forward_vel = max(min_forward_vel, min(max_forward_vel, forward_vel))
 
-            max_rot_vel = self.last_rot_vel + self.rot_accel*time_diff
-            min_rot_vel = self.last_rot_vel - self.rot_accel*time_diff
+            max_rot_vel = self.last_rot_vel + self.rot_accel * time_diff
+            min_rot_vel = self.last_rot_vel - self.rot_accel * time_diff
             rotational_vel = max(min_rot_vel, min(max_rot_vel, rotational_vel))
+
             
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
