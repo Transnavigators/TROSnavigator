@@ -185,7 +185,7 @@ class Master:
             # fill in values for the Twist
             msg.linear = Vector3(self.forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, self.rotational_vel)
-            self.last_forward_vel = forward_vel
+            self.last_forward_vel = self.forward_vel
             self.last_rot_vel = self.rotational_vel
 
             rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,self.rotational_vel))
