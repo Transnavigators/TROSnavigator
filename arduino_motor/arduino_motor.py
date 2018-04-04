@@ -36,7 +36,7 @@ class ArduinoMotor:
             self.on_arduino = False
             pass
         # Reset the Arduino
-        self.reset_arduino()
+        # self.reset_arduino()
         self.is_virtual = int(rospy.get_param("~is_virtual", 0))
         # Setup the i2c bus
         if self.is_virtual:
