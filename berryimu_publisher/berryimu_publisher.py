@@ -42,7 +42,8 @@ class BerryIMUPublisher:
         gyro_x_angle = 0.0
         gyro_y_angle = 0.0
         gyro_z_angle = 0.0
-
+        last_yaw = 0
+        first_run = True
         last_timestamp = rospy.get_time()
 
         while not rospy.is_shutdown():
@@ -106,7 +107,14 @@ class BerryIMUPublisher:
                     msg.header.frame_id = "base_footprint"
 
                     # Convert from euler to quaternion for ROS
-                    q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle)
+                    if first_run:
+                        q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, 0)
+                        first_run = False
+                    else:
+                        q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle - last_yaw)
+
+                    last_yaw = gyro_z_angle
+
                     msg.orientation = Quaternion(q[0], q[1], q[2], q[3])
                     # TODO: measure covariance
                     msg.orientation_covariance = [99999, 0, 0,  # covariance on x axis
