@@ -172,7 +172,7 @@ class Master:
                     self.rotational_vel = max(-0.875, min(0.875, 0.3*orientation_err))
                     rospy.loginfo_throttle(1, "Turning rotational velocity=%f=%f*0.3" % (self.rotational_vel, orientation_err))
 
-            if self.rotational_vel == 0:
+            if self.rotational_vel == 0 and self.forward_vel == 0:
                 self.is_turning = False
             max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
             min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
