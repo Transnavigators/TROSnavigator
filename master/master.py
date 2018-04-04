@@ -126,10 +126,10 @@ class Master:
             # get delta orientation in the range -pi to pi so we always take the short way around
             orientation_err = self.desired_orientation - self.current_orientation
             if orientation_err > math.pi:
-                orientation_err -= 2*math.pi
+                orientation_err = 2*math.pi - orientation_err
                 rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err+2*math.pi, orientation_err))
             elif orientation_err < -math.pi:
-                orientation_err += 2*math.pi
+                orientation_err = 2*math.pi + orientation_err
                 rospy.loginfo_throttle(0.25, "Wrapping orientation error from %f to %f" % (orientation_err-2*math.pi, orientation_err))
 
             # we are trying to move forward
