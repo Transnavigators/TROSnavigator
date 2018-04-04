@@ -120,11 +120,11 @@ class Master:
                 self.desired_position_x = self.current_position_x
                 self.desired_position_y = self.current_position_y
             # get delta orientation in the range -pi to pi so we always take the short way around
-            orientation_err = (self.desired_orientation - self.current_orientation)
-            # if orientation_err > math.pi:
-                # orientation_err = orientation_err - 2*math.pi
-            # elif orientation_err < -math.pi:
-                # orientation_err = orientation_err + 2*math.pi
+            orientation_err = self.desired_orientation - self.current_orientation
+            if orientation_err > math.pi:
+                orientation_err -= 2*math.pi
+            elif orientation_err < -math.pi:
+                orientation_err += 2*math.pi
 
             # we are trying to move forward
             if dist >= 0.05: # 5 cm
@@ -158,7 +158,12 @@ class Master:
                     #  else:
                     #      rotational_vel = 1.29/orientation_err
                     # rotational_vel = min(0.875,orientation_err)
-                    rotational_vel = 0.3*orientation_err
+                    
+                    # Prefer right turns when turning 180 degrees
+                    if math.pi-0.043 < abs(orientation_err) < math.pi+0.043:
+                        rotational_vel = 0.875
+                    else:
+                        rotational_vel = max(-0.875, min(0.875, 0.3*orientation_err))
 
             max_forward_vel = self.last_forward_vel + self.linear_accel*time_diff
             min_forward_vel = self.last_forward_vel - self.linear_accel * time_diff
@@ -168,13 +173,11 @@ class Master:
             min_rot_vel = self.last_rot_vel - self.rot_accel * time_diff
             rotational_vel = max(min_rot_vel, min(max_rot_vel, rotational_vel))
 
-            
             # fill in values for the Twist
             msg.linear = Vector3(forward_vel, 0, 0)
             msg.angular = Vector3(0, 0, rotational_vel)
             self.last_forward_vel = forward_vel
             self.last_rot_vel = rotational_vel
-
 
             rospy.loginfo_throttle(1, "Desired Position: (%f,%f,%f) Current Position: (%f,%f,%f) Sending Velocity: (%f,%f)" % (self.desired_position_x,self.desired_position_y,self.desired_orientation,self.current_position_x,self.current_position_y,self.current_orientation,forward_vel,rotational_vel))
 
@@ -226,7 +229,7 @@ class Master:
         self.desired_position_y = self.current_position_y + goal.target_pose.pose.position.x*math.sin(self.current_orientation)
         
         
-        rospy.loginfo("Getting updated goal P:%f R:%f", goal.target_pose.pose.position.x, math.asin(goal.target_pose.pose.orientation.z) * 2)
+        rospy.loginfo("Getting updated goal P:%f R:%f" % (goal.target_pose.pose.position.x, math.asin(goal.target_pose.pose.orientation.z) * 2))
 
         self.action_server.set_succeeded()
         self.recv_msg = True
