@@ -135,7 +135,7 @@ class DiffTf:
         try:
             l, r = self.read_encoders()
         except IOError as e:
-            rospy.logerr("Couldn't read the encoders: " % e)
+            rospy.logerr("Couldn't read the encoders: %s" % str(e))
             return
         self.lwheelCallback(l)
         self.rwheelCallback(r)
