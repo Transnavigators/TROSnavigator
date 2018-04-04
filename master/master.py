@@ -124,8 +124,8 @@ class Master:
                     # rotational_vel = min(0.875,orientation_err)
                 # else:
                     # rotational_vel = 0.3*orientation_err
-                rotational_vel = 0.3*orientation_err
-                
+                rotational_vel = 0.5*orientation_err
+
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
                     if dist > 1:
