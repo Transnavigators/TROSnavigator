@@ -108,12 +108,12 @@ class BerryIMUPublisher:
 
                     # Convert from euler to quaternion for ROS
                     if first_run:
-                        q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, 0)
+                        q = quaternion_from_euler(roll * self.RAD_TO_DEG, pitch * self.RAD_TO_DEG, 0)
                         first_run = False
                     else:
-                        q = quaternion_from_euler(gyro_x_angle, gyro_y_angle, gyro_z_angle - last_yaw)
+                        q = quaternion_from_euler(roll * self.RAD_TO_DEG, pitch * self.RAD_TO_DEG, tilt_compensated_heading - last_yaw)
 
-                    last_yaw = gyro_z_angle
+                    last_yaw = tilt_compensated_heading
 
                     msg.orientation = Quaternion(q[0], q[1], q[2], q[3])
                     # TODO: measure covariance
