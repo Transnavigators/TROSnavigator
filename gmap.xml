@@ -23,7 +23,7 @@
     <node name="berryimu_publisher" pkg="berryimu_publisher" type="berryimu_publisher.py">
         <param name="poll_rate" value="10"/>
     </node>
-    <node name="robot_pose_ekf" pkg="robot_pose_ekf" type="robot_pose_ekf">
+    <!--<node name="robot_pose_ekf" pkg="robot_pose_ekf" type="robot_pose_ekf">
         <param name="output_frame" value="odom"/>
         <param name="freq" value="1000"/>
         <param name="sensor_timeout" value="1.0"/>
@@ -32,7 +32,7 @@
         <param name="vo_used" value="false"/>
         <param name="debug" value="false"/>
         <param name="self_diagnose" value="true"/>
-    </node>
+    </node>-->
     <!--<arg name="map_file" default="$(find nav_config)/shiley3.yaml"/>
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="false"/>-->
     <node name="move_base" pkg="move_base" type="move_base" respawn="false" output="screen">
