@@ -57,7 +57,7 @@
         <param name="map_update_interval" value="5.0"/> <!-- default: 5.0 -->
 
         <!-- The maximum usable range of the laser. A beam is cropped to this value.  -->
-        <param name="maxUrange" value="6.0"/>
+        <param name="maxUrange" value="5.5"/>
 
         <!-- The maximum range of the sensor. If regions with no obstacles within the range of the sensor should appear as free space in the map, set maxUrange < maximum range of the real sensor <= maxRange -->
         <param name="maxRange" value="6.0"/>
@@ -91,13 +91,13 @@
         <param name="particles" value="10"/>
 
         <!-- Initial map size  -->
-        <param name="xmin" value="-10.0"/>
-        <param name="ymin" value="-10.0"/>
-        <param name="xmax" value="10.0"/>
-        <param name="ymax" value="10.0"/>
+        <param name="xmin" value="-40.0"/>
+        <param name="ymin" value="-40.0"/>
+        <param name="xmax" value="40.0"/>
+        <param name="ymax" value="40.0"/>
 
         <!-- Processing parameters (resolution of the map)  -->
-        <param name="delta" value="14.2"/>
+        <param name="delta" value="0.01"/>
 
         <param name="llsamplerange" value="0.01"/>
         <param name="llsamplestep" value="0.01"/>
