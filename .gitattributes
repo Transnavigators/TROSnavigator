@@ -10,6 +10,7 @@
 *.enc eol=lf
 *.urdf eol=lf
 *.rst eol=lf
+*.yaml eol=lf
 *.bat eol=crlf
 *.wav binary
 *.stl binary
