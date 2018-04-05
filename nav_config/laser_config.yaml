@@ -1,5 +1,5 @@
 scan_filter_chain:
-- name: shadow
+- name: shadows
   type: laser_filters/ScanShadowsFilter
   params:
     min_angle: 10
@@ -9,7 +9,7 @@ scan_filter_chain:
 - name: box
   type: laser_filters/LaserScanBoxFilter
   params:
-    box_frame: base_footprint
+    box_frame: neato_laser
     min_x: -0.41
     max_x: 0.66
     min_y: -0.44
