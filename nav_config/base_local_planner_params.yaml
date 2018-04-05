@@ -1,5 +1,5 @@
 max_vel_x: 2.2
-min_vel_x: 0.1
+min_vel_x: -0.5
 
 max_rotational_vel: 1.75
 min_in_place_rotational_vel: 0.4
@@ -9,7 +9,7 @@ min_in_place_vel_theta: 0.4
 
 escale_vel: -1.0
 
-acc_lim_theta: 3.2
+acc_lim_theta: 1.0
 acc_lim_x: 2.5
 acc_lim_y: 2.5
 
