@@ -8,7 +8,7 @@
         <param name="reset_pin" value="4"/>
         <param name="poll_rate" value="10"/>
     </node>
-    <node name="laser_filter" pkg="laser_filters" type="scan_to_scan_filter_chain">
+    <node name="laser_filter" pkg="laser_filters" type="scan_to_scan_filter_chain" output="screen">
         <rosparam command="load" file="$(find nav_config)/laser_config.yaml"/>
     </node>
     <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py">
