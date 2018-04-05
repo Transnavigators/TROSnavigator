@@ -8,6 +8,9 @@
         <param name="reset_pin" value="4"/>
         <param name="poll_rate" value="10"/>
     </node>
+    <node name="laser_filter" pkg="laser_filters" type="scan_to_scan_filter_chain">
+        <rosparam command="load" file="$(find nav_config)/laser_config.yaml"/>
+    </node>
     <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py">
         <param name="host" value="a1vgqh9vgvjzyh.iot.us-east-1.amazonaws.com"/>
         <param name="rootCAPath" value="/Certificates/root-CA.crt"/>
@@ -101,7 +104,7 @@
         <param name="lasamplerange" value="0.005"/>
         <param name="lasamplestep" value="0.005"/>
 
-        <!-- <remap from="scan" to="$(arg scan_topic)"/>  -->
+        <remap from="scan" to="scan_filtered"/>
     </node>
     <node name="scan_to_base_broadcaster" pkg="tf" type="static_transform_publisher" args="-0.04445 0 0 1 0 0 0 base_footprint neato_laser 100"/>
 </launch>
