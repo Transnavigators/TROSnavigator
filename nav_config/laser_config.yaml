@@ -4,7 +4,17 @@ scan_filter_chain:
   params:
     min_angle: 10
     max_angle: 170
-    neighbors: 20
+    neighbors: 2
     window: 1
+- name: box
+  type: laser_filters/LaserScanBoxFilter
+  params:
+    box_frame: neato_laser
+    min_x: -0.41
+    max_x: 0.66
+    min_y: -0.44
+    max_y: 0.37
+    min_z: -10.0
+    max_z: 10.0
 - name: interpolation
   type: laser_filters/InterpolationFilter
