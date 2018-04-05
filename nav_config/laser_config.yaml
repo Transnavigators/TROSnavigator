@@ -1,20 +1,20 @@
 scan_filter_chain:
-  - name: shadow
-    type: ScanShadowsFilter
-    params:
-      min_angle: 10
-      max_angle: 170
-      neighbors: 20
-      window: 1
-  - name: box
-    type: LaserScanBoxFilter
-    params:
-      box_frame: base_footprint
-      min_x: -0.415149450302
-      max_x: 0.591126203537
-      min_y: -0.444353818893
-      max_y: 0.394423782825
-      min_z: -10.0
-      max_z: 10.0
-  - name: interpolation
-    type: InterpolationFilter
+- name: shadow
+  type: ScanShadowsFilter
+  params:
+    min_angle: 10
+    max_angle: 170
+    neighbors: 20
+    window: 1
+- name: box
+  type: LaserScanBoxFilter
+  params:
+    box_frame: base_footprint
+    min_x: -0.415149450302
+    max_x: 0.591126203537
+    min_y: -0.444353818893
+    max_y: 0.394423782825
+    min_z: -10.0
+    max_z: 10.0
+- name: interpolation
+  type: InterpolationFilter
