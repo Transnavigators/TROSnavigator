@@ -1,5 +1,5 @@
 footprint: [[-0.366,0.395], [-0.416,-0.372], [0.592,0.362], [0.576,-0.445]]
-controller_frequency: 10.0
+controller_frequency: 5.0
 controller_patience: 15.0
 clearing_radius: 0.59
 footprint_padding: 0.03
