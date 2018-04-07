@@ -31,7 +31,6 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         self.MAX_REVERSE_SPEED = float(rospy.get_param("~max_reverse_speed", 0.5))
         self.MAX_ROT_SPEED = float(rospy.get_param("~max_rot_speed", 1.75))
         self.threshold = int(rospy.get_param("~joystick_threshold", 5))
-        search_time = int(rospy.get_param("~search_time", 60))
         is_test = int(rospy.get_param("~test", 0))
 
         # Instance variables for helping the callback remember its state
@@ -63,21 +62,20 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         else:
             self.is_test = False
             rospy.loginfo("Finding PS3 controller.")
+
+            if not self.connect_joystick():
+                rospy.loginfo("Waiting for controller...")
+
             # Check every second
             rate = rospy.Rate(1.0)
-            for i in range(0, search_time):
+            while not rospy.is_shutdown():
                 if self.connect_joystick():
                     break
-                rospy.loginfo("Waiting for controller...")
                 rate.sleep()
-            if self.gamepad is None:
-                rospy.logerr("Could not find the PS3 controller.")
-                if is_test == 0:
-                    sys.exit(1)
-
-
 
     def connect_joystick(self):
+        if self.gamepad is not None:
+            return True
         devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
         for device in devices:
             if 'PLAYSTATION(R)3 Controller' == device.name:
@@ -123,14 +121,12 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             self.stop = False
 
     def process_event(self, event):
-        #rospy.loginfo(event)
         # Check for joystick inputs and if we're in joystick mode
         mag = abs(event.value - 128)
         if event.type == 3 and not self.used_key:
             if event.code == 4:
                 # right joystick y axis controls moving forward
                 if mag > self.threshold:
-                    #rospy.loginfo("y=%d" % event.value)
                     scaled = self.scale_stick(event.value)
                     if scaled < 0:
                         self.x_vel = -scaled * self.MAX_SPEED
@@ -142,7 +138,6 @@ class SixaxisPublisher(asyncore.file_dispatcher):
 
             elif event.code == 3:
                 # right joystick x-axis controls turning
-                #rospy.loginfo("x=%d" % event.value)
                 if mag > self.threshold:
                     self.rot_vel = -self.scale_stick(event.value) * self.MAX_ROT_SPEED
                     self.used_key = False
@@ -199,11 +194,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
         elif self.stop:
             self.rot_vel = 0
             self.x_vel = 0
-        # If it used to be stopped and is suddenly moving at full speed, ignore the input
-        # if self.stopped and (abs(self.x_vel) in [self.MAX_SPEED, self.MAX_REVERSE_SPEED]
-        #                     or abs(self.rot_vel) == self.MAX_ROT_SPEED):
-        #    rospy.logwarn("Caught error from 0 to vx=%f vth=%f" % (self.x_vel, self.rot_vel))
-        # else:
+
         # Send a new twist if we have a nonzero command or an explicit stop command
         twist = Twist()
         twist.linear = Vector3(self.x_vel, 0, 0)
