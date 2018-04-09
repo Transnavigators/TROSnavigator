@@ -63,6 +63,8 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             self.is_test = False
             rospy.loginfo("Finding PS3 controller.")
 
+            self.gamepad = None
+
             if not self.connect_joystick():
                 rospy.loginfo("Waiting for controller...")
 
