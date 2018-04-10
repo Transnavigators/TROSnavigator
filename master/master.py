@@ -127,7 +127,7 @@ class Master:
                 # orientation_err = orientation_err + 2*math.pi
 
             # we are trying to move forward
-            if dist >= 0.05: # 5 cm
+            if dist >= 0.10: # 5 cm
                 # rotate toward the correct location
                 # if orientation_err>0.875:
                     # rotational_vel = min(0.875,orientation_err)
@@ -137,10 +137,10 @@ class Master:
 
                 # make sure we are in the correct orientation before moving forward
                 if abs(orientation_err) < 0.043: # 5 degrees/2
-                    if dist > 1:
+                    if dist > 2.5:
                         forward_vel = 1.1
                     else:
-                        forward_vel = dist
+                        forward_vel = 0.3*dist
             
             # turn command
             else:

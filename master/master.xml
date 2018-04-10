@@ -1,0 +1,9 @@
+<launch>
+    <node name="alexa_voice_control" pkg="alexa_voice_control" type="alexa_voice_control.py"/>
+    <node name="arduino_motor" pkg="arduino_motor" type="arduino_motor.py">
+    </node>
+    <node name="arduino_odometry" pkg="arduino_odometry" type="arduino_odometry.py">
+    </node>
+    <node name="master" pkg="master" type="master.py" output="screen">
+    </node>
+</launch>

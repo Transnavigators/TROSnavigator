@@ -80,7 +80,7 @@ class SixaxisPublisher(asyncore.file_dispatcher):
             return True
         devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
         for device in devices:
-            if 'PLAYSTATION(R)3 Controller' == device.name:
+            if 'Sony PLAYSTATION(R)3 Controller' == device.name:
                 rospy.loginfo("Found the PS3 controller.")
                 self.gamepad = device
                 asyncore.file_dispatcher.__init__(self, self.gamepad)
