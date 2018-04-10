@@ -70,21 +70,25 @@ class DiffTf:
         rospy.init_node("odometry")
         self.nodename = rospy.get_name()
         rospy.loginfo("-I- %s started" % self.nodename)
-        
-        
+
         # Setup I2C variables
         self.encoder_cmd = ord('e')
         self.address = int(rospy.get_param("~address", 0x04))
-        self.bus = smbus.SMBus(1)
-        
+        is_virtual = int(rospy.get_param("~is_virtual", 0))
+        if is_virtual:
+            self.bus = smbus.SMBus(0)
+        else:
+            rospy.sleep(4.0)
+            self.bus = smbus.SMBus(1)
+
         #### parameters #######
-        self.rate = rospy.get_param('~rate',10.0)  # the rate at which to publish the transform
+        self.rate = rospy.get_param('~rate', 10.0)  # the rate at which to publish the transform
         # Constant distance travelled per pulse of the encoder
         # 6" diameter wheel, 4096 pulses per revolution
         self.ticks_meter = float(rospy.get_param('ticks_meter', 4096 / (6 * pi *0.0254)))  # The number of wheel encoder ticks per meter of travel
         self.base_width = float(rospy.get_param('~base_width', 31.5 * 0.0254)) # The wheel base width in meters
         
-        self.base_frame_id = rospy.get_param('~base_frame_id','base_footprint') # the name of the base frame of the robot
+        self.base_frame_id = rospy.get_param('~base_frame_id', 'base_footprint') # the name of the base frame of the robot
         self.odom_frame_id = rospy.get_param('~odom_frame_id', 'odom') # the name of the odometry reference frame
         
         self.encoder_min = rospy.get_param('encoder_min', -2147483648)
@@ -112,7 +116,7 @@ class DiffTf:
         self.then = rospy.Time.now()
         
         # subscriptions
-        self.odomPub = rospy.Publisher("odom", Odometry,queue_size=10)
+        self.odomPub = rospy.Publisher("odom", Odometry, queue_size=10)
         self.odomBroadcaster = TransformBroadcaster()
         
     #############################################################################
@@ -122,8 +126,7 @@ class DiffTf:
         while not rospy.is_shutdown():
             self.update()
             r.sleep()
-       
-     
+
     #############################################################################
     def update(self):
     #############################################################################
@@ -139,7 +142,6 @@ class DiffTf:
             elapsed = now - self.then
             self.then = now
             elapsed = elapsed.to_sec()
-            
 
             # calculate odometry
             if self.enc_left == None:
@@ -158,9 +160,7 @@ class DiffTf:
             # calculate velocities
             self.dx = d / elapsed
             self.dr = th / elapsed
-           
 
-             
             if (d != 0):
                 # calculate distance traveled in x and y
                 x = cos( th ) * d
@@ -182,8 +182,7 @@ class DiffTf:
                 (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
                 rospy.Time.now(),
                 self.base_frame_id,
-                self.odom_frame_id
-                )
+                self.odom_frame_id)
             
             odom = Odometry()
             odom.header.stamp = now
@@ -197,9 +196,6 @@ class DiffTf:
             odom.twist.twist.linear.y = 0
             odom.twist.twist.angular.z = self.dr
             self.odomPub.publish(odom)
-            
-            
-
 
     #############################################################################
     def lwheelCallback(self, msg):
@@ -212,7 +208,6 @@ class DiffTf:
             self.lmult = self.lmult - 1
             
         self.left = 1.0 * (enc + self.lmult * (self.encoder_max - self.encoder_min)) 
-
 
         self.prev_lencoder = enc
         
@@ -227,7 +222,6 @@ class DiffTf:
             self.rmult = self.rmult - 1
             
         self.right = 1.0 * (enc + self.rmult * (self.encoder_max - self.encoder_min))
-
 
         self.prev_rencoder = enc
 
