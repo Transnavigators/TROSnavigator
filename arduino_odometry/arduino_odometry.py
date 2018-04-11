@@ -75,7 +75,11 @@ class DiffTf:
         # Setup I2C variables
         self.encoder_cmd = ord('e')
         self.address = int(rospy.get_param("~address", 0x04))
-        self.bus = smbus.SMBus(1)
+        is_virtual = int(rospy.get_param("~is_virtual", 0))
+        if is_virtual:
+            self.bus = smbus.SMBus(0)
+        else:
+            self.bus = smbus.SMBus(1)
 
         #### parameters #######
         self.rate = rospy.get_param('~rate', 10.0)  # the rate at which to publish the transform
